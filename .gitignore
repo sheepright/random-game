@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+__tests__
 
 # next.js
 /.next/
@@ -35,6 +36,10 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# Kiro
+.Kiro
+.vscode
 
 # typescript
 *.tsbuildinfo
