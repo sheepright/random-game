@@ -37,6 +37,9 @@ export const ITEM_PRIMARY_STATS: Record<ItemType, keyof ItemStats> = {
   // 무기 (공격력)
   [ItemType.MAIN_WEAPON]: "attack",
   [ItemType.SUB_WEAPON]: "attack",
+
+  // 펫 (공격력)
+  [ItemType.PET]: "attack",
 };
 
 // Enhancement cost calculation (밸런스 조정됨 - Requirements 10.12)
@@ -49,6 +52,7 @@ export function calculateEnhancementCost(
     [ItemGrade.RARE]: 1.3,
     [ItemGrade.EPIC]: 1.7,
     [ItemGrade.LEGENDARY]: 2.2,
+    [ItemGrade.MYTHIC]: 3.0,
   };
 
   let baseCost: number;
@@ -69,57 +73,80 @@ export function calculateEnhancementCost(
   return Math.floor(baseCost * gradeMultiplier[grade]);
 }
 
-// Enhancement success rate (100% until level 12, then decreasing)
+// Enhancement success rate (낮춰진 성공률과 파괴 확률 추가)
 export function getEnhancementSuccessRate(enhancementLevel: number): number {
-  if (enhancementLevel <= 11) {
-    return 1.0; // 100% 성공
+  if (enhancementLevel <= 5) {
+    return 1.0; // 1~5강: 100% 성공
+  } else if (enhancementLevel <= 10) {
+    return 0.95; // 6~10강: 95% 성공
+  } else if (enhancementLevel <= 15) {
+    return 0.8; // 11~15강: 80% 성공
+  } else if (enhancementLevel <= 19) {
+    return 0.6; // 16~19강: 60% 성공
+  } else {
+    // 20강 이상: 낮은 성공률
+    const successRates: Record<number, number> = {
+      20: 0.4, // 40%
+      21: 0.35, // 35%
+      22: 0.3, // 30%
+      23: 0.25, // 25%
+      24: 0.2, // 20%
+      25: 0.15, // 15%
+    };
+    return successRates[enhancementLevel] || 0.1;
   }
-
-  // 12강부터 성공률 감소
-  const successRates: Record<number, number> = {
-    12: 0.9, // 90%
-    13: 0.85, // 85%
-    14: 0.8, // 80%
-    15: 0.75, // 75%
-    16: 0.7, // 70%
-    17: 0.65, // 65%
-    18: 0.6, // 60%
-    19: 0.55, // 55%
-    20: 0.5, // 50%
-    21: 0.45, // 45%
-    22: 0.4, // 40%
-    23: 0.35, // 35%
-    24: 0.3, // 30%
-    25: 0.25, // 25%
-  };
-
-  return successRates[enhancementLevel] || 0.25;
 }
 
-// Enhancement stat increase calculation (아이템 고유 스탯만 증가, 밸런스 조정됨)
+// Enhancement destruction rate (20강 이상에서 파괴 확률)
+export function getEnhancementDestructionRate(
+  enhancementLevel: number
+): number {
+  if (enhancementLevel < 20) {
+    return 0; // 19강 이하는 파괴되지 않음
+  }
+
+  // 20강 이상에서 파괴 확률
+  const destructionRates: Record<number, number> = {
+    20: 0.1, // 10%
+    21: 0.15, // 15%
+    22: 0.2, // 20%
+    23: 0.25, // 25%
+    24: 0.3, // 30%
+    25: 0.35, // 35%
+  };
+
+  return destructionRates[enhancementLevel] || 0.4;
+}
+
+// Enhancement stat increase calculation (높은 스탯 증가량으로 보상)
 export function getEnhancementStatIncrease(
   enhancementLevel: number,
   grade: ItemGrade,
   itemType: ItemType
 ): ItemStats {
-  // 등급별 기본 증가량 (최소 1 보장)
+  // 등급별 기본 증가량 (대폭 증가)
   const baseIncrease = {
-    [ItemGrade.COMMON]: 1.0,
-    [ItemGrade.RARE]: 1.5,
-    [ItemGrade.EPIC]: 2.2,
-    [ItemGrade.LEGENDARY]: 3.0,
+    [ItemGrade.COMMON]: 2.0, // 1.0 → 2.0
+    [ItemGrade.RARE]: 3.5, // 1.5 → 3.5
+    [ItemGrade.EPIC]: 5.5, // 2.2 → 5.5
+    [ItemGrade.LEGENDARY]: 8.0, // 3.0 → 8.0
+    [ItemGrade.MYTHIC]: 12.0, // 새로 추가
   };
 
-  // 레벨별 효율 증가 (Requirements 10.12) - 높은 레벨일수록 더 많은 스탯 증가
+  // 레벨별 효율 증가 (더 높은 보상)
   let levelMultiplier: number;
   if (enhancementLevel <= 5) {
-    levelMultiplier = 0.6; // 1~5강: 낮은 효율
-  } else if (enhancementLevel <= 11) {
-    levelMultiplier = 0.8 + (enhancementLevel - 5) * 0.05; // 6~11강: 점진적 효율 증가 (0.8 ~ 1.1)
+    levelMultiplier = 1.0; // 1~5강: 기본 효율
+  } else if (enhancementLevel <= 10) {
+    levelMultiplier = 1.2 + (enhancementLevel - 5) * 0.1; // 6~10강: 1.2 ~ 1.7
+  } else if (enhancementLevel <= 15) {
+    levelMultiplier = 1.8 + (enhancementLevel - 10) * 0.2; // 11~15강: 1.8 ~ 2.8
+  } else if (enhancementLevel <= 19) {
+    levelMultiplier = 3.0 + (enhancementLevel - 15) * 0.3; // 16~19강: 3.0 ~ 4.2
   } else {
-    // 12~25강: 높은 효율 - 스탯이 크게 증가하여 비용 대비 효율적
-    const levelAbove12 = enhancementLevel - 11;
-    levelMultiplier = 1.5 + levelAbove12 * 0.5; // 1.5 ~ 8.5 (매우 큰 증가)
+    // 20~25강: 매우 높은 효율 (위험 대비 높은 보상)
+    const levelAbove20 = enhancementLevel - 19;
+    levelMultiplier = 5.0 + levelAbove20 * 1.0; // 5.0 ~ 11.0
   }
 
   const primaryStat = ITEM_PRIMARY_STATS[itemType];
@@ -136,16 +163,16 @@ export function getEnhancementStatIncrease(
   // 해당 아이템의 주요 스탯만 증가 (Requirements 10.2)
   switch (primaryStat) {
     case "attack":
-      statIncrease.attack = Math.max(1, Math.floor(baseValue)); // 최소 1 보장
+      statIncrease.attack = Math.max(2, Math.floor(baseValue)); // 최소 2 보장
       break;
     case "defense":
-      statIncrease.defense = Math.max(1, Math.floor(baseValue)); // 최소 1 보장
+      statIncrease.defense = Math.max(2, Math.floor(baseValue)); // 최소 2 보장
       break;
     case "defensePenetration":
-      statIncrease.defensePenetration = Math.max(1, Math.floor(baseValue)); // 최소 1 보장
+      statIncrease.defensePenetration = Math.max(2, Math.floor(baseValue)); // 최소 2 보장
       break;
     case "additionalAttackChance":
-      statIncrease.additionalAttackChance = Math.max(0.001, baseValue * 0.001); // 최소 0.1% 보장
+      statIncrease.additionalAttackChance = Math.max(0.002, baseValue * 0.001); // 최소 0.2% 보장
       break;
   }
 
@@ -178,6 +205,7 @@ export function getEnhancementInfo(item: Item): EnhancementInfo {
 
   const cost = calculateEnhancementCost(nextLevel, item.grade);
   const successRate = getEnhancementSuccessRate(nextLevel);
+  const destructionRate = getEnhancementDestructionRate(nextLevel);
   const statIncrease = getEnhancementStatIncrease(
     nextLevel,
     item.grade,
@@ -189,6 +217,7 @@ export function getEnhancementInfo(item: Item): EnhancementInfo {
     statIncrease,
     newEnhancementLevel: nextLevel,
     successRate,
+    destructionRate,
     itemType: item.type,
   };
 }
@@ -221,7 +250,7 @@ export function canEnhanceItem(item: Item, availableCredits: number): boolean {
   }
 }
 
-// Perform enhancement attempt
+// Perform enhancement attempt (파괴 확률 추가)
 export function performEnhancement(
   item: Item,
   availableCredits: number
@@ -238,21 +267,35 @@ export function performEnhancement(
 
   const enhancementInfo = getEnhancementInfo(item);
   const previousLevel = item.enhancementLevel;
-  const isSuccess = Math.random() < enhancementInfo.successRate;
+  const successRate = enhancementInfo.successRate;
+  const destructionRate = enhancementInfo.destructionRate || 0;
+
+  const randomValue = Math.random();
 
   let result: EnhancementResult;
   let newLevel: number;
   let statChange: ItemStats;
 
-  if (isSuccess) {
+  if (randomValue < successRate) {
     // 성공: 레벨 증가 및 스탯 증가
     result = EnhancementResult.SUCCESS;
     newLevel = enhancementInfo.newEnhancementLevel;
     statChange = enhancementInfo.statIncrease;
+  } else if (randomValue < successRate + destructionRate) {
+    // 파괴: 아이템이 파괴되어 강화 등급이 0으로 초기화
+    result = EnhancementResult.DESTRUCTION;
+    newLevel = 0;
+
+    // 모든 강화 스탯을 잃음
+    statChange = {
+      attack: -item.enhancedStats.attack,
+      defense: -item.enhancedStats.defense,
+      defensePenetration: -item.enhancedStats.defensePenetration,
+      additionalAttackChance: -item.enhancedStats.additionalAttackChance,
+    };
   } else {
-    // 실패
-    if (previousLevel >= 12) {
-      // 12강 이상에서 실패 시 레벨 1 감소
+    // 실패: 레벨 감소 (11강 이상에서만)
+    if (previousLevel >= 11) {
       result = EnhancementResult.DOWNGRADE;
       newLevel = Math.max(0, previousLevel - 1);
 
@@ -269,7 +312,7 @@ export function performEnhancement(
         additionalAttackChance: -lostStatIncrease.additionalAttackChance,
       };
     } else {
-      // 11강 이하에서는 실패해도 레벨 유지 (이론적으로 발생하지 않음)
+      // 10강 이하에서는 실패해도 레벨 유지
       result = EnhancementResult.FAILURE;
       newLevel = previousLevel;
       statChange = {
@@ -290,7 +333,7 @@ export function performEnhancement(
   };
 }
 
-// Apply enhancement result to item
+// Apply enhancement result to item (강화 등급에 따른 스탯 재계산 포함)
 export function applyEnhancementResult(
   item: Item,
   enhancementAttempt: EnhancementAttempt
@@ -310,6 +353,30 @@ export function applyEnhancementResult(
     ...item,
     enhancementLevel: enhancementAttempt.newLevel,
     enhancedStats: newEnhancedStats,
+  };
+}
+
+// Recalculate enhanced stats based on enhancement level (계승 시스템용)
+export function recalculateEnhancedStats(item: Item): Item {
+  // 기본 스탯부터 시작
+  let enhancedStats: ItemStats = { ...item.baseStats };
+
+  // 각 강화 레벨별로 스탯 증가량을 누적 계산
+  for (let level = 1; level <= item.enhancementLevel; level++) {
+    const statIncrease = getEnhancementStatIncrease(
+      level,
+      item.grade,
+      item.type
+    );
+    enhancedStats.attack += statIncrease.attack;
+    enhancedStats.defense += statIncrease.defense;
+    enhancedStats.defensePenetration += statIncrease.defensePenetration;
+    enhancedStats.additionalAttackChance += statIncrease.additionalAttackChance;
+  }
+
+  return {
+    ...item,
+    enhancedStats,
   };
 }
 

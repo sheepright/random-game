@@ -91,20 +91,21 @@ export function canProgressToNextStage(
 }
 
 /**
- * 단계 클리어 시 새로운 크레딧 생성률 계산
+ * 단계 클리어 시 새로운 크레딧 생성률 계산 (기본값 기준으로 계산)
  * Requirements: 1.3, 3.2 - 단계 클리어 시 크레딧 생성률 증가
  */
 export function calculateNewCreditRate(
-  currentCreditRate: number,
+  baseCreditRate: number,
   newStage: number
 ): number {
   const stageInfo = STAGE_REQUIREMENTS[newStage];
 
   if (!stageInfo) {
-    return currentCreditRate;
+    return baseCreditRate;
   }
 
-  return currentCreditRate * stageInfo.creditMultiplier;
+  // 기본값에 배율을 곱해서 기하급수적 증가 방지
+  return baseCreditRate * stageInfo.creditMultiplier;
 }
 
 /**
@@ -156,6 +157,16 @@ export function loadBossForStage(stage: number): Boss | null {
 }
 
 /**
+ * 스테이지 클리어 시 즉시 크레딧 보상 계산
+ * Requirements: 13.2 - 스테이지 클리어 보상 추가
+ */
+export function calculateStageClearReward(stage: number): number {
+  const baseReward = 100; // 기본 보상 크레딧
+  const stageMultiplier = Math.pow(1.1, stage - 1); // 스테이지별 배율
+  return Math.floor(baseReward * stage * stageMultiplier);
+}
+
+/**
  * 전투 승리 시 아이템 드랍 처리
  * Requirements: 7.7, 3.1 - 전투 승리 시 아이템 드랍 연동
  */
@@ -189,27 +200,30 @@ export function processBattleVictoryRewards(stage: number): Item[] {
 
 /**
  * 전투 승리 시 다음 스테이지 해금 및 보상 처리
- * Requirements: 7.7, 7.10 - 다음 스테이지 해금 로직
+ * Requirements: 7.7, 7.10 - 다음 스테이지 해금 로직, 13.2 - 크레딧 보상 추가
  */
 export function processBattleVictory(
   currentStage: number,
-  currentCreditRate: number
+  baseCreditRate: number
 ): {
   newStage: number;
   newCreditRate: number;
   stageInfo: StageInfo | null;
   droppedItems: Item[];
+  creditReward: number;
 } {
   const newStage = currentStage + 1;
-  const newCreditRate = calculateNewCreditRate(currentCreditRate, newStage);
+  const newCreditRate = calculateNewCreditRate(baseCreditRate, newStage);
   const stageInfo = getStageInfo(newStage);
   const droppedItems = processBattleVictoryRewards(currentStage);
+  const creditReward = calculateStageClearReward(currentStage);
 
   return {
     newStage,
     newCreditRate,
     stageInfo,
     droppedItems,
+    creditReward,
   };
 }
 

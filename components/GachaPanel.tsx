@@ -89,12 +89,14 @@ export default function GachaPanel({ onGachaResult }: GachaPanelProps) {
         <h3 className="text-lg font-semibold hero-text-primary mb-3">
           드랍 확률
         </h3>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-2">
           {Object.entries(GACHA_RATES).map(([grade, rate]) => (
             <div
               key={grade}
               className={`p-2 rounded border text-center ${
-                grade === ItemGrade.LEGENDARY
+                grade === ItemGrade.MYTHIC
+                  ? "hero-card-red hero-text-red"
+                  : grade === ItemGrade.LEGENDARY
                   ? "hero-card-accent hero-text-accent"
                   : grade === ItemGrade.EPIC
                   ? "hero-card-purple hero-text-purple"

@@ -6,7 +6,9 @@ import { Item, ItemType, ItemGrade, ItemStats } from "../types/game";
 import {
   calculateInheritancePreview,
   canPerformInheritance,
+  calculateGradeDifference,
 } from "../utils/inheritanceSystem";
+import { ITEM_TYPE_NAMES, GRADE_NAMES } from "../constants/game";
 import ResponsiveItemImage from "./ResponsiveItemImage";
 
 /**
@@ -28,29 +30,7 @@ const GRADE_COLORS = {
   [ItemGrade.RARE]: "hero-card-blue border-blue-400 hero-text-blue",
   [ItemGrade.EPIC]: "hero-card-purple border-purple-400 hero-text-purple",
   [ItemGrade.LEGENDARY]: "hero-card-accent border-yellow-400 hero-text-accent",
-};
-
-// 아이템 타입 한글 이름
-const ITEM_TYPE_NAMES = {
-  [ItemType.HELMET]: "헬멧",
-  [ItemType.ARMOR]: "아머",
-  [ItemType.PANTS]: "팬츠",
-  [ItemType.GLOVES]: "글러브",
-  [ItemType.SHOES]: "슈즈",
-  [ItemType.SHOULDER]: "숄더",
-  [ItemType.EARRING]: "귀걸이",
-  [ItemType.RING]: "반지",
-  [ItemType.NECKLACE]: "목걸이",
-  [ItemType.MAIN_WEAPON]: "주무기",
-  [ItemType.SUB_WEAPON]: "보조무기",
-};
-
-// 등급 한글 이름
-const GRADE_NAMES = {
-  [ItemGrade.COMMON]: "일반",
-  [ItemGrade.RARE]: "희귀",
-  [ItemGrade.EPIC]: "영웅",
-  [ItemGrade.LEGENDARY]: "전설",
+  [ItemGrade.MYTHIC]: "hero-card-red border-red-400 hero-text-red",
 };
 
 // 등급 순서 (계승 방향 확인용)
@@ -59,6 +39,7 @@ const GRADE_ORDER = {
   [ItemGrade.RARE]: 2,
   [ItemGrade.EPIC]: 3,
   [ItemGrade.LEGENDARY]: 4,
+  [ItemGrade.MYTHIC]: 5,
 };
 
 interface ItemSelectorProps {
@@ -205,8 +186,8 @@ interface InheritancePreviewProps {
   previewResult: {
     success: boolean;
     inheritedItem?: Item;
-    inheritanceRate?: number;
-    transferredStats?: ItemStats;
+    successRate?: number;
+    targetEnhancementLevel?: number;
     error?: string;
   };
 }
@@ -225,22 +206,30 @@ function InheritancePreview({
     );
   }
 
-  const { inheritedItem, inheritanceRate, transferredStats } = previewResult;
-  if (!inheritedItem || !transferredStats) return null;
+  const { inheritedItem, successRate, targetEnhancementLevel } = previewResult;
+  if (!inheritedItem || targetEnhancementLevel === undefined) return null;
+
+  const gradeDifference = calculateGradeDifference(
+    sourceItem.grade,
+    targetItem.grade
+  );
+  const levelReduction = sourceItem.enhancementLevel - targetEnhancementLevel;
 
   return (
     <div className="hero-card-green p-4 space-y-4">
-      <h3 className="text-lg font-semibold hero-text-green">계승 미리보기</h3>
+      <h3 className="text-lg font-semibold hero-text-green">
+        강화 등급 계승 미리보기
+      </h3>
 
-      {/* 계승률 표시 */}
+      {/* 계승 성공률 표시 */}
       <div className="hero-card rounded p-3">
-        <div className="text-sm hero-text-secondary mb-1">계승률</div>
+        <div className="text-sm hero-text-secondary mb-1">계승 성공률</div>
         <div className="text-xl font-bold hero-text-green">
-          {(inheritanceRate! * 100).toFixed(1)}%
+          {(successRate! * 100).toFixed(1)}%
         </div>
       </div>
 
-      {/* 스탯 변화 */}
+      {/* 강화 등급 변화 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 소스 아이템 */}
         <div className="hero-card rounded p-3">
@@ -258,25 +247,32 @@ function InheritancePreview({
               </div>
             </div>
           </div>
-          <div className="space-y-1 text-sm hero-text-secondary">
-            <div>공격: {sourceItem.enhancedStats.attack}</div>
-            <div>방어: {sourceItem.enhancedStats.defense}</div>
-            <div>방무: {sourceItem.enhancedStats.defensePenetration}</div>
+          <div className="text-center">
+            <div className="text-lg font-bold hero-text-blue">
+              +{sourceItem.enhancementLevel}
+            </div>
+            <div className="text-xs hero-text-secondary">강화 등급</div>
           </div>
         </div>
 
-        {/* 전승되는 스탯 */}
+        {/* 전승되는 강화 등급 */}
         <div className="hero-card-blue rounded p-3">
           <div className="text-sm font-semibold hero-text-blue mb-2">
-            전승 스탯
+            강화 등급 전승
           </div>
           <div className="flex items-center justify-center mb-3">
             <div className="text-3xl hero-text-blue">→</div>
           </div>
-          <div className="space-y-1 text-sm hero-text-blue">
-            <div>공격: +{transferredStats.attack}</div>
-            <div>방어: +{transferredStats.defense}</div>
-            <div>방무: +{transferredStats.defensePenetration}</div>
+          <div className="text-center space-y-2">
+            <div className="text-lg font-bold hero-text-blue">
+              +{sourceItem.enhancementLevel} → +{targetEnhancementLevel}
+            </div>
+            <div className="text-sm hero-text-blue">
+              {levelReduction}레벨 감소
+            </div>
+            <div className="text-xs hero-text-secondary">
+              등급 차이: {gradeDifference}단계
+            </div>
           </div>
         </div>
 
@@ -296,10 +292,11 @@ function InheritancePreview({
               </div>
             </div>
           </div>
-          <div className="space-y-1 text-sm hero-text-green">
-            <div>공격: {inheritedItem.enhancedStats.attack}</div>
-            <div>방어: {inheritedItem.enhancedStats.defense}</div>
-            <div>방무: {inheritedItem.enhancedStats.defensePenetration}</div>
+          <div className="text-center">
+            <div className="text-lg font-bold hero-text-green">
+              +{targetEnhancementLevel}
+            </div>
+            <div className="text-xs hero-text-secondary">최종 강화 등급</div>
           </div>
         </div>
       </div>
@@ -310,10 +307,13 @@ function InheritancePreview({
           주의사항
         </div>
         <div className="text-sm hero-text-secondary">
-          • 소스 아이템({ITEM_TYPE_NAMES[sourceItem.type]})은 계승 후 소멸됩니다
+          • 소스 아이템({ITEM_TYPE_NAMES[sourceItem.type]} +
+          {sourceItem.enhancementLevel})은 계승 후 소멸됩니다
           <br />
           • 계승은 되돌릴 수 없습니다
-          <br />• 타겟 아이템의 레벨은 변경되지 않습니다
+          <br />
+          • 계승 실패 시 소스 아이템만 소멸되고 타겟 아이템은 변화 없습니다
+          <br />• 강화 등급에 따른 스탯은 자동으로 재계산됩니다
         </div>
       </div>
     </div>
@@ -428,10 +428,10 @@ export function InheritanceModal({
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold hero-text-primary">
-                아이템 계승
+                아이템 계승 (강화 등급 전승)
               </h2>
               <p className="hero-text-secondary mt-1">
-                낮은 등급 아이템의 스탯을 높은 등급 아이템에 전승합니다
+                낮은 등급 아이템의 강화 등급을 높은 등급 아이템으로 전승합니다
               </p>
             </div>
             <button
@@ -449,7 +449,7 @@ export function InheritanceModal({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* 소스 아이템 선택 */}
             <ItemSelector
-              title="소스 아이템 (전승할 아이템)"
+              title="소스 아이템 (강화 등급을 전승할 아이템)"
               selectedItem={sourceItem}
               availableItems={availableSourceItems}
               onSelectItem={setSourceItem}
@@ -458,7 +458,7 @@ export function InheritanceModal({
 
             {/* 타겟 아이템 선택 */}
             <ItemSelector
-              title="타겟 아이템 (전승받을 아이템)"
+              title="타겟 아이템 (강화 등급을 전승받을 아이템)"
               selectedItem={targetItem}
               availableItems={availableTargetItems}
               onSelectItem={setTargetItem}

@@ -115,6 +115,7 @@ const equippedItems: EquippedItems = {
   necklace: null,
   mainWeapon: null,
   subWeapon: null,
+  pet: null,
 };
 
 const equippedItem = equippedItems.helmet!;

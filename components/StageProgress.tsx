@@ -2,7 +2,11 @@
 
 import { useGame } from "../contexts/GameContext";
 import { STAGE_REQUIREMENTS } from "../constants/game";
-import { canStartBossBattle, getBattlePreview } from "../utils/stageManager";
+import {
+  canStartBossBattle,
+  getBattlePreview,
+  calculateStageClearReward,
+} from "../utils/stageManager";
 
 /**
  * StageProgress 컴포넌트 - 용사키우기 스테이지 진행
@@ -27,6 +31,9 @@ export function StageProgress({ onStartBattle }: StageProgressProps) {
   const boss = battleInfo.boss;
   const battlePreview = battleInfo.battlePreview;
 
+  // 스테이지 클리어 보상 계산
+  const stageClearReward = calculateStageClearReward(currentStage);
+
   // 보스 전투 시작 핸들러
   const handleStartBattle = () => {
     if (canStartBattle && boss) {
@@ -50,6 +57,9 @@ export function StageProgress({ onStartBattle }: StageProgressProps) {
         <div className="text-center mb-3">
           <div className="text-lg font-semibold hero-text-purple">
             크레딧 배율: {currentRequirements.creditMultiplier}x
+          </div>
+          <div className="text-sm hero-text-green mt-1">
+            💰 클리어 보상: {stageClearReward.toLocaleString()} 크레딧
           </div>
         </div>
 

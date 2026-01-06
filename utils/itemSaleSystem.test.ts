@@ -64,6 +64,7 @@ function createTestEquippedItems(
     necklace: null,
     mainWeapon: null,
     subWeapon: null,
+    pet: null,
   };
 
   // 테스트를 위해 특정 아이템들을 장착된 것으로 설정
@@ -97,6 +98,9 @@ describe("Item Sale System", () => {
       expect(calculateItemSalePrice(rareItem)).toBe(12); // 25 -> 12로 조정
       expect(calculateItemSalePrice(epicItem)).toBe(25); // 50 -> 25로 조정
       expect(calculateItemSalePrice(legendaryItem)).toBe(50); // 100 -> 50으로 조정
+
+      const mythicItem = createTestItem("5", ItemType.HELMET, ItemGrade.MYTHIC);
+      expect(calculateItemSalePrice(mythicItem)).toBe(100); // 새로 추가
     });
 
     it("should add enhancement bonus correctly (5% per level)", () => {
@@ -293,6 +297,20 @@ describe("Item Sale System", () => {
 
         expect(validation.isValid).toBe(false);
         expect(validation.errors).toContain(
+          `한 번에 최대 ${SALE_LIMITS.MAX_ITEMS_PER_SALE}개까지만 판매할 수 있습니다. (선택된 아이템: 25개)`
+        );
+      });
+
+      it("should allow exceeding item limit in select all mode", () => {
+        const items = Array.from({ length: 25 }, (_, i) =>
+          createTestItem(`${i}`, ItemType.HELMET, ItemGrade.COMMON, 0)
+        );
+        const equippedItems = createTestEquippedItems([]);
+
+        const validation = validateItemSale(items, equippedItems, true); // isSelectAll = true
+
+        expect(validation.isValid).toBe(true);
+        expect(validation.errors).not.toContain(
           `한 번에 최대 ${SALE_LIMITS.MAX_ITEMS_PER_SALE}개까지만 판매할 수 있습니다. (선택된 아이템: 25개)`
         );
       });

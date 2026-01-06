@@ -69,6 +69,7 @@ export const INVENTORY_CONFIG = {
  * 아이템 등급별 우선순위 (정렬용)
  */
 const GRADE_PRIORITY: Record<ItemGrade, number> = {
+  [ItemGrade.MYTHIC]: 5,
   [ItemGrade.LEGENDARY]: 4,
   [ItemGrade.EPIC]: 3,
   [ItemGrade.RARE]: 2,
@@ -81,15 +82,16 @@ const GRADE_PRIORITY: Record<ItemGrade, number> = {
 const TYPE_PRIORITY: Record<ItemType, number> = {
   [ItemType.MAIN_WEAPON]: 11,
   [ItemType.SUB_WEAPON]: 10,
-  [ItemType.HELMET]: 9,
-  [ItemType.ARMOR]: 8,
-  [ItemType.PANTS]: 7,
-  [ItemType.GLOVES]: 6,
-  [ItemType.SHOES]: 5,
-  [ItemType.SHOULDER]: 4,
-  [ItemType.NECKLACE]: 3,
-  [ItemType.EARRING]: 2,
-  [ItemType.RING]: 1,
+  [ItemType.PET]: 9,
+  [ItemType.HELMET]: 8,
+  [ItemType.ARMOR]: 7,
+  [ItemType.PANTS]: 6,
+  [ItemType.GLOVES]: 5,
+  [ItemType.SHOES]: 4,
+  [ItemType.SHOULDER]: 3,
+  [ItemType.NECKLACE]: 2,
+  [ItemType.EARRING]: 1,
+  [ItemType.RING]: 0,
 };
 
 /**
@@ -323,6 +325,7 @@ export function getItemDisplayName(item: Item): string {
     [ItemType.NECKLACE]: "목걸이",
     [ItemType.MAIN_WEAPON]: "주무기",
     [ItemType.SUB_WEAPON]: "보조무기",
+    [ItemType.PET]: "펫",
   };
 
   const gradeNames: Record<ItemGrade, string> = {
@@ -330,6 +333,7 @@ export function getItemDisplayName(item: Item): string {
     [ItemGrade.RARE]: "희귀",
     [ItemGrade.EPIC]: "영웅",
     [ItemGrade.LEGENDARY]: "전설",
+    [ItemGrade.MYTHIC]: "신화",
   };
 
   const typeName = typeNames[item.type] || item.type;

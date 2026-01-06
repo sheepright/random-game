@@ -13,12 +13,13 @@ import { InheritanceModal } from "./InheritanceModal";
 import { SaveStatusIndicator } from "./SaveStatusIndicator";
 import EnhancementModal from "./EnhancementModal";
 import GachaResultModal from "./GachaResultModal";
+import MultiGachaResultModal from "./MultiGachaResultModal";
 import GachaModal from "./GachaModal";
 import InventoryModal from "./InventoryModal";
 import ItemSelectionModal from "./ItemSelectionModal";
 import ClientOnly from "./ClientOnly";
 import { useGame } from "../contexts/GameContext";
-import { Item, Boss, GachaResult } from "../types/game";
+import { Item, Boss, GachaResult, MultiGachaResult } from "../types/game";
 import { ItemDropResult } from "../utils/itemDropSystem";
 
 /**
@@ -33,12 +34,16 @@ export function GameDashboard() {
   const [showInheritanceModal, setShowInheritanceModal] = useState(false);
   const [showGachaModal, setShowGachaModal] = useState(false);
   const [showGachaResultModal, setShowGachaResultModal] = useState(false);
+  const [showMultiGachaResultModal, setShowMultiGachaResultModal] =
+    useState(false);
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
   const [showItemSelectionModal, setShowItemSelectionModal] = useState(false);
   const [currentBoss, setCurrentBoss] = useState<Boss | null>(null);
   const [currentGachaResult, setCurrentGachaResult] =
     useState<GachaResult | null>(null);
+  const [currentMultiGachaResult, setCurrentMultiGachaResult] =
+    useState<MultiGachaResult | null>(null);
   const [enhancementItem, setEnhancementItem] = useState<Item | null>(null);
 
   // 보스 전투 시작
@@ -87,10 +92,16 @@ export function GameDashboard() {
     console.log("아이템 드랍됨:", dropResult);
   };
 
-  // 가챠 결과 처리
+  // 가챠 결과 처리 (단일)
   const handleGachaResult = (result: GachaResult) => {
     setCurrentGachaResult(result);
     setShowGachaResultModal(true);
+  };
+
+  // 가챠 결과 처리 (10연뽑)
+  const handleMultiGachaResult = (result: MultiGachaResult) => {
+    setCurrentMultiGachaResult(result);
+    setShowMultiGachaResultModal(true);
   };
 
   // 강화할 아이템 선택 처리
@@ -107,6 +118,17 @@ export function GameDashboard() {
     return gameState.inventory.length > 0 || equippedItems.length > 0;
   };
 
+  // 강화 가능한 아이템 수 계산
+  const getEnhanceableItemsCount = () => {
+    const allItems = [
+      ...gameState.inventory,
+      ...Object.values(gameState.equippedItems).filter(
+        (item): item is Item => item !== null
+      ),
+    ];
+    return allItems.filter((item) => item.enhancementLevel < 25).length;
+  };
+
   return (
     <div
       className="h-screen overflow-hidden flex items-center justify-center"
@@ -121,9 +143,9 @@ export function GameDashboard() {
       <OfflineProgressModalManager />
       <SaveStatusIndicator />
 
-      <div className="flex flex-col p-4 max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="flex flex-col justify-center items-center p-4 max-w-7xl w-full h-full">
         {/* 메인 게임 영역 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full max-h-[85vh]">
           {/* 좌측: 크레딧 & 장비 */}
           <div className="space-y-4 flex flex-col">
             {/* 크레딧 */}
@@ -187,6 +209,9 @@ export function GameDashboard() {
                 <p className="hero-text-secondary mb-4 text-sm">
                   아이템을 강화하여 스탯을 증가시키세요
                 </p>
+                <div className="text-sm hero-text-muted mb-3">
+                  강화 가능: {getEnhanceableItemsCount()}개 아이템
+                </div>
                 <button
                   onClick={() => setShowItemSelectionModal(true)}
                   disabled={!hasEnhanceableItems()}
@@ -220,8 +245,13 @@ export function GameDashboard() {
                   <span className="hero-text-accent font-bold text-lg">
                     {gameState.inventory.length}
                   </span>
-                  <span className="hero-text-secondary ml-1">개 아이템</span>
+                  <span className="hero-text-secondary ml-1">/ 100 아이템</span>
                 </div>
+                {gameState.inventory.length >= 90 && (
+                  <div className="text-xs hero-text-red mb-2">
+                    ⚠️ 인벤토리가 거의 가득참
+                  </div>
+                )}
                 <button
                   onClick={() => setShowInventoryModal(true)}
                   className="hero-btn hero-btn-primary w-full"
@@ -250,6 +280,7 @@ export function GameDashboard() {
           isOpen={showGachaModal}
           onClose={() => setShowGachaModal(false)}
           onGachaResult={handleGachaResult}
+          onMultiGachaResult={handleMultiGachaResult}
         />
       )}
 
@@ -281,6 +312,15 @@ export function GameDashboard() {
         onClose={() => {
           setShowGachaResultModal(false);
           setCurrentGachaResult(null);
+        }}
+      />
+
+      <MultiGachaResultModal
+        result={currentMultiGachaResult}
+        isOpen={showMultiGachaResultModal}
+        onClose={() => {
+          setShowMultiGachaResultModal(false);
+          setCurrentMultiGachaResult(null);
         }}
       />
 

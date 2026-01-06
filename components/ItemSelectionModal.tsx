@@ -20,6 +20,7 @@ const GRADE_COLORS = {
   [ItemGrade.RARE]: "hero-card-blue border-blue-400",
   [ItemGrade.EPIC]: "hero-card-purple border-purple-400",
   [ItemGrade.LEGENDARY]: "hero-card-accent border-yellow-400",
+  [ItemGrade.MYTHIC]: "hero-card-red border-red-400",
 };
 
 export function ItemSelectionModal({
@@ -68,7 +69,13 @@ export function ItemSelectionModal({
   // 등급순으로 정렬하는 함수
   const sortByGrade = (items: Item[]) => {
     return [...items].sort((a, b) => {
-      const gradeOrder = { common: 0, rare: 1, epic: 2, legendary: 3 };
+      const gradeOrder = {
+        common: 0,
+        rare: 1,
+        epic: 2,
+        legendary: 3,
+        mythic: 4,
+      };
       return gradeOrder[b.grade] - gradeOrder[a.grade];
     });
   };

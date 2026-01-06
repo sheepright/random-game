@@ -24,7 +24,11 @@ import {
   GachaResult,
   ItemSaleResult,
 } from "../types/game";
-import { getDefaultGameState, GAME_LIMITS } from "../constants/game";
+import {
+  getDefaultGameState,
+  GAME_LIMITS,
+  BASE_CREDIT_PER_SECOND,
+} from "../constants/game";
 import {
   saveGameState,
   loadGameState,
@@ -47,6 +51,7 @@ import {
   applyEnhancementResult,
   canEnhanceItem,
   getEnhancementInfo,
+  recalculateEnhancedStats,
   MAX_ENHANCEMENT_LEVEL,
 } from "../utils/enhancementSystem";
 import { performGachaDraw } from "../utils/gachaSystem";
@@ -374,11 +379,11 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
     case "END_BATTLE": {
       const { result } = action.payload;
 
-      // 승리 시 다음 스테이지 해금 및 크레딧 생성률 증가, 아이템 드랍
+      // 승리 시 다음 스테이지 해금 및 크레딧 생성률 증가, 아이템 드랍, 크레딧 보상
       if (result === "victory" && state.battleState) {
         const victoryResult = processBattleVictory(
           state.currentStage,
-          state.creditPerSecond
+          BASE_CREDIT_PER_SECOND // 기본 크레딧 생성률 사용
         );
 
         // 드랍된 아이템들을 인벤토리에 추가
@@ -389,6 +394,7 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
 
         return {
           ...state,
+          credits: state.credits + victoryResult.creditReward, // 즉시 크레딧 보상 추가
           currentStage: victoryResult.newStage,
           creditPerSecond: victoryResult.newCreditRate,
           inventory: newInventory,
@@ -396,6 +402,7 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
           recentStageClearDrops: {
             items: victoryResult.droppedItems,
             stageNumber: state.currentStage,
+            creditReward: victoryResult.creditReward,
             timestamp: Date.now(),
           },
           lastSaveTime: Date.now(),
@@ -567,12 +574,17 @@ export function GameProvider({ children }: GameProviderProps) {
           return false;
         }
 
+        // 계승된 아이템의 강화 등급에 따른 스탯 재계산
+        const inheritedItemWithRecalculatedStats = recalculateEnhancedStats(
+          inheritanceResult.inheritedItem!
+        );
+
         dispatch({
           type: "INHERIT_ITEM",
           payload: {
             sourceItem,
             targetItem,
-            inheritedItem: inheritanceResult.inheritedItem!,
+            inheritedItem: inheritedItemWithRecalculatedStats,
           },
         });
 

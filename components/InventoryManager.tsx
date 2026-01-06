@@ -99,6 +99,7 @@ export default function InventoryManager() {
       [ItemGrade.RARE]: 25,
       [ItemGrade.EPIC]: 50,
       [ItemGrade.LEGENDARY]: 100,
+      [ItemGrade.MYTHIC]: 200,
     };
 
     const basePrice = gradeMultipliers[item.grade];

@@ -13,7 +13,6 @@ export { ItemDropSystem, IdleDropTimer } from "./ItemDropSystem";
 export { ItemDropNotification } from "./ItemDropNotification";
 export { default as InventoryManager } from "./InventoryManager";
 export { default as InventoryPanel } from "./InventoryPanel";
-export { InheritanceSystem } from "./InheritanceSystem";
 export { ItemDropModal } from "./ItemDropModal";
 export { InheritanceModal } from "./InheritanceModal";
 export { BattleModal } from "./BattleModal";

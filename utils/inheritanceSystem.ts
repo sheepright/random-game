@@ -1,6 +1,9 @@
 /**
- * Item inheritance system utilities
+ * Item inheritance system utilities - Enhancement Level Transfer System
  * Based on requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.6
+ *
+ * 계승 시스템: 낮은 등급 아이템의 강화 등급을 높은 등급 아이템으로 전승
+ * 예: 에픽 +10 → 레전드리 +8 (일정 확률로 레벨 감소)
  */
 
 import { Item, ItemGrade, ItemStats, ItemType } from "../types/game";
@@ -12,14 +15,32 @@ const GRADE_HIERARCHY = {
   [ItemGrade.RARE]: 1,
   [ItemGrade.EPIC]: 2,
   [ItemGrade.LEGENDARY]: 3,
+  [ItemGrade.MYTHIC]: 4,
+} as const;
+
+// 등급 차이별 강화 등급 감소량
+const ENHANCEMENT_LEVEL_REDUCTION = {
+  1: 1, // 1등급 차이: -1 레벨
+  2: 2, // 2등급 차이: -2 레벨
+  3: 3, // 3등급 차이: -3 레벨
+  4: 4, // 4등급 차이: -4 레벨
+} as const;
+
+// 등급 차이별 계승 성공률
+const INHERITANCE_SUCCESS_RATES = {
+  1: 0.9, // 1등급 차이: 90% 성공률
+  2: 0.7, // 2등급 차이: 70% 성공률
+  3: 0.5, // 3등급 차이: 50% 성공률
+  4: 0.3, // 4등급 차이: 30% 성공률
 } as const;
 
 export interface InheritancePreview {
   sourceItem: Item;
   targetItem: Item;
-  inheritanceRate: number;
-  transferredStats: ItemStats;
-  finalStats: ItemStats;
+  successRate: number;
+  sourceEnhancementLevel: number;
+  targetEnhancementLevel: number;
+  levelReduction: number;
   canInherit: boolean;
   errorMessage?: string;
 }
@@ -43,59 +64,50 @@ export function calculateGradeDifference(
 }
 
 /**
- * Get inheritance rate based on grade difference
+ * Get inheritance success rate based on grade difference
  */
-export function getInheritanceRate(gradeDifference: number): number {
+export function getInheritanceSuccessRate(gradeDifference: number): number {
   if (gradeDifference <= 0) {
     return 0; // Cannot inherit to same or lower grade
   }
 
-  if (gradeDifference > 3) {
-    return 0; // Maximum 3 grade difference
+  if (gradeDifference > 4) {
+    return 0; // Maximum 4 grade difference
   }
 
   return (
-    INHERITANCE_RATES[gradeDifference as keyof typeof INHERITANCE_RATES] || 0
+    INHERITANCE_SUCCESS_RATES[
+      gradeDifference as keyof typeof INHERITANCE_SUCCESS_RATES
+    ] || 0
   );
 }
 
 /**
- * Calculate stats that will be transferred during inheritance
+ * Calculate enhancement level reduction based on grade difference
  */
-export function calculateTransferredStats(
-  sourceItem: Item,
-  inheritanceRate: number
-): ItemStats {
-  const enhancedStats = sourceItem.enhancedStats;
+export function calculateEnhancementLevelReduction(
+  gradeDifference: number
+): number {
+  if (gradeDifference <= 0 || gradeDifference > 4) {
+    return 0;
+  }
 
-  return {
-    attack: Math.floor(enhancedStats.attack * inheritanceRate),
-    defense: Math.floor(enhancedStats.defense * inheritanceRate),
-    defensePenetration: Math.floor(
-      enhancedStats.defensePenetration * inheritanceRate
-    ),
-    additionalAttackChance:
-      enhancedStats.additionalAttackChance * inheritanceRate,
-  };
+  return (
+    ENHANCEMENT_LEVEL_REDUCTION[
+      gradeDifference as keyof typeof ENHANCEMENT_LEVEL_REDUCTION
+    ] || 0
+  );
 }
 
 /**
- * Calculate final stats after inheritance
+ * Calculate target enhancement level after inheritance
  */
-export function calculateFinalStats(
-  targetItem: Item,
-  transferredStats: ItemStats
-): ItemStats {
-  return {
-    attack: targetItem.enhancedStats.attack + transferredStats.attack,
-    defense: targetItem.enhancedStats.defense + transferredStats.defense,
-    defensePenetration:
-      targetItem.enhancedStats.defensePenetration +
-      transferredStats.defensePenetration,
-    additionalAttackChance:
-      targetItem.enhancedStats.additionalAttackChance +
-      transferredStats.additionalAttackChance,
-  };
+export function calculateTargetEnhancementLevel(
+  sourceEnhancementLevel: number,
+  gradeDifference: number
+): number {
+  const levelReduction = calculateEnhancementLevelReduction(gradeDifference);
+  return Math.max(0, sourceEnhancementLevel - levelReduction);
 }
 
 /**
@@ -126,10 +138,19 @@ export function validateInheritance(
   }
 
   // Check if grade difference is within allowed range
-  if (gradeDifference > 3) {
+  if (gradeDifference > 4) {
     return {
       valid: false,
-      error: "등급 차이가 너무 큽니다. (최대 3등급 차이)",
+      error: "등급 차이가 너무 큽니다. (최대 4등급 차이)",
+    };
+  }
+
+  // Check if source item has enhancement level to transfer
+  if (sourceItem.enhancementLevel <= 0) {
+    return {
+      valid: false,
+      error:
+        "소스 아이템의 강화 등급이 0입니다. 강화된 아이템만 계승할 수 있습니다.",
     };
   }
 
@@ -149,14 +170,10 @@ export function generateInheritancePreview(
     return {
       sourceItem,
       targetItem,
-      inheritanceRate: 0,
-      transferredStats: {
-        attack: 0,
-        defense: 0,
-        defensePenetration: 0,
-        additionalAttackChance: 0,
-      },
-      finalStats: targetItem.enhancedStats,
+      successRate: 0,
+      sourceEnhancementLevel: sourceItem.enhancementLevel,
+      targetEnhancementLevel: 0,
+      levelReduction: 0,
       canInherit: false,
       errorMessage: validation.error,
     };
@@ -166,19 +183,20 @@ export function generateInheritancePreview(
     sourceItem.grade,
     targetItem.grade
   );
-  const inheritanceRate = getInheritanceRate(gradeDifference);
-  const transferredStats = calculateTransferredStats(
-    sourceItem,
-    inheritanceRate
+  const successRate = getInheritanceSuccessRate(gradeDifference);
+  const levelReduction = calculateEnhancementLevelReduction(gradeDifference);
+  const targetEnhancementLevel = calculateTargetEnhancementLevel(
+    sourceItem.enhancementLevel,
+    gradeDifference
   );
-  const finalStats = calculateFinalStats(targetItem, transferredStats);
 
   return {
     sourceItem,
     targetItem,
-    inheritanceRate,
-    transferredStats,
-    finalStats,
+    successRate,
+    sourceEnhancementLevel: sourceItem.enhancementLevel,
+    targetEnhancementLevel,
+    levelReduction,
     canInherit: true,
   };
 }
@@ -192,8 +210,8 @@ export function calculateInheritancePreview(
 ): {
   success: boolean;
   inheritedItem?: Item;
-  inheritanceRate?: number;
-  transferredStats?: ItemStats;
+  successRate?: number;
+  targetEnhancementLevel?: number;
   error?: string;
 } {
   const preview = generateInheritancePreview(sourceItem, targetItem);
@@ -205,17 +223,18 @@ export function calculateInheritancePreview(
     };
   }
 
-  // Create inherited item
+  // Create inherited item with transferred enhancement level
   const inheritedItem: Item = {
     ...preview.targetItem,
-    enhancedStats: preview.finalStats,
+    enhancementLevel: preview.targetEnhancementLevel,
+    // 강화 등급에 따른 스탯 재계산은 enhancementSystem에서 처리
   };
 
   return {
     success: true,
     inheritedItem,
-    inheritanceRate: preview.inheritanceRate,
-    transferredStats: preview.transferredStats,
+    successRate: preview.successRate,
+    targetEnhancementLevel: preview.targetEnhancementLevel,
   };
 }
 
@@ -231,7 +250,7 @@ export function canPerformInheritance(
 }
 
 /**
- * Perform item inheritance
+ * Perform item inheritance with enhancement level transfer
  */
 export function performInheritance(
   sourceItem: Item,
@@ -246,11 +265,21 @@ export function performInheritance(
     };
   }
 
-  // Create new item with inherited stats
+  // 계승 성공률 체크
+  const isSuccess = Math.random() < preview.successRate;
+
+  if (!isSuccess) {
+    return {
+      success: false,
+      error: "계승에 실패했습니다. 다시 시도해주세요.",
+    };
+  }
+
+  // Create new item with inherited enhancement level
   const inheritedItem: Item = {
     ...targetItem,
-    enhancedStats: preview.finalStats,
-    // Keep the same ID and other properties of target item
+    enhancementLevel: preview.targetEnhancementLevel,
+    // 강화 등급에 따른 스탯은 enhancementSystem에서 재계산됨
   };
 
   return {
@@ -268,6 +297,7 @@ export function getGradeDisplayName(grade: ItemGrade): string {
     [ItemGrade.RARE]: "레어",
     [ItemGrade.EPIC]: "에픽",
     [ItemGrade.LEGENDARY]: "전설",
+    [ItemGrade.MYTHIC]: "신화",
   };
 
   return gradeNames[grade];
@@ -289,26 +319,19 @@ export function getItemTypeDisplayName(type: ItemType): string {
     [ItemType.NECKLACE]: "목걸이",
     [ItemType.MAIN_WEAPON]: "주무기",
     [ItemType.SUB_WEAPON]: "보조무기",
+    [ItemType.PET]: "펫",
   };
 
   return typeNames[type];
 }
 
 /**
- * Format stats for display
+ * Format enhancement level transfer for display
  */
-export function formatStatsForDisplay(stats: ItemStats): string {
-  const parts: string[] = [];
-
-  if (stats.attack > 0) {
-    parts.push(`공격력 +${stats.attack}`);
-  }
-  if (stats.defense > 0) {
-    parts.push(`방어력 +${stats.defense}`);
-  }
-  if (stats.defensePenetration > 0) {
-    parts.push(`방어율 무시 +${stats.defensePenetration}`);
-  }
-
-  return parts.join(", ");
+export function formatEnhancementLevelTransfer(
+  sourceLevel: number,
+  targetLevel: number,
+  levelReduction: number
+): string {
+  return `+${sourceLevel} → +${targetLevel} (${levelReduction}레벨 감소)`;
 }

@@ -15,6 +15,7 @@ export interface GameState {
   recentStageClearDrops: {
     items: Item[];
     stageNumber: number;
+    creditReward: number;
     timestamp: number;
   } | null;
 }
@@ -59,6 +60,7 @@ export interface EquippedItems {
   necklace: Item | null;
   mainWeapon: Item | null;
   subWeapon: Item | null;
+  pet: Item | null;
 }
 
 export interface Item {
@@ -84,6 +86,7 @@ export enum ItemType {
   NECKLACE = "necklace",
   MAIN_WEAPON = "mainWeapon",
   SUB_WEAPON = "subWeapon",
+  PET = "pet",
 }
 
 export enum ItemGrade {
@@ -91,6 +94,7 @@ export enum ItemGrade {
   RARE = "rare",
   EPIC = "epic",
   LEGENDARY = "legendary",
+  MYTHIC = "mythic",
 }
 
 export interface ItemStats {
@@ -129,6 +133,7 @@ export interface DropRateTable {
   [ItemGrade.RARE]: number;
   [ItemGrade.EPIC]: number;
   [ItemGrade.LEGENDARY]: number;
+  [ItemGrade.MYTHIC]: number;
 }
 
 export interface OfflineProgress {
@@ -163,6 +168,7 @@ export enum EnhancementResult {
   SUCCESS = "success",
   FAILURE = "failure",
   DOWNGRADE = "downgrade",
+  DESTRUCTION = "destruction",
 }
 
 export interface EnhancementInfo {
@@ -170,6 +176,7 @@ export interface EnhancementInfo {
   statIncrease: ItemStats;
   newEnhancementLevel: number;
   successRate: number;
+  destructionRate?: number;
   itemType: ItemType;
 }
 
@@ -191,6 +198,13 @@ export interface GachaResult {
   item: Item;
   category: GachaCategory;
   cost: number;
+}
+
+export interface MultiGachaResult {
+  items: Item[];
+  category: GachaCategory;
+  totalCost: number;
+  count: number;
 }
 
 export interface ItemSaleResult {

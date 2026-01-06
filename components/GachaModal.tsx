@@ -2,19 +2,31 @@
 
 import { useState } from "react";
 import { useGame } from "../contexts/GameContext";
-import { GachaCategory, GachaResult } from "../types/game";
-import { GACHA_COSTS, GACHA_CATEGORY_NAMES } from "../constants/game";
+import {
+  GachaCategory,
+  GachaResult,
+  MultiGachaResult,
+  ItemGrade,
+} from "../types/game";
+import {
+  GACHA_COSTS,
+  GACHA_CATEGORY_NAMES,
+  GACHA_RATES,
+  GRADE_NAMES,
+} from "../constants/game";
 
 interface GachaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onGachaResult: (result: GachaResult) => void;
+  onMultiGachaResult: (result: MultiGachaResult) => void;
 }
 
 export function GachaModal({
   isOpen,
   onClose,
   onGachaResult,
+  onMultiGachaResult,
 }: GachaModalProps) {
   const { gameState, actions } = useGame();
   const [selectedCategory, setSelectedCategory] = useState<GachaCategory>(
@@ -53,9 +65,14 @@ export function GachaModal({
         }
 
         if (results.length > 0) {
-          // 10연뽑 결과를 하나씩 표시하거나 통합 결과로 표시
-          // 여기서는 마지막 결과만 표시 (추후 개선 가능)
-          onGachaResult(results[results.length - 1]);
+          // 10연뽑 결과를 MultiGachaResult로 변환
+          const multiResult: MultiGachaResult = {
+            items: results.map((r) => r.item),
+            category,
+            totalCost: cost,
+            count: results.length,
+          };
+          onMultiGachaResult(multiResult);
           onClose();
         }
       }
@@ -84,7 +101,7 @@ export function GachaModal({
       category: GachaCategory.WEAPONS,
       name: "무기",
       icon: "⚔️",
-      description: "주무기, 보조무기",
+      description: "주무기, 보조무기, 펫",
     },
   ];
 
@@ -204,22 +221,28 @@ export function GachaModal({
           <div className="mt-6 hero-card p-4 rounded-lg">
             <h4 className="font-bold hero-text-primary mb-3">📊 등급별 확률</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex justify-between">
-                <span className="hero-text-muted">일반:</span>
-                <span className="hero-text-primary">80%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="hero-text-blue">희귀:</span>
-                <span className="hero-text-primary">18%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="hero-text-purple">영웅:</span>
-                <span className="hero-text-primary">2.5%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="hero-text-accent">전설:</span>
-                <span className="hero-text-primary">0.5%</span>
-              </div>
+              {Object.entries(GACHA_RATES).map(([grade, rate]) => {
+                const gradeKey = grade as keyof typeof GRADE_NAMES;
+                const colorClass =
+                  grade === "mythic"
+                    ? "hero-text-red"
+                    : grade === "legendary"
+                    ? "hero-text-accent"
+                    : grade === "epic"
+                    ? "hero-text-purple"
+                    : grade === "rare"
+                    ? "hero-text-blue"
+                    : "hero-text-muted";
+
+                return (
+                  <div key={grade} className="flex justify-between">
+                    <span className={colorClass}>{GRADE_NAMES[gradeKey]}:</span>
+                    <span className="hero-text-primary">
+                      {(rate * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -18,6 +18,7 @@ interface ItemDropModalProps {
   onCollectAll: () => void;
   dropSource: "stage_clear"; // 스테이지 클리어 시에만 사용
   stageNumber?: number; // 클리어한 스테이지 번호
+  creditReward?: number; // 스테이지 클리어 크레딧 보상
 }
 
 // 아이템 등급별 색상 및 스타일
@@ -49,6 +50,13 @@ const GRADE_STYLES = {
     text: "hero-text-accent",
     glow: "hero-glow",
     particle: "bg-yellow-300",
+  },
+  [ItemGrade.MYTHIC]: {
+    bg: "hero-card-red",
+    border: "border-red-400",
+    text: "hero-text-red",
+    glow: "hero-glow-red",
+    particle: "bg-red-300",
   },
 };
 
@@ -201,6 +209,7 @@ export function ItemDropModal({
   onCollectAll,
   dropSource,
   stageNumber = 1,
+  creditReward = 0,
 }: ItemDropModalProps) {
   const [collectedItems, setCollectedItems] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
@@ -266,9 +275,22 @@ export function ItemDropModal({
               <p className="hero-text-green text-lg font-medium">
                 스테이지 {stageNumber} 클리어 보상
               </p>
-              <p className="hero-text-secondary mt-1">
-                {droppedItems.length}개의 특별한 아이템을 획득했습니다
-              </p>
+              <div className="flex items-center space-x-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-2xl">🎁</span>
+                  <span className="hero-text-secondary">
+                    아이템 {droppedItems.length}개
+                  </span>
+                </div>
+                {creditReward > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl">💰</span>
+                    <span className="hero-text-accent font-bold">
+                      +{creditReward.toLocaleString()} 크레딧
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
             <button
               onClick={handleClose}

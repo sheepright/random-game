@@ -134,6 +134,7 @@ const validGameStateArbitrary = fc
         })
       ),
       subWeapon: fc.constant(null),
+      pet: fc.constant(null),
     }),
     inventory: fc.array(
       fc.record({
@@ -149,7 +150,8 @@ const validGameStateArbitrary = fc
           "ring",
           "necklace",
           "mainWeapon",
-          "subWeapon"
+          "subWeapon",
+          "pet"
         ),
         grade: fc.constantFrom("common", "rare", "epic", "legendary"),
         baseStats: fc.record({
@@ -375,6 +377,7 @@ describe("Property 10: State Restoration Round Trip", () => {
               "necklace",
               "mainWeapon",
               "subWeapon",
+              "pet",
             ];
 
             slots.forEach((slot) => {

@@ -37,7 +37,8 @@ export function ItemDropSystem({ onItemDropped }: ItemDropSystemProps) {
     items: any[];
     isVisible: boolean;
     stageNumber: number;
-  }>({ items: [], isVisible: false, stageNumber: 1 });
+    creditReward: number;
+  }>({ items: [], isVisible: false, stageNumber: 1, creditReward: 0 });
 
   /**
    * 스테이지 클리어 시 아이템 드랍 처리
@@ -62,6 +63,7 @@ export function ItemDropSystem({ onItemDropped }: ItemDropSystemProps) {
           items: [dropResult.item],
           isVisible: true,
           stageNumber: stage,
+          creditReward: 0, // 이 함수에서는 크레딧 보상 정보가 없으므로 0
         });
 
         // 드랍 결과 콜백 호출
@@ -149,13 +151,16 @@ export function ItemDropSystem({ onItemDropped }: ItemDropSystemProps) {
    */
   useEffect(() => {
     if (gameState.recentStageClearDrops) {
-      const { items, stageNumber } = gameState.recentStageClearDrops;
+      const { items, stageNumber, creditReward } =
+        gameState.recentStageClearDrops;
 
       console.log(
         "스테이지 클리어 아이템 드랍 감지:",
         items,
         "스테이지:",
-        stageNumber
+        stageNumber,
+        "크레딧 보상:",
+        creditReward
       );
 
       // 스테이지 클리어 모달 표시
@@ -163,6 +168,7 @@ export function ItemDropSystem({ onItemDropped }: ItemDropSystemProps) {
         items,
         isVisible: true,
         stageNumber,
+        creditReward,
       });
 
       // 드랍 결과 콜백 호출
@@ -184,7 +190,12 @@ export function ItemDropSystem({ onItemDropped }: ItemDropSystemProps) {
 
   // 스테이지 클리어 모달 닫기 핸들러
   const handleCloseStageClearModal = () => {
-    setStageClearModal({ items: [], isVisible: false, stageNumber: 1 });
+    setStageClearModal({
+      items: [],
+      isVisible: false,
+      stageNumber: 1,
+      creditReward: 0,
+    });
     // recentStageClearDrops 클리어하여 중복 표시 방지
     actions.clearRecentStageClearDrops();
   };
@@ -213,6 +224,7 @@ export function ItemDropSystem({ onItemDropped }: ItemDropSystemProps) {
         onCollectAll={handleCollectAllStageItems}
         dropSource="stage_clear"
         stageNumber={stageClearModal.stageNumber}
+        creditReward={stageClearModal.creditReward}
       />
     </>
   );

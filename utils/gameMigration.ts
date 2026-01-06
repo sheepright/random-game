@@ -109,6 +109,9 @@ export function recalculateEnhancedItemStats(item: Item): Item {
     // 무기 (공격력)
     [ItemType.MAIN_WEAPON]: "attack",
     [ItemType.SUB_WEAPON]: "attack",
+
+    // 펫 (공격력)
+    [ItemType.PET]: "attack",
   };
 
   const primaryStat = ITEM_PRIMARY_STATS[item.type];

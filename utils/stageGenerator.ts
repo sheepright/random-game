@@ -6,52 +6,122 @@
 import { StageInfo, BossInfo, DropRateTable, ItemGrade } from "../types/game";
 
 /**
- * 스테이지별 요구 스탯 계산
+ * 스테이지별 요구 스탯 계산 (밸런스 조정됨)
  */
 export function calculateStageRequirements(stage: number): {
   requiredAttack: number;
   requiredDefense: number;
 } {
-  const baseAttack = 10;
-  const baseDefense = 10;
-  const attackGrowth = 1.15; // 15% 증가
-  const defenseGrowth = 1.12; // 12% 증가
+  // 플레이어 파워 진행도에 맞춘 새로운 성장률
+  let requiredAttack: number;
+  let requiredDefense: number;
+
+  if (stage <= 10) {
+    // 1-10: 초반 난이도 상향 (너무 쉬웠음)
+    const baseAttack = 25;
+    const baseDefense = 20;
+    const attackGrowth = 1.08; // 8% 증가
+    const defenseGrowth = 1.07; // 7% 증가
+
+    requiredAttack = Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1));
+    requiredDefense = Math.floor(
+      baseDefense * Math.pow(defenseGrowth, stage - 1)
+    );
+  } else if (stage <= 20) {
+    // 11-20: 레어 장비 구간
+    const stage10Attack = 54;
+    const stage10Defense = 40;
+    const attackGrowth = 1.08; // 8% 증가
+    const defenseGrowth = 1.07; // 7% 증가
+
+    requiredAttack = Math.floor(
+      stage10Attack * Math.pow(attackGrowth, stage - 10)
+    );
+    requiredDefense = Math.floor(
+      stage10Defense * Math.pow(defenseGrowth, stage - 10)
+    );
+  } else if (stage <= 35) {
+    // 21-35: 에픽 장비 구간, 더 가파른 증가
+    const stage20Attack = 117;
+    const stage20Defense = 80;
+    const attackGrowth = 1.09; // 9% 증가
+    const defenseGrowth = 1.08; // 8% 증가
+
+    requiredAttack = Math.floor(
+      stage20Attack * Math.pow(attackGrowth, stage - 20)
+    );
+    requiredDefense = Math.floor(
+      stage20Defense * Math.pow(defenseGrowth, stage - 20)
+    );
+  } else if (stage <= 60) {
+    // 36-60: 레전드리 장비 구간, 강화 시스템 고려
+    const stage35Attack = 320; // 370 → 320으로 감소
+    const stage35Defense = 210; // 240 → 210으로 감소
+    const attackGrowth = 1.065; // 7% → 6.5%로 감소
+    const defenseGrowth = 1.055; // 6% → 5.5%로 감소
+
+    requiredAttack = Math.floor(
+      stage35Attack * Math.pow(attackGrowth, stage - 35)
+    );
+    requiredDefense = Math.floor(
+      stage35Defense * Math.pow(defenseGrowth, stage - 35)
+    );
+  } else {
+    // 61-100: 미식 장비 구간, 고강화 고려
+    const stage60Attack = 900; // 1100 → 900으로 감소
+    const stage60Defense = 600; // 700 → 600으로 감소
+    const attackGrowth = 1.035; // 4% → 3.5%로 감소
+    const defenseGrowth = 1.03; // 3.5% → 3%로 감소
+
+    requiredAttack = Math.floor(
+      stage60Attack * Math.pow(attackGrowth, stage - 60)
+    );
+    requiredDefense = Math.floor(
+      stage60Defense * Math.pow(defenseGrowth, stage - 60)
+    );
+  }
 
   return {
-    requiredAttack: Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1)),
-    requiredDefense: Math.floor(
-      baseDefense * Math.pow(defenseGrowth, stage - 1)
-    ),
+    requiredAttack,
+    requiredDefense,
   };
 }
 
 /**
- * 보스 스탯 계산
+ * 보스 스탯 계산 (밸런스 조정됨)
  */
 export function calculateBossStats(stage: number): {
   maxHP: number;
   attack: number;
   defense: number;
 } {
-  const baseHP = 50;
-  const baseAttack = 8;
-  const baseDefense = 3;
-  const hpGrowth = 1.18; // 18% 증가
-  const attackGrowth = 1.14; // 14% 증가
-  const defenseGrowth = 1.13; // 13% 증가
+  // 스테이지 요구사항에 비례한 보스 스탯 계산
+  const stageReq = calculateStageRequirements(stage);
+
+  // 보스 HP는 플레이어 공격력의 8-12배 정도로 설정 (전투 시간 고려)
+  const hpMultiplier = 8 + (stage % 10) * 0.4; // 8.0 ~ 11.6배
+  const maxHP = Math.floor(stageReq.requiredAttack * hpMultiplier);
+
+  // 보스 공격력은 플레이어 방어력의 70-90% 정도 (너무 강하지 않게)
+  const attackMultiplier = 0.7 + (stage % 20) * 0.01; // 0.7 ~ 0.89배
+  const attack = Math.floor(stageReq.requiredDefense * attackMultiplier);
+
+  // 보스 방어력은 플레이어 공격력의 15-25% 정도 (방어 무시 고려)
+  const defenseMultiplier = 0.15 + (stage % 30) * 0.003; // 0.15 ~ 0.237배
+  const defense = Math.floor(stageReq.requiredAttack * defenseMultiplier);
 
   return {
-    maxHP: Math.floor(baseHP * Math.pow(hpGrowth, stage - 1)),
-    attack: Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1)),
-    defense: Math.floor(baseDefense * Math.pow(defenseGrowth, stage - 1)),
+    maxHP: Math.max(50, maxHP), // 최소 HP 보장
+    attack: Math.max(5, attack), // 최소 공격력 보장
+    defense: Math.max(1, defense), // 최소 방어력 보장
   };
 }
 
 /**
- * 크레딧 배율 계산
+ * 크레딧 배율 계산 (기본값 기준으로 계산하여 기하급수적 증가 방지)
  */
 export function calculateCreditMultiplier(stage: number): number {
-  return 1 + (stage - 1) * 0.05; // 스테이지당 5% 증가
+  return 1 + (stage - 1) * 0.02; // 스테이지당 2% 증가 (기본값 기준)
 }
 
 /**
@@ -67,72 +137,82 @@ export function calculateDropRates(stage: number): {
   if (stage <= 20) {
     // 1-20: 초급
     stageClearRates = {
-      [ItemGrade.COMMON]: 0.7,
-      [ItemGrade.RARE]: 0.2,
-      [ItemGrade.EPIC]: 0.08,
-      [ItemGrade.LEGENDARY]: 0.02,
-    };
-    idleRates = {
-      [ItemGrade.COMMON]: 0.8,
-      [ItemGrade.RARE]: 0.15,
-      [ItemGrade.EPIC]: 0.04,
-      [ItemGrade.LEGENDARY]: 0.01,
-    };
-  } else if (stage <= 40) {
-    // 21-40: 중급
-    stageClearRates = {
-      [ItemGrade.COMMON]: 0.6,
-      [ItemGrade.RARE]: 0.25,
-      [ItemGrade.EPIC]: 0.12,
-      [ItemGrade.LEGENDARY]: 0.03,
+      [ItemGrade.COMMON]: 0.65,
+      [ItemGrade.RARE]: 0.22,
+      [ItemGrade.EPIC]: 0.1,
+      [ItemGrade.LEGENDARY]: 0.025,
+      [ItemGrade.MYTHIC]: 0.005,
     };
     idleRates = {
       [ItemGrade.COMMON]: 0.75,
       [ItemGrade.RARE]: 0.18,
-      [ItemGrade.EPIC]: 0.06,
-      [ItemGrade.LEGENDARY]: 0.01,
+      [ItemGrade.EPIC]: 0.05,
+      [ItemGrade.LEGENDARY]: 0.015,
+      [ItemGrade.MYTHIC]: 0.005,
+    };
+  } else if (stage <= 40) {
+    // 21-40: 중급
+    stageClearRates = {
+      [ItemGrade.COMMON]: 0.55,
+      [ItemGrade.RARE]: 0.25,
+      [ItemGrade.EPIC]: 0.14,
+      [ItemGrade.LEGENDARY]: 0.05,
+      [ItemGrade.MYTHIC]: 0.01,
+    };
+    idleRates = {
+      [ItemGrade.COMMON]: 0.7,
+      [ItemGrade.RARE]: 0.2,
+      [ItemGrade.EPIC]: 0.07,
+      [ItemGrade.LEGENDARY]: 0.025,
+      [ItemGrade.MYTHIC]: 0.005,
     };
   } else if (stage <= 60) {
     // 41-60: 고급
     stageClearRates = {
-      [ItemGrade.COMMON]: 0.5,
-      [ItemGrade.RARE]: 0.3,
-      [ItemGrade.EPIC]: 0.15,
-      [ItemGrade.LEGENDARY]: 0.05,
+      [ItemGrade.COMMON]: 0.45,
+      [ItemGrade.RARE]: 0.28,
+      [ItemGrade.EPIC]: 0.17,
+      [ItemGrade.LEGENDARY]: 0.08,
+      [ItemGrade.MYTHIC]: 0.02,
     };
     idleRates = {
-      [ItemGrade.COMMON]: 0.7,
+      [ItemGrade.COMMON]: 0.65,
       [ItemGrade.RARE]: 0.22,
-      [ItemGrade.EPIC]: 0.07,
-      [ItemGrade.LEGENDARY]: 0.01,
+      [ItemGrade.EPIC]: 0.09,
+      [ItemGrade.LEGENDARY]: 0.035,
+      [ItemGrade.MYTHIC]: 0.005,
     };
   } else if (stage <= 80) {
     // 61-80: 최고급
     stageClearRates = {
-      [ItemGrade.COMMON]: 0.4,
-      [ItemGrade.RARE]: 0.35,
-      [ItemGrade.EPIC]: 0.18,
-      [ItemGrade.LEGENDARY]: 0.07,
+      [ItemGrade.COMMON]: 0.35,
+      [ItemGrade.RARE]: 0.3,
+      [ItemGrade.EPIC]: 0.2,
+      [ItemGrade.LEGENDARY]: 0.12,
+      [ItemGrade.MYTHIC]: 0.03,
     };
     idleRates = {
-      [ItemGrade.COMMON]: 0.65,
+      [ItemGrade.COMMON]: 0.6,
       [ItemGrade.RARE]: 0.25,
-      [ItemGrade.EPIC]: 0.08,
-      [ItemGrade.LEGENDARY]: 0.02,
+      [ItemGrade.EPIC]: 0.1,
+      [ItemGrade.LEGENDARY]: 0.04,
+      [ItemGrade.MYTHIC]: 0.01,
     };
   } else {
     // 81-100: 전설급
     stageClearRates = {
-      [ItemGrade.COMMON]: 0.3,
-      [ItemGrade.RARE]: 0.35,
+      [ItemGrade.COMMON]: 0.25,
+      [ItemGrade.RARE]: 0.3,
       [ItemGrade.EPIC]: 0.25,
-      [ItemGrade.LEGENDARY]: 0.1,
+      [ItemGrade.LEGENDARY]: 0.15,
+      [ItemGrade.MYTHIC]: 0.05,
     };
     idleRates = {
-      [ItemGrade.COMMON]: 0.6,
-      [ItemGrade.RARE]: 0.28,
-      [ItemGrade.EPIC]: 0.1,
-      [ItemGrade.LEGENDARY]: 0.02,
+      [ItemGrade.COMMON]: 0.55,
+      [ItemGrade.RARE]: 0.27,
+      [ItemGrade.EPIC]: 0.12,
+      [ItemGrade.LEGENDARY]: 0.05,
+      [ItemGrade.MYTHIC]: 0.01,
     };
   }
 

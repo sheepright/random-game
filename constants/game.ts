@@ -31,6 +31,7 @@ export const GRADE_MULTIPLIERS = {
   [ItemGrade.RARE]: 1.5,
   [ItemGrade.EPIC]: 2.0,
   [ItemGrade.LEGENDARY]: 3.0,
+  [ItemGrade.MYTHIC]: 4.5,
 } as const;
 
 // Item type base stats configuration
@@ -108,6 +109,14 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     defensePenetration: 0,
     additionalAttackChance: 0,
   },
+
+  // 펫 (공격력)
+  [ItemType.PET]: {
+    attack: 8,
+    defense: 0,
+    defensePenetration: 0,
+    additionalAttackChance: 0,
+  },
 } as const;
 
 // Generate all 100 stages using the stage generator
@@ -128,11 +137,20 @@ for (let stage = 1; stage <= 100; stage++) {
   }
 }
 
-// Inheritance rates based on grade difference
+// Inheritance rates based on grade difference (강화 등급 전승용)
 export const INHERITANCE_RATES = {
-  1: 0.8, // 1등급 차이: 80% 계승
-  2: 0.6, // 2등급 차이: 60% 계승
-  3: 0.4, // 3등급 차이: 40% 계승
+  1: 0.9, // 1등급 차이: 90% 성공률
+  2: 0.7, // 2등급 차이: 70% 성공률
+  3: 0.5, // 3등급 차이: 50% 성공률
+  4: 0.3, // 4등급 차이: 30% 성공률
+} as const;
+
+// Enhancement level reduction for inheritance (등급 차이별 강화 등급 감소량)
+export const ENHANCEMENT_LEVEL_REDUCTION = {
+  1: 1, // 1등급 차이: -1 레벨
+  2: 2, // 2등급 차이: -2 레벨
+  3: 3, // 3등급 차이: -3 레벨
+  4: 4, // 4등급 차이: -4 레벨
 } as const;
 
 // Drop check intervals
@@ -189,6 +207,7 @@ export const getDefaultEquippedItems = (): EquippedItems => ({
   necklace: null,
   mainWeapon: createDefaultItem(ItemType.MAIN_WEAPON, ItemGrade.COMMON),
   subWeapon: null,
+  pet: null,
 });
 
 // Default game state with new item system (lazy initialization)
@@ -222,7 +241,7 @@ export const GAME_LIMITS = {
 } as const;
 
 // Item type names for UI (Korean)
-export const ITEM_TYPE_NAMES = {
+export const ITEM_TYPE_NAMES: Record<ItemType, string> = {
   [ItemType.HELMET]: "헬멧",
   [ItemType.ARMOR]: "아머",
   [ItemType.PANTS]: "팬츠",
@@ -234,7 +253,8 @@ export const ITEM_TYPE_NAMES = {
   [ItemType.NECKLACE]: "목걸이",
   [ItemType.MAIN_WEAPON]: "주무기",
   [ItemType.SUB_WEAPON]: "보조무기",
-} as const;
+  [ItemType.PET]: "펫",
+};
 
 // Item grade names for UI (Korean)
 export const GRADE_NAMES = {
@@ -242,6 +262,7 @@ export const GRADE_NAMES = {
   [ItemGrade.RARE]: "레어",
   [ItemGrade.EPIC]: "에픽",
   [ItemGrade.LEGENDARY]: "전설",
+  [ItemGrade.MYTHIC]: "신화",
 } as const;
 
 // Player stat names for UI (Korean)
@@ -267,12 +288,13 @@ export const GACHA_COSTS = {
   [GachaCategory.WEAPONS]: 1600, // 무기 가챠 (2000 -> 1600으로 감소)
 } as const;
 
-// Gacha rates (모든 카테고리 동일)
+// Gacha rates (모든 카테고리 동일) - 레전드리 상향 및 미식 등급 추가
 export const GACHA_RATES: DropRateTable = {
-  [ItemGrade.COMMON]: 0.8, // 80%
-  [ItemGrade.RARE]: 0.18, // 18%
-  [ItemGrade.EPIC]: 0.025, // 2.5%
-  [ItemGrade.LEGENDARY]: 0.005, // 0.5%
+  [ItemGrade.COMMON]: 0.7, // 70% (80% → 70%)
+  [ItemGrade.RARE]: 0.2, // 20% (18% → 20%)
+  [ItemGrade.EPIC]: 0.07, // 7% (2.5% → 7%)
+  [ItemGrade.LEGENDARY]: 0.025, // 2.5% (0.5% → 2.5%)
+  [ItemGrade.MYTHIC]: 0.005, // 0.5% (새로 추가)
 } as const;
 
 // Gacha category item types
@@ -290,7 +312,11 @@ export const GACHA_ITEM_TYPES = {
     ItemType.RING,
     ItemType.NECKLACE,
   ],
-  [GachaCategory.WEAPONS]: [ItemType.MAIN_WEAPON, ItemType.SUB_WEAPON],
+  [GachaCategory.WEAPONS]: [
+    ItemType.MAIN_WEAPON,
+    ItemType.SUB_WEAPON,
+    ItemType.PET,
+  ],
 } as const;
 
 // Gacha category names for UI (Korean)
@@ -313,6 +339,7 @@ export const ITEM_IMAGE_PATHS = {
   [ItemType.NECKLACE]: "/Items/Necklace.png",
   [ItemType.MAIN_WEAPON]: "/Items/Weapon.png",
   [ItemType.SUB_WEAPON]: "/Items/SubWeapon.png",
+  [ItemType.PET]: "/Items/Pet.png",
 } as const;
 
 // Get item image path by item type

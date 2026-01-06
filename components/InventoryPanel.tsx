@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Item, ItemType, ItemGrade } from "../types/game";
 import { useGame } from "../contexts/GameContext";
+import { ITEM_TYPE_NAMES } from "../constants/game";
 import EnhancementModal from "./EnhancementModal";
 import { GridItemImage } from "./ResponsiveItemImage";
 import {
@@ -49,6 +50,7 @@ export default function InventoryPanel() {
     new Set()
   );
   const [showSaleInterface, setShowSaleInterface] = useState(false);
+  const [isSelectAllMode, setIsSelectAllMode] = useState(false); // 전체 선택 모드 추적
 
   // 필터 상태
   const [filter, setFilter] = useState<InventoryFilter>({});
@@ -181,6 +183,7 @@ export default function InventoryPanel() {
       newSelected.add(itemId);
     }
     setSelectedItemsForSale(newSelected);
+    setIsSelectAllMode(false); // 개별 선택 시 전체 선택 모드 해제
   };
 
   // 전체 선택/해제
@@ -191,9 +194,11 @@ export default function InventoryPanel() {
         .filter((item) => canSellItem(item, gameState.equippedItems))
         .map((item) => item.id);
       setSelectedItemsForSale(new Set(sellableItemIds));
+      setIsSelectAllMode(true); // 전체 선택 모드 활성화
     } else {
       // 전체 해제
       setSelectedItemsForSale(new Set());
+      setIsSelectAllMode(false); // 전체 선택 모드 비활성화
     }
   };
 
@@ -205,6 +210,7 @@ export default function InventoryPanel() {
     if (!newSaleMode) {
       // 판매 모드 종료 시 모든 상태 초기화
       setSelectedItemsForSale(new Set());
+      setIsSelectAllMode(false); // 전체 선택 모드도 초기화
       setSaleSuccessMessage(null);
       setSaleErrorMessage(null);
       setSaleWarnings([]);
@@ -227,10 +233,11 @@ export default function InventoryPanel() {
       return;
     }
 
-    // 판매 전 검증 수행
+    // 판매 전 검증 수행 (전체 선택 모드 전달)
     const validation = validateItemSale(
       selectedItemsData.selectedItems,
-      gameState.equippedItems
+      gameState.equippedItems,
+      isSelectAllMode
     );
 
     if (!validation.isValid) {
@@ -310,20 +317,7 @@ export default function InventoryPanel() {
 
   // 아이템 타입 한글 이름
   const getTypeDisplayName = (type: ItemType): string => {
-    const typeNames: Record<ItemType, string> = {
-      [ItemType.HELMET]: "헬멧",
-      [ItemType.ARMOR]: "아머",
-      [ItemType.PANTS]: "팬츠",
-      [ItemType.GLOVES]: "글러브",
-      [ItemType.SHOES]: "슈즈",
-      [ItemType.SHOULDER]: "숄더",
-      [ItemType.EARRING]: "귀걸이",
-      [ItemType.RING]: "반지",
-      [ItemType.NECKLACE]: "목걸이",
-      [ItemType.MAIN_WEAPON]: "주무기",
-      [ItemType.SUB_WEAPON]: "보조무기",
-    };
-    return typeNames[type] || type;
+    return ITEM_TYPE_NAMES[type] || type;
   };
 
   return (
@@ -464,9 +458,10 @@ export default function InventoryPanel() {
             className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
           >
             <option value="">모든 등급</option>
+            <option value={ItemGrade.MYTHIC}>신화</option>
             <option value={ItemGrade.LEGENDARY}>전설</option>
-            <option value={ItemGrade.EPIC}>영웅</option>
-            <option value={ItemGrade.RARE}>희귀</option>
+            <option value={ItemGrade.EPIC}>에픽</option>
+            <option value={ItemGrade.RARE}>레어</option>
             <option value={ItemGrade.COMMON}>일반</option>
           </select>
         </div>
@@ -507,8 +502,9 @@ export default function InventoryPanel() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
           <div>총 아이템: {inventoryStats.totalItems}개</div>
           <div>평균 레벨: {inventoryStats.averageLevel.toFixed(1)}</div>
+          <div>신화: {inventoryStats.itemsByGrade[ItemGrade.MYTHIC]}개</div>
           <div>전설: {inventoryStats.itemsByGrade[ItemGrade.LEGENDARY]}개</div>
-          <div>영웅: {inventoryStats.itemsByGrade[ItemGrade.EPIC]}개</div>
+          <div>에픽: {inventoryStats.itemsByGrade[ItemGrade.EPIC]}개</div>
         </div>
       </div>
 
@@ -687,8 +683,8 @@ export default function InventoryPanel() {
             </div>
             <div className="text-xs text-gray-400 space-y-1">
               <div>
-                • 한 번에 최대 {getSaleLimits().MAX_ITEMS_PER_SALE}개까지 판매
-                가능
+                • 개별 선택 시 최대 {getSaleLimits().MAX_ITEMS_PER_SALE}개까지
+                판매 가능 (전체 선택 시 제한 없음)
               </div>
               <div>• Epic, Legendary 등급 아이템 판매 시 추가 확인</div>
               <div>
@@ -703,12 +699,20 @@ export default function InventoryPanel() {
             <div className="flex-1">
               <div className="text-sm text-gray-300 mb-1">
                 선택된 아이템: {selectedItemsData.selectedItems.length}개
-                {selectedItemsData.selectedItems.length >
-                  getSaleLimits().MAX_ITEMS_PER_SALE && (
-                  <span className="text-red-400 ml-2">
-                    (제한 초과: 최대 {getSaleLimits().MAX_ITEMS_PER_SALE}개)
-                  </span>
-                )}
+                {!isSelectAllMode &&
+                  selectedItemsData.selectedItems.length >
+                    getSaleLimits().MAX_ITEMS_PER_SALE && (
+                    <span className="text-red-400 ml-2">
+                      (제한 초과: 최대 {getSaleLimits().MAX_ITEMS_PER_SALE}개)
+                    </span>
+                  )}
+                {isSelectAllMode &&
+                  selectedItemsData.selectedItems.length >
+                    getSaleLimits().MAX_ITEMS_PER_SALE && (
+                    <span className="text-green-400 ml-2">
+                      (전체 선택 모드: 제한 없음)
+                    </span>
+                  )}
                 {selectedItemsData.hasUnsellableItems && (
                   <span className="text-red-400 ml-2">
                     (장착된 아이템{" "}

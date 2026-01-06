@@ -67,6 +67,7 @@ function createTestEquippedItems(): EquippedItems {
       ItemGrade.EPIC
     ),
     subWeapon: null,
+    pet: null,
   };
 }
 

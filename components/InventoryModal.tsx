@@ -22,6 +22,7 @@ const GRADE_COLORS = {
   [ItemGrade.RARE]: "hero-card-blue border-blue-400",
   [ItemGrade.EPIC]: "hero-card-purple border-purple-400",
   [ItemGrade.LEGENDARY]: "hero-card-accent border-yellow-400",
+  [ItemGrade.MYTHIC]: "hero-card-red border-red-400",
 };
 
 export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
@@ -52,7 +53,13 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
   const isUpgradeCandidate = (item: Item): boolean => {
     const equippedItem = equippedItems[item.type as keyof typeof equippedItems];
 
-    const gradeOrder = { common: 0, rare: 1, epic: 2, legendary: 3 };
+    const gradeOrder = {
+      common: 0,
+      rare: 1,
+      epic: 2,
+      legendary: 3,
+      mythic: 4,
+    };
 
     // 장착된 아이템이 없으면 -1로 취급하여 모든 등급이 업그레이드로 표시
     const equippedGrade = equippedItem ? gradeOrder[equippedItem.grade] : -1;
@@ -80,7 +87,13 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
       case "level":
         return b.level - a.level;
       case "grade":
-        const gradeOrder = { common: 0, rare: 1, epic: 2, legendary: 3 };
+        const gradeOrder = {
+          common: 0,
+          rare: 1,
+          epic: 2,
+          legendary: 3,
+          mythic: 4,
+        };
         return gradeOrder[b.grade] - gradeOrder[a.grade];
       case "type":
         return a.type.localeCompare(b.type);

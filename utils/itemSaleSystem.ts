@@ -13,6 +13,7 @@ export const ITEM_BASE_SALE_PRICES: Record<ItemGrade, number> = {
   [ItemGrade.RARE]: 12, // 25 -> 12로 감소 (가챠 비용의 1.0-1.5% 수준)
   [ItemGrade.EPIC]: 25, // 50 -> 25로 감소 (가챠 비용의 1.6-3.1% 수준)
   [ItemGrade.LEGENDARY]: 50, // 100 -> 50으로 감소 (가챠 비용의 3.1-6.3% 수준)
+  [ItemGrade.MYTHIC]: 100, // 새로 추가 (가챠 비용의 6.3-12.5% 수준)
 };
 
 /**
@@ -79,11 +80,13 @@ export const SALE_LIMITS = {
  * 판매 전 검증을 수행합니다
  * @param items 판매할 아이템들
  * @param equippedItems 현재 장착된 아이템들
+ * @param isSelectAll 전체 선택 모드인지 여부 (true일 경우 개수 제한 무시)
  * @returns 검증 결과
  */
 export function validateItemSale(
   items: Item[],
-  equippedItems: EquippedItems
+  equippedItems: EquippedItems,
+  isSelectAll: boolean = false
 ): {
   isValid: boolean;
   warnings: string[];
@@ -92,8 +95,8 @@ export function validateItemSale(
   const warnings: string[] = [];
   const errors: string[] = [];
 
-  // 아이템 수 제한 검증
-  if (items.length > SALE_LIMITS.MAX_ITEMS_PER_SALE) {
+  // 아이템 수 제한 검증 (전체 선택 모드가 아닐 때만)
+  if (!isSelectAll && items.length > SALE_LIMITS.MAX_ITEMS_PER_SALE) {
     errors.push(
       `한 번에 최대 ${SALE_LIMITS.MAX_ITEMS_PER_SALE}개까지만 판매할 수 있습니다. (선택된 아이템: ${items.length}개)`
     );
@@ -256,6 +259,7 @@ export function calculateSaleEfficiency(item: Item): {
     [ItemGrade.RARE]: 1.3,
     [ItemGrade.EPIC]: 1.7,
     [ItemGrade.LEGENDARY]: 2.2,
+    [ItemGrade.MYTHIC]: 3.0,
   };
 
   const estimatedEnhancementCost =

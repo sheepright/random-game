@@ -45,6 +45,14 @@ export default function GachaResultModal({
   // 등급별 색상 및 스타일
   const getGradeStyles = (grade: ItemGrade) => {
     switch (grade) {
+      case ItemGrade.MYTHIC:
+        return {
+          bg: "hero-card-red",
+          text: "hero-text-red",
+          border: "border-red-400",
+          glow: "hero-glow-red",
+          particle: "bg-red-300",
+        };
       case ItemGrade.LEGENDARY:
         return {
           bg: "hero-card-accent",

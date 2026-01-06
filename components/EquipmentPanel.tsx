@@ -1,12 +1,12 @@
 "use client";
 
 import { useGame } from "../contexts/GameContext";
-import { Item, ItemType, ItemGrade } from "../types/game";
+import { Item, ItemType } from "../types/game";
 import { EquipmentSlotImage } from "./ResponsiveItemImage";
 
 /**
  * EquipmentPanel 컴포넌트
- * 11개 장비 슬롯을 시각적으로 표시하고 장착/해제 인터페이스 제공
+ * 12개 장비 슬롯을 시각적으로 표시하고 장착/해제 인터페이스 제공
  * Requirements: 9.3
  */
 
@@ -24,6 +24,7 @@ const getSlotIcon = (slotType: ItemType): string => {
     [ItemType.NECKLACE]: "📿",
     [ItemType.MAIN_WEAPON]: "⚔️",
     [ItemType.SUB_WEAPON]: "🛡️",
+    [ItemType.PET]: "🐾",
   };
   return icons[slotType] || "❓";
 };
@@ -42,7 +43,7 @@ function EquipmentSlot({
   onUnequip,
 }: EquipmentSlotProps) {
   return (
-    <div className="flex flex-col items-center space-y-1">
+    <div className="flex flex-col items-center space-y-1 min-w-[80px]">
       <div
         className="w-16 h-16 cursor-pointer transition-all hover:shadow-lg hover:scale-105 relative"
         onDoubleClick={() => {
@@ -86,53 +87,23 @@ export function EquipmentPanel() {
         ⚔️ 장비 관리
       </h2>
 
-      {/* 장비 슬롯 그리드 - 컴팩트한 RPG 스타일 레이아웃 */}
+      {/* 장비 슬롯 레이아웃 - 컴팩트한 배치 */}
       <div className="flex justify-center">
-        <div className="grid grid-cols-5 grid-rows-4 gap-2 w-fit">
-          {/* 1행: 헬멧 중앙 */}
-          <div className="col-start-3 flex justify-center">
-            <EquipmentSlot
-              item={gameState.equippedItems.helmet}
-              slotType={ItemType.HELMET}
-              slotName="헬멧"
-              onUnequip={handleUnequipItem}
-            />
-          </div>
-
-          {/* 2행: 귀걸이 - 숄더 - 아머 - 글러브 - 목걸이 */}
-          <div className="col-start-1 flex justify-center">
+        <div className="flex flex-col items-center space-y-3">
+          {/* 1행: 귀걸이 - 헬멧 - 목걸이 */}
+          <div className="flex justify-center items-center space-x-6">
             <EquipmentSlot
               item={gameState.equippedItems.earring}
               slotType={ItemType.EARRING}
               slotName="귀걸이"
               onUnequip={handleUnequipItem}
             />
-          </div>
-          <div className="col-start-2 flex justify-center">
             <EquipmentSlot
-              item={gameState.equippedItems.shoulder}
-              slotType={ItemType.SHOULDER}
-              slotName="숄더"
+              item={gameState.equippedItems.helmet}
+              slotType={ItemType.HELMET}
+              slotName="헬멧"
               onUnequip={handleUnequipItem}
             />
-          </div>
-          <div className="col-start-3 flex justify-center">
-            <EquipmentSlot
-              item={gameState.equippedItems.armor}
-              slotType={ItemType.ARMOR}
-              slotName="아머"
-              onUnequip={handleUnequipItem}
-            />
-          </div>
-          <div className="col-start-4 flex justify-center">
-            <EquipmentSlot
-              item={gameState.equippedItems.gloves}
-              slotType={ItemType.GLOVES}
-              slotName="글러브"
-              onUnequip={handleUnequipItem}
-            />
-          </div>
-          <div className="col-start-5 flex justify-center">
             <EquipmentSlot
               item={gameState.equippedItems.necklace}
               slotType={ItemType.NECKLACE}
@@ -141,24 +112,42 @@ export function EquipmentPanel() {
             />
           </div>
 
+          {/* 2행: 숄더 - 아머 - 글러브 */}
+          <div className="flex justify-center items-center space-x-6">
+            <EquipmentSlot
+              item={gameState.equippedItems.shoulder}
+              slotType={ItemType.SHOULDER}
+              slotName="숄더"
+              onUnequip={handleUnequipItem}
+            />
+            <EquipmentSlot
+              item={gameState.equippedItems.armor}
+              slotType={ItemType.ARMOR}
+              slotName="아머"
+              onUnequip={handleUnequipItem}
+            />
+            <EquipmentSlot
+              item={gameState.equippedItems.gloves}
+              slotType={ItemType.GLOVES}
+              slotName="글러브"
+              onUnequip={handleUnequipItem}
+            />
+          </div>
+
           {/* 3행: 주무기 - 팬츠 - 보조무기 */}
-          <div className="col-start-1 flex justify-center">
+          <div className="flex justify-center items-center space-x-6">
             <EquipmentSlot
               item={gameState.equippedItems.mainWeapon}
               slotType={ItemType.MAIN_WEAPON}
               slotName="주무기"
               onUnequip={handleUnequipItem}
             />
-          </div>
-          <div className="col-start-3 flex justify-center">
             <EquipmentSlot
               item={gameState.equippedItems.pants}
               slotType={ItemType.PANTS}
               slotName="팬츠"
               onUnequip={handleUnequipItem}
             />
-          </div>
-          <div className="col-start-5 flex justify-center">
             <EquipmentSlot
               item={gameState.equippedItems.subWeapon}
               slotType={ItemType.SUB_WEAPON}
@@ -167,20 +156,24 @@ export function EquipmentPanel() {
             />
           </div>
 
-          {/* 4행: 반지 - 슈즈 */}
-          <div className="col-start-2 flex justify-center">
+          {/* 4행: 반지 - 슈즈 - 펫 */}
+          <div className="flex justify-center items-center space-x-6">
             <EquipmentSlot
               item={gameState.equippedItems.ring}
               slotType={ItemType.RING}
               slotName="반지"
               onUnequip={handleUnequipItem}
             />
-          </div>
-          <div className="col-start-3 flex justify-center">
             <EquipmentSlot
               item={gameState.equippedItems.shoes}
               slotType={ItemType.SHOES}
               slotName="슈즈"
+              onUnequip={handleUnequipItem}
+            />
+            <EquipmentSlot
+              item={gameState.equippedItems.pet}
+              slotType={ItemType.PET}
+              slotName="펫"
               onUnequip={handleUnequipItem}
             />
           </div>

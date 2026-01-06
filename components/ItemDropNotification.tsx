@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Item, ItemGrade, ItemType } from "../types/game";
+import { ITEM_TYPE_NAMES } from "../constants/game";
 
 /**
  * ItemDropNotification 컴포넌트
@@ -46,21 +47,13 @@ const GRADE_STYLES = {
     accent: "bg-yellow-400",
     glow: "hero-glow",
   },
-};
-
-// 아이템 타입 한글 이름
-const ITEM_TYPE_NAMES = {
-  [ItemType.HELMET]: "헬멧",
-  [ItemType.ARMOR]: "아머",
-  [ItemType.PANTS]: "팬츠",
-  [ItemType.GLOVES]: "글러브",
-  [ItemType.SHOES]: "슈즈",
-  [ItemType.SHOULDER]: "숄더",
-  [ItemType.EARRING]: "귀걸이",
-  [ItemType.RING]: "반지",
-  [ItemType.NECKLACE]: "목걸이",
-  [ItemType.MAIN_WEAPON]: "주무기",
-  [ItemType.SUB_WEAPON]: "보조무기",
+  [ItemGrade.MYTHIC]: {
+    bg: "hero-card-red",
+    border: "border-red-300",
+    text: "hero-text-red",
+    accent: "bg-red-400",
+    glow: "hero-glow-red",
+  },
 };
 
 // 등급 한글 이름
@@ -69,6 +62,7 @@ const GRADE_NAMES = {
   [ItemGrade.RARE]: "희귀",
   [ItemGrade.EPIC]: "영웅",
   [ItemGrade.LEGENDARY]: "전설",
+  [ItemGrade.MYTHIC]: "신화",
 };
 
 export function ItemDropNotification({
