@@ -131,7 +131,7 @@ export function GameDashboard() {
 
   return (
     <div
-      className="h-screen overflow-hidden flex items-center justify-center"
+      className="min-h-screen overflow-y-auto flex items-start justify-center"
       style={{
         background:
           "linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%)",
@@ -143,9 +143,9 @@ export function GameDashboard() {
       <OfflineProgressModalManager />
       <SaveStatusIndicator />
 
-      <div className="flex flex-col justify-center items-center p-4 max-w-7xl w-full h-full">
+      <div className="flex flex-col justify-start items-center p-4 max-w-7xl w-full min-h-screen py-8">
         {/* 메인 게임 영역 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full max-h-[85vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           {/* 좌측: 크레딧 & 장비 */}
           <div className="space-y-4 flex flex-col">
             {/* 크레딧 */}
@@ -204,7 +204,7 @@ export function GameDashboard() {
             <div className="hero-card hero-card-purple">
               <div className="p-6 text-center">
                 <h3 className="text-xl font-bold hero-text-primary mb-4">
-                  ⚡ 강화
+                  ⚡강화
                 </h3>
                 <p className="hero-text-secondary mb-4 text-sm">
                   아이템을 강화하여 스탯을 증가시키세요
