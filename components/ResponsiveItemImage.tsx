@@ -10,7 +10,7 @@ import { useState, useEffect } from "react";
 
 interface ResponsiveItemImageProps {
   item: Item;
-  size?: "small" | "medium" | "large" | "xlarge";
+  size?: "small" | "medium" | "large" | "xlarge" | "fixed";
   showEnhancementLevel?: boolean;
   className?: string;
   onClick?: () => void;
@@ -69,6 +69,14 @@ const RESPONSIVE_SIZE_STYLES = {
     enhancement: "text-lg",
     imageSize: { width: 112, height: 112 },
     sizes: "(max-width: 640px) 72px, (max-width: 768px) 88px, 104px",
+  },
+  fixed: {
+    // 고정 크기 (장비 슬롯용)
+    container: "w-16 h-16",
+    image: "w-14 h-14",
+    enhancement: "text-sm",
+    imageSize: { width: 64, height: 64 },
+    sizes: "56px",
   },
 } as const;
 
@@ -265,15 +273,13 @@ export function EquipmentSlotImage({
   }
 
   return (
-    <div className="w-16 h-16 flex items-center justify-center">
-      <ResponsiveItemImage
-        item={item}
-        size="medium"
-        onClick={onClick}
-        priority={true}
-        loading="eager"
-        className="bg-transparent"
-      />
-    </div>
+    <ResponsiveItemImage
+      item={item}
+      size="fixed"
+      onClick={onClick}
+      priority={true}
+      loading="eager"
+      className="bg-transparent"
+    />
   );
 }
