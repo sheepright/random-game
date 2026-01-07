@@ -160,8 +160,12 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
       selectedItemsForSale.has(item.id)
     );
 
-    // 판매 전 검증
-    const validation = validateItemSale(itemsToSell, gameState.equippedItems);
+    // 판매 전 검증 (등급별 선택도 제한 없음으로 처리)
+    const validation = validateItemSale(
+      itemsToSell,
+      gameState.equippedItems,
+      true
+    );
 
     if (!validation.isValid) {
       setSaleErrorMessage(validation.errors.join(" "));
@@ -316,6 +320,97 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
                   </button>
                 </div>
               </div>
+
+              {/* 등급별 일괄 선택 버튼 */}
+              <div className="mb-4 p-3 hero-card-blue rounded">
+                <div className="text-sm font-medium hero-text-blue mb-2">
+                  등급별 일괄 선택:
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    {
+                      grade: ItemGrade.COMMON,
+                      name: "일반",
+                      color: "bg-gray-600 hover:bg-gray-500",
+                      count: gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.COMMON
+                      ).length,
+                    },
+                    {
+                      grade: ItemGrade.RARE,
+                      name: "레어",
+                      color: "bg-blue-600 hover:bg-blue-500",
+                      count: gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.RARE
+                      ).length,
+                    },
+                    {
+                      grade: ItemGrade.EPIC,
+                      name: "에픽",
+                      color: "bg-purple-600 hover:bg-purple-500",
+                      count: gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.EPIC
+                      ).length,
+                    },
+                    {
+                      grade: ItemGrade.LEGENDARY,
+                      name: "전설",
+                      color: "bg-yellow-600 hover:bg-yellow-500",
+                      count: gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.LEGENDARY
+                      ).length,
+                    },
+                    {
+                      grade: ItemGrade.MYTHIC,
+                      name: "신화",
+                      color: "bg-red-600 hover:bg-red-500",
+                      count: gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.MYTHIC
+                      ).length,
+                    },
+                  ].map(({ grade, name, color, count }) => (
+                    <button
+                      key={grade}
+                      onClick={() => {
+                        const gradeItems = sortedItems
+                          .filter(
+                            (item) =>
+                              item.grade === grade &&
+                              canSellItem(item, gameState.equippedItems)
+                          )
+                          .map((item) => item.id);
+
+                        const newSelected = new Set(selectedItemsForSale);
+                        const allGradeItemsSelected = gradeItems.every((id) =>
+                          newSelected.has(id)
+                        );
+
+                        if (allGradeItemsSelected) {
+                          gradeItems.forEach((id) => newSelected.delete(id));
+                        } else {
+                          gradeItems.forEach((id) => newSelected.add(id));
+                        }
+
+                        setSelectedItemsForSale(newSelected);
+                      }}
+                      disabled={count === 0}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        count === 0
+                          ? "bg-gray-500 cursor-not-allowed text-gray-400"
+                          : `${color} text-white`
+                      }`}
+                      title={
+                        count === 0
+                          ? "해당 등급 아이템이 없습니다"
+                          : `${name} 등급 아이템 ${count}개 선택`
+                      }
+                    >
+                      {name} ({count})
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="hero-text-secondary">선택된 아이템:</span>
@@ -354,6 +449,74 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
                 </div>
                 <div className="text-xs hero-text-muted">
                   장착된 아이템은 판매할 수 없습니다
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
+                <div>
+                  <span className="hero-text-secondary">총 아이템:</span>
+                  <span className="ml-2 font-semibold hero-text-primary">
+                    {gameState.inventory.length}개
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-red-500 rounded"></span>
+                  <span className="text-red-400">
+                    신화:{" "}
+                    {
+                      gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.MYTHIC
+                      ).length
+                    }
+                    개
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-yellow-500 rounded"></span>
+                  <span className="text-yellow-400">
+                    전설:{" "}
+                    {
+                      gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.LEGENDARY
+                      ).length
+                    }
+                    개
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-purple-500 rounded"></span>
+                  <span className="text-purple-400">
+                    에픽:{" "}
+                    {
+                      gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.EPIC
+                      ).length
+                    }
+                    개
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-blue-500 rounded"></span>
+                  <span className="text-blue-400">
+                    레어:{" "}
+                    {
+                      gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.RARE
+                      ).length
+                    }
+                    개
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 bg-gray-500 rounded"></span>
+                  <span className="text-gray-400">
+                    일반:{" "}
+                    {
+                      gameState.inventory.filter(
+                        (item) => item.grade === ItemGrade.COMMON
+                      ).length
+                    }
+                    개
+                  </span>
                 </div>
               </div>
 

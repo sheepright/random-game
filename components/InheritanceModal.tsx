@@ -302,18 +302,22 @@ function InheritancePreview({
       </div>
 
       {/* 주의사항 */}
-      <div className="hero-card-accent rounded p-3">
-        <div className="text-sm font-semibold hero-text-accent mb-1">
-          주의사항
+      <div className="hero-card-red rounded p-3">
+        <div className="text-sm font-semibold hero-text-red mb-1">
+          ⚠️ 중요한 주의사항
         </div>
-        <div className="text-sm hero-text-secondary">
-          • 소스 아이템({ITEM_TYPE_NAMES[sourceItem.type]} +
-          {sourceItem.enhancementLevel})은 계승 후 소멸됩니다
-          <br />
-          • 계승은 되돌릴 수 없습니다
-          <br />
-          • 계승 실패 시 소스 아이템만 소멸되고 타겟 아이템은 변화 없습니다
-          <br />• 강화 등급에 따른 스탯은 자동으로 재계산됩니다
+        <div className="text-sm hero-text-secondary space-y-1">
+          <div className="hero-text-red font-medium">
+            • 계승 성공률: {(successRate! * 100).toFixed(1)}% (등급이 높을수록
+            낮아짐)
+          </div>
+          <div className="hero-text-red font-medium">
+            • 계승 실패 시 소스 아이템({ITEM_TYPE_NAMES[sourceItem.type]} +
+            {sourceItem.enhancementLevel})이 완전히 파괴됩니다!
+          </div>
+          <div>• 계승 성공 시에도 소스 아이템은 소멸됩니다</div>
+          <div>• 계승은 되돌릴 수 없습니다</div>
+          <div>• 강화 등급에 따른 스탯은 자동으로 재계산됩니다</div>
         </div>
       </div>
     </div>
@@ -395,13 +399,21 @@ export function InheritanceModal({
 
       if (success) {
         // 성공 시 모달 닫기
+        alert(
+          `계승 성공! ${targetItem.type} 아이템의 강화 등급이 증가했습니다.`
+        );
         setTimeout(() => {
           onClose();
           setSourceItem(null);
           setTargetItem(null);
         }, 1000);
       } else {
-        alert("계승에 실패했습니다. 다시 시도해주세요.");
+        // 실패 시 소스 아이템이 이미 제거되었으므로 상태 초기화
+        alert(
+          `계승 실패! ${sourceItem.type} +${sourceItem.enhancementLevel} 아이템이 파괴되었습니다.`
+        );
+        setSourceItem(null);
+        setTargetItem(null);
       }
     } catch (error) {
       console.error("계승 중 오류 발생:", error);

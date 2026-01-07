@@ -71,9 +71,13 @@ export interface ItemSaleResult {
  * 판매 시스템 제한사항 상수
  */
 export const SALE_LIMITS = {
-  MAX_ITEMS_PER_SALE: 20, // 한 번에 최대 20개까지 판매 가능
-  HIGH_VALUE_CONFIRMATION_THRESHOLD: 100, // 100 크레딧 이상 시 추가 확인
-  RARE_GRADE_CONFIRMATION: [ItemGrade.EPIC, ItemGrade.LEGENDARY], // Epic, Legendary 등급 판매 시 추가 확인
+  MAX_ITEMS_PER_SALE: 50, // 개별 선택 시 최대 50개까지 판매 가능 (20 -> 50으로 증가)
+  HIGH_VALUE_CONFIRMATION_THRESHOLD: 500, // 500 크레딧 이상 시 추가 확인 (100 -> 500으로 증가)
+  RARE_GRADE_CONFIRMATION: [
+    ItemGrade.EPIC,
+    ItemGrade.LEGENDARY,
+    ItemGrade.MYTHIC,
+  ], // Epic, Legendary, Mythic 등급 판매 시 추가 확인
 } as const;
 
 /**

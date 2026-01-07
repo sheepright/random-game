@@ -73,49 +73,69 @@ export function calculateEnhancementCost(
   return Math.floor(baseCost * gradeMultiplier[grade]);
 }
 
-// Enhancement success rate (낮춰진 성공률과 파괴 확률 추가)
+// Enhancement success rate (대폭 너프된 성공률)
 export function getEnhancementSuccessRate(enhancementLevel: number): number {
-  if (enhancementLevel <= 5) {
-    return 1.0; // 1~5강: 100% 성공
-  } else if (enhancementLevel <= 10) {
-    return 0.95; // 6~10강: 95% 성공
-  } else if (enhancementLevel <= 15) {
-    return 0.8; // 11~15강: 80% 성공
-  } else if (enhancementLevel <= 19) {
-    return 0.6; // 16~19강: 60% 성공
-  } else {
-    // 20강 이상: 낮은 성공률
-    const successRates: Record<number, number> = {
-      20: 0.4, // 40%
-      21: 0.35, // 35%
-      22: 0.3, // 30%
-      23: 0.25, // 25%
-      24: 0.2, // 20%
-      25: 0.15, // 15%
-    };
-    return successRates[enhancementLevel] || 0.1;
-  }
+  // 단계별 차등 확률로 대폭 너프
+  const successRates: Record<number, number> = {
+    1: 0.95, // 95%
+    2: 0.9, // 90%
+    3: 0.85, // 85%
+    4: 0.8, // 80%
+    5: 0.75, // 75%
+    6: 0.7, // 70%
+    7: 0.65, // 65%
+    8: 0.6, // 60%
+    9: 0.55, // 55%
+    10: 0.5, // 50%
+    11: 0.45, // 45%
+    12: 0.4, // 40%
+    13: 0.35, // 35%
+    14: 0.3, // 30%
+    15: 0.25, // 25%
+    16: 0.2, // 20%
+    17: 0.18, // 18%
+    18: 0.16, // 16%
+    19: 0.14, // 14%
+    20: 0.12, // 12%
+    21: 0.1, // 10%
+    22: 0.08, // 8%
+    23: 0.06, // 6%
+    24: 0.04, // 4%
+    25: 0.02, // 2%
+  };
+
+  return successRates[enhancementLevel] || 0.01; // 기본 1%
 }
 
-// Enhancement destruction rate (20강 이상에서 파괴 확률)
+// Enhancement destruction rate (10강 이상에서 파괴 확률)
 export function getEnhancementDestructionRate(
   enhancementLevel: number
 ): number {
-  if (enhancementLevel < 20) {
-    return 0; // 19강 이하는 파괴되지 않음
+  if (enhancementLevel < 10) {
+    return 0; // 9강 이하는 파괴되지 않음
   }
 
-  // 20강 이상에서 파괴 확률
+  // 10강 이상에서 파괴 확률 (단계별 차등)
   const destructionRates: Record<number, number> = {
-    20: 0.1, // 10%
-    21: 0.15, // 15%
-    22: 0.2, // 20%
-    23: 0.25, // 25%
-    24: 0.3, // 30%
-    25: 0.35, // 35%
+    10: 0.05, // 5%
+    11: 0.08, // 8%
+    12: 0.12, // 12%
+    13: 0.16, // 16%
+    14: 0.2, // 20%
+    15: 0.25, // 25%
+    16: 0.3, // 30%
+    17: 0.35, // 35%
+    18: 0.4, // 40%
+    19: 0.45, // 45%
+    20: 0.5, // 50%
+    21: 0.55, // 55%
+    22: 0.6, // 60%
+    23: 0.65, // 65%
+    24: 0.7, // 70%
+    25: 0.75, // 75%
   };
 
-  return destructionRates[enhancementLevel] || 0.4;
+  return destructionRates[enhancementLevel] || 0.8;
 }
 
 // Enhancement stat increase calculation (높은 스탯 증가량으로 보상)
@@ -282,16 +302,16 @@ export function performEnhancement(
     newLevel = enhancementInfo.newEnhancementLevel;
     statChange = enhancementInfo.statIncrease;
   } else if (randomValue < successRate + destructionRate) {
-    // 파괴: 아이템이 파괴되어 강화 등급이 0으로 초기화
+    // 파괴: 아이템이 완전히 파괴됨
     result = EnhancementResult.DESTRUCTION;
-    newLevel = 0;
+    newLevel = 0; // 레벨은 0으로 설정 (실제로는 아이템이 제거됨)
 
-    // 모든 강화 스탯을 잃음
+    // 파괴 시에는 스탯 변화를 0으로 설정 (아이템 자체가 사라지므로)
     statChange = {
-      attack: -item.enhancedStats.attack,
-      defense: -item.enhancedStats.defense,
-      defensePenetration: -item.enhancedStats.defensePenetration,
-      additionalAttackChance: -item.enhancedStats.additionalAttackChance,
+      attack: 0,
+      defense: 0,
+      defensePenetration: 0,
+      additionalAttackChance: 0,
     };
   } else {
     // 실패: 레벨 감소 (11강 이상에서만)

@@ -14,6 +14,10 @@ import {
   GACHA_RATES,
   GRADE_NAMES,
 } from "../constants/game";
+import {
+  getSynthesizableGrades,
+  getGradeDisplayName,
+} from "../utils/synthesisSystem";
 
 interface GachaModalProps {
   isOpen: boolean;
@@ -33,6 +37,10 @@ export function GachaModal({
     GachaCategory.ARMOR
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [synthesisResult, setSynthesisResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   if (!isOpen) return null;
 
@@ -83,6 +91,55 @@ export function GachaModal({
       setIsProcessing(false);
     }
   };
+
+  const handleSynthesis = async (grade: ItemGrade) => {
+    setIsProcessing(true);
+    setSynthesisResult(null);
+
+    try {
+      const result = actions.performSynthesis(grade);
+
+      if (result.success) {
+        const nextGradeName = getGradeDisplayName(
+          result.synthesizedItem!.grade
+        );
+        setSynthesisResult({
+          success: true,
+          message: `합성 성공! ${nextGradeName} 등급 아이템을 획득했습니다.`,
+        });
+
+        // 3초 후 메시지 자동 제거
+        setTimeout(() => {
+          setSynthesisResult(null);
+        }, 3000);
+      } else {
+        setSynthesisResult({
+          success: false,
+          message: result.error || "합성에 실패했습니다.",
+        });
+
+        // 5초 후 메시지 자동 제거
+        setTimeout(() => {
+          setSynthesisResult(null);
+        }, 5000);
+      }
+    } catch (error) {
+      console.error("합성 실행 중 오류:", error);
+      setSynthesisResult({
+        success: false,
+        message: "합성 실행 중 오류가 발생했습니다.",
+      });
+
+      setTimeout(() => {
+        setSynthesisResult(null);
+      }, 5000);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 합성 가능한 등급 정보 가져오기
+  const synthesizableGrades = getSynthesizableGrades([...gameState.inventory]);
 
   const gachaCategories = [
     {
@@ -244,6 +301,109 @@ export function GachaModal({
                 );
               })}
             </div>
+          </div>
+
+          {/* 합성 가챠 섹션 */}
+          <div className="mt-6 hero-card-purple p-4 rounded-lg">
+            <h4 className="font-bold hero-text-primary mb-3">🔮 합성 가챠</h4>
+            <p className="text-sm hero-text-secondary mb-4">
+              같은 등급 아이템 10개를 합성하여 상위 등급 아이템 1개를 획득하세요
+            </p>
+
+            {/* 합성 결과 메시지 */}
+            {synthesisResult && (
+              <div
+                className={`mb-4 p-3 rounded-lg ${
+                  synthesisResult.success
+                    ? "hero-card-green border border-green-400"
+                    : "hero-card-red border border-red-400"
+                }`}
+              >
+                <div
+                  className={`text-sm font-medium ${
+                    synthesisResult.success
+                      ? "hero-text-green"
+                      : "hero-text-red"
+                  }`}
+                >
+                  {synthesisResult.success ? "✅" : "❌"}{" "}
+                  {synthesisResult.message}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {synthesizableGrades.map(
+                ({ grade, count, canSynthesize, nextGrade }) => {
+                  if (!nextGrade) return null; // 신화 등급은 표시하지 않음
+
+                  const gradeColorClass =
+                    grade === ItemGrade.LEGENDARY
+                      ? "hero-text-accent"
+                      : grade === ItemGrade.EPIC
+                      ? "hero-text-purple"
+                      : grade === ItemGrade.RARE
+                      ? "hero-text-blue"
+                      : "hero-text-muted";
+
+                  const nextGradeColorClass =
+                    nextGrade === ItemGrade.MYTHIC
+                      ? "hero-text-red"
+                      : nextGrade === ItemGrade.LEGENDARY
+                      ? "hero-text-accent"
+                      : nextGrade === ItemGrade.EPIC
+                      ? "hero-text-purple"
+                      : "hero-text-blue";
+
+                  return (
+                    <div key={grade} className="hero-card p-3 rounded border">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`font-medium ${gradeColorClass}`}>
+                              {getGradeDisplayName(grade)}
+                            </span>
+                            <span className="text-2xl">→</span>
+                            <span
+                              className={`font-medium ${nextGradeColorClass}`}
+                            >
+                              {getGradeDisplayName(nextGrade)}
+                            </span>
+                          </div>
+                          <div className="text-sm hero-text-secondary">
+                            보유: {count}개 / 필요: 10개
+                          </div>
+                          {!canSynthesize && count > 0 && (
+                            <div className="text-xs hero-text-red mt-1">
+                              {10 - count}개 더 필요합니다
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleSynthesis(grade)}
+                          disabled={!canSynthesize || isProcessing}
+                          className={
+                            canSynthesize && !isProcessing
+                              ? "hero-btn hero-btn-purple"
+                              : "hero-btn hero-btn-disabled"
+                          }
+                        >
+                          {isProcessing ? "합성 중..." : "합성"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+
+            {synthesizableGrades.every((g) => !g.canSynthesize) && (
+              <div className="text-center py-4 hero-text-muted">
+                합성 가능한 아이템이 없습니다.
+                <br />
+                같은 등급 아이템을 10개 이상 모아보세요!
+              </div>
+            )}
           </div>
         </div>
 

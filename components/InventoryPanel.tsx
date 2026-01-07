@@ -51,6 +51,7 @@ export default function InventoryPanel() {
   );
   const [showSaleInterface, setShowSaleInterface] = useState(false);
   const [isSelectAllMode, setIsSelectAllMode] = useState(false); // 전체 선택 모드 추적
+  const [isGradeSelectMode, setIsGradeSelectMode] = useState(false); // 등급별 선택 모드 추적
 
   // 필터 상태
   const [filter, setFilter] = useState<InventoryFilter>({});
@@ -184,6 +185,35 @@ export default function InventoryPanel() {
     }
     setSelectedItemsForSale(newSelected);
     setIsSelectAllMode(false); // 개별 선택 시 전체 선택 모드 해제
+    setIsGradeSelectMode(false); // 개별 선택 시 등급별 선택 모드 해제
+  };
+
+  // 등급별 아이템 선택
+  const handleSelectByGrade = (grade: ItemGrade) => {
+    const gradeItems = processedItems
+      .filter(
+        (item) =>
+          item.grade === grade && canSellItem(item, gameState.equippedItems)
+      )
+      .map((item) => item.id);
+
+    const newSelected = new Set(selectedItemsForSale);
+
+    // 해당 등급의 모든 아이템이 이미 선택되어 있으면 해제, 아니면 추가
+    const allGradeItemsSelected = gradeItems.every((id) => newSelected.has(id));
+
+    if (allGradeItemsSelected) {
+      // 해당 등급 아이템들 선택 해제
+      gradeItems.forEach((id) => newSelected.delete(id));
+      setIsGradeSelectMode(false);
+    } else {
+      // 해당 등급 아이템들 선택 추가
+      gradeItems.forEach((id) => newSelected.add(id));
+      setIsGradeSelectMode(true);
+    }
+
+    setSelectedItemsForSale(newSelected);
+    setIsSelectAllMode(false);
   };
 
   // 전체 선택/해제
@@ -211,6 +241,7 @@ export default function InventoryPanel() {
       // 판매 모드 종료 시 모든 상태 초기화
       setSelectedItemsForSale(new Set());
       setIsSelectAllMode(false); // 전체 선택 모드도 초기화
+      setIsGradeSelectMode(false); // 등급별 선택 모드도 초기화
       setSaleSuccessMessage(null);
       setSaleErrorMessage(null);
       setSaleWarnings([]);
@@ -233,11 +264,11 @@ export default function InventoryPanel() {
       return;
     }
 
-    // 판매 전 검증 수행 (전체 선택 모드 전달)
+    // 판매 전 검증 수행 (전체 선택 모드 또는 등급별 선택 모드 전달)
     const validation = validateItemSale(
       selectedItemsData.selectedItems,
       gameState.equippedItems,
-      isSelectAllMode
+      isSelectAllMode || isGradeSelectMode
     );
 
     if (!validation.isValid) {
@@ -349,13 +380,75 @@ export default function InventoryPanel() {
         <div className="mb-4 p-4 bg-blue-900 rounded-lg">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-lg font-semibold">아이템 판매 모드</h3>
-            <button
-              onClick={handleToggleSelectAll}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm"
-            >
-              {selectedItemsForSale.size === 0 ? "전체 선택" : "전체 해제"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleToggleSelectAll}
+                className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm"
+              >
+                {selectedItemsForSale.size === 0 ? "전체 선택" : "전체 해제"}
+              </button>
+            </div>
           </div>
+
+          {/* 등급별 일괄 선택 버튼 */}
+          <div className="mb-4 p-3 bg-blue-800 rounded">
+            <div className="text-sm font-medium text-blue-200 mb-2">
+              등급별 일괄 선택:
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                {
+                  grade: ItemGrade.COMMON,
+                  name: "일반",
+                  color: "bg-gray-600 hover:bg-gray-500",
+                  count: inventoryStats.itemsByGrade[ItemGrade.COMMON],
+                },
+                {
+                  grade: ItemGrade.RARE,
+                  name: "레어",
+                  color: "bg-blue-600 hover:bg-blue-500",
+                  count: inventoryStats.itemsByGrade[ItemGrade.RARE],
+                },
+                {
+                  grade: ItemGrade.EPIC,
+                  name: "에픽",
+                  color: "bg-purple-600 hover:bg-purple-500",
+                  count: inventoryStats.itemsByGrade[ItemGrade.EPIC],
+                },
+                {
+                  grade: ItemGrade.LEGENDARY,
+                  name: "전설",
+                  color: "bg-yellow-600 hover:bg-yellow-500",
+                  count: inventoryStats.itemsByGrade[ItemGrade.LEGENDARY],
+                },
+                {
+                  grade: ItemGrade.MYTHIC,
+                  name: "신화",
+                  color: "bg-red-600 hover:bg-red-500",
+                  count: inventoryStats.itemsByGrade[ItemGrade.MYTHIC],
+                },
+              ].map(({ grade, name, color, count }) => (
+                <button
+                  key={grade}
+                  onClick={() => handleSelectByGrade(grade)}
+                  disabled={count === 0}
+                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    count === 0
+                      ? "bg-gray-500 cursor-not-allowed text-gray-400"
+                      : `${color} text-white`
+                  }`}
+                  title={
+                    count === 0
+                      ? "해당 등급 아이템이 없습니다"
+                      : `${name} 등급 아이템 ${count}개 선택`
+                  }
+                >
+                  {name} ({count})
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-gray-300">선택된 아이템:</span>
@@ -497,14 +590,45 @@ export default function InventoryPanel() {
         </div>
       </div>
 
-      {/* 인벤토리 통계 */}
+      {/* 인벤토리 통계 - 등급별 개수 표시 */}
       <div className="mb-4 p-3 bg-gray-700 rounded">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-          <div>총 아이템: {inventoryStats.totalItems}개</div>
-          <div>평균 레벨: {inventoryStats.averageLevel.toFixed(1)}</div>
-          <div>신화: {inventoryStats.itemsByGrade[ItemGrade.MYTHIC]}개</div>
-          <div>전설: {inventoryStats.itemsByGrade[ItemGrade.LEGENDARY]}개</div>
-          <div>에픽: {inventoryStats.itemsByGrade[ItemGrade.EPIC]}개</div>
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">총 아이템:</span>
+            <span className="font-semibold text-white">
+              {inventoryStats.totalItems}개
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-red-500 rounded"></span>
+            <span className="text-red-400">
+              신화: {inventoryStats.itemsByGrade[ItemGrade.MYTHIC]}개
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-yellow-500 rounded"></span>
+            <span className="text-yellow-400">
+              전설: {inventoryStats.itemsByGrade[ItemGrade.LEGENDARY]}개
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-purple-500 rounded"></span>
+            <span className="text-purple-400">
+              에픽: {inventoryStats.itemsByGrade[ItemGrade.EPIC]}개
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-blue-500 rounded"></span>
+            <span className="text-blue-400">
+              레어: {inventoryStats.itemsByGrade[ItemGrade.RARE]}개
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-gray-500 rounded"></span>
+            <span className="text-gray-400">
+              일반: {inventoryStats.itemsByGrade[ItemGrade.COMMON]}개
+            </span>
+          </div>
         </div>
       </div>
 
@@ -684,9 +808,9 @@ export default function InventoryPanel() {
             <div className="text-xs text-gray-400 space-y-1">
               <div>
                 • 개별 선택 시 최대 {getSaleLimits().MAX_ITEMS_PER_SALE}개까지
-                판매 가능 (전체 선택 시 제한 없음)
+                판매 가능 (등급별/전체 선택 시 제한 없음)
               </div>
-              <div>• Epic, Legendary 등급 아이템 판매 시 추가 확인</div>
+              <div>• Epic, Legendary, Mythic 등급 아이템 판매 시 추가 확인</div>
               <div>
                 • {getSaleLimits().HIGH_VALUE_CONFIRMATION_THRESHOLD} 크레딧
                 이상 고가치 판매 시 추가 확인
@@ -700,17 +824,18 @@ export default function InventoryPanel() {
               <div className="text-sm text-gray-300 mb-1">
                 선택된 아이템: {selectedItemsData.selectedItems.length}개
                 {!isSelectAllMode &&
+                  !isGradeSelectMode &&
                   selectedItemsData.selectedItems.length >
                     getSaleLimits().MAX_ITEMS_PER_SALE && (
                     <span className="text-red-400 ml-2">
                       (제한 초과: 최대 {getSaleLimits().MAX_ITEMS_PER_SALE}개)
                     </span>
                   )}
-                {isSelectAllMode &&
+                {(isSelectAllMode || isGradeSelectMode) &&
                   selectedItemsData.selectedItems.length >
                     getSaleLimits().MAX_ITEMS_PER_SALE && (
                     <span className="text-green-400 ml-2">
-                      (전체 선택 모드: 제한 없음)
+                      (일괄 선택 모드: 제한 없음)
                     </span>
                   )}
                 {selectedItemsData.hasUnsellableItems && (

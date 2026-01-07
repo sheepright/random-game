@@ -26,12 +26,12 @@ const ENHANCEMENT_LEVEL_REDUCTION = {
   4: 4, // 4등급 차이: -4 레벨
 } as const;
 
-// 등급 차이별 계승 성공률
+// 등급 차이별 계승 성공률 (대폭 너프)
 const INHERITANCE_SUCCESS_RATES = {
-  1: 0.9, // 1등급 차이: 90% 성공률
-  2: 0.7, // 2등급 차이: 70% 성공률
-  3: 0.5, // 3등급 차이: 50% 성공률
-  4: 0.3, // 4등급 차이: 30% 성공률
+  1: 0.7, // 1등급 차이: 70% 성공률 (90% → 70%)
+  2: 0.5, // 2등급 차이: 50% 성공률 (70% → 50%)
+  3: 0.3, // 3등급 차이: 30% 성공률 (50% → 30%)
+  4: 0.15, // 4등급 차이: 15% 성공률 (30% → 15%)
 } as const;
 
 export interface InheritancePreview {
@@ -251,6 +251,7 @@ export function canPerformInheritance(
 
 /**
  * Perform item inheritance with enhancement level transfer
+ * 실패 시 소스 아이템(강화된 아이템)이 파괴됨
  */
 export function performInheritance(
   sourceItem: Item,
@@ -271,7 +272,7 @@ export function performInheritance(
   if (!isSuccess) {
     return {
       success: false,
-      error: "계승에 실패했습니다. 다시 시도해주세요.",
+      error: "계승에 실패했습니다. 소스 아이템이 파괴되었습니다.",
     };
   }
 

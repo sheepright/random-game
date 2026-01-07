@@ -154,6 +154,13 @@ export default function EnhancementModal({
       const result = actions.enhanceItem(currentItem);
       console.log("강화 결과:", result);
       setLastEnhancementResult(result);
+
+      // 아이템이 파괴된 경우 3초 후 모달 자동 닫기
+      if (result.result === EnhancementResult.DESTRUCTION) {
+        setTimeout(() => {
+          onClose();
+        }, 3000);
+      }
     } catch (error) {
       console.error("Enhancement failed:", error);
       // 사용자에게 에러 메시지 표시
@@ -175,6 +182,8 @@ export default function EnhancementModal({
         return `강화 실패! 레벨은 유지됩니다.`;
       case EnhancementResult.DOWNGRADE:
         return `강화 실패! +${result.newLevel}강으로 하락했습니다.`;
+      case EnhancementResult.DESTRUCTION:
+        return `강화 실패! 아이템이 파괴되었습니다.`;
       default:
         return "알 수 없는 결과입니다.";
     }
@@ -187,6 +196,8 @@ export default function EnhancementModal({
       case EnhancementResult.FAILURE:
         return "hero-text-accent";
       case EnhancementResult.DOWNGRADE:
+        return "hero-text-red";
+      case EnhancementResult.DESTRUCTION:
         return "hero-text-red";
       default:
         return "hero-text-secondary";
@@ -408,6 +419,17 @@ export default function EnhancementModal({
                 </span>
               </div>
 
+              {/* 파괴 확률 표시 (10강 이상) */}
+              {enhancementInfo.destructionRate &&
+                enhancementInfo.destructionRate > 0 && (
+                  <div className="flex justify-between">
+                    <span>파괴 확률:</span>
+                    <span className="font-medium hero-text-red">
+                      {(enhancementInfo.destructionRate * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+
               {/* 효율성 정보 */}
               {efficiency && efficiencyLevel && (
                 <>
@@ -486,14 +508,24 @@ export default function EnhancementModal({
                 </div>
               </div>
 
-              {/* 실패 시 경고 (12강 이상) */}
-              {currentItem.enhancementLevel >= 12 && (
+              {/* 실패 시 경고 (11강 이상) */}
+              {currentItem.enhancementLevel >= 11 && (
                 <div className="pt-2 border-t border-gray-300">
                   <div className="hero-text-red font-medium text-xs">
                     ⚠️ 실패 시 강화 레벨이 1 감소합니다!
                   </div>
                 </div>
               )}
+
+              {/* 파괴 경고 (10강 이상) */}
+              {enhancementInfo.destructionRate &&
+                enhancementInfo.destructionRate > 0 && (
+                  <div className="pt-2 border-t border-gray-300">
+                    <div className="hero-text-red font-bold text-xs">
+                      💀 파괴 시 아이템이 완전히 사라집니다!
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         )}
@@ -522,10 +554,19 @@ export default function EnhancementModal({
               <div>
                 비용: {lastEnhancementResult.costPaid.toLocaleString()} 크레딧
               </div>
-              <div>
-                {primaryStatName} 변화:{" "}
-                {formatStatChange(lastEnhancementResult.statChange)}
-              </div>
+              {lastEnhancementResult.result !==
+                EnhancementResult.DESTRUCTION && (
+                <div>
+                  {primaryStatName} 변화:{" "}
+                  {formatStatChange(lastEnhancementResult.statChange)}
+                </div>
+              )}
+              {lastEnhancementResult.result ===
+                EnhancementResult.DESTRUCTION && (
+                <div className="hero-text-red font-medium">
+                  아이템이 완전히 파괴되었습니다.
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -156,6 +156,11 @@ export interface GameActions {
   inheritItem: (sourceItem: Item, targetItem: Item) => boolean;
   enhanceItem: (item: Item) => EnhancementAttempt;
   performGachaDraw: (category: GachaCategory) => GachaResult;
+  performSynthesis: (grade: ItemGrade) => {
+    success: boolean;
+    synthesizedItem?: Item;
+    error?: string;
+  };
   sellMultipleItems: (items: Item[]) => ItemSaleResult;
   startBattle: (boss: Boss) => void;
   updateBattleState: (battleState: BattleState) => void;

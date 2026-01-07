@@ -16,6 +16,7 @@ import {
   OfflineProgress,
   Item,
   ItemType,
+  ItemGrade,
   EquippedItems,
   BattleState,
   Boss,
@@ -56,6 +57,7 @@ import {
 } from "../utils/enhancementSystem";
 import { performGachaDraw } from "../utils/gachaSystem";
 import { processItemSale } from "../utils/itemSaleSystem";
+import { performSynthesis } from "../utils/synthesisSystem";
 
 // Game action types for reducer
 type GameActionType =
@@ -77,6 +79,10 @@ type GameActionType =
       payload: { sourceItem: Item; targetItem: Item; inheritedItem: Item };
     }
   | {
+      type: "INHERIT_ITEM_FAILED";
+      payload: { sourceItem: Item; targetItem: Item };
+    }
+  | {
       type: "ENHANCE_ITEM";
       payload: {
         originalItem: Item;
@@ -87,6 +93,10 @@ type GameActionType =
   | {
       type: "PERFORM_GACHA_DRAW";
       payload: { gachaResult: GachaResult };
+    }
+  | {
+      type: "PERFORM_SYNTHESIS";
+      payload: { synthesizedItem: Item; usedItems: Item[] };
     }
   | {
       type: "SELL_MULTIPLE_ITEMS";
@@ -262,6 +272,33 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
       };
     }
 
+    case "INHERIT_ITEM_FAILED": {
+      const { sourceItem, targetItem } = action.payload;
+
+      // 계승 실패 시 소스 아이템만 제거 (파괴)
+      let newEquippedItems = { ...state.equippedItems };
+      let newInventory = [...state.inventory];
+
+      // Check if source item is equipped
+      const sourceSlotKey = sourceItem.type as keyof EquippedItems;
+      if (newEquippedItems[sourceSlotKey]?.id === sourceItem.id) {
+        newEquippedItems[sourceSlotKey] = null;
+      } else {
+        newInventory = newInventory.filter((item) => item.id !== sourceItem.id);
+      }
+
+      const newPlayerStats =
+        calculatePlayerStatsFromEquipment(newEquippedItems);
+
+      return {
+        ...state,
+        equippedItems: newEquippedItems,
+        inventory: newInventory,
+        playerStats: newPlayerStats,
+        lastSaveTime: Date.now(),
+      };
+    }
+
     case "ENHANCE_ITEM": {
       const { originalItem, enhancedItem, enhancementAttempt } = action.payload;
 
@@ -271,7 +308,36 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
         state.credits - enhancementAttempt.costPaid
       );
 
-      // 아이템 업데이트 (장착된 아이템 또는 인벤토리)
+      // 아이템 파괴 시 완전히 제거
+      if (enhancementAttempt.result === "destruction") {
+        let newEquippedItems = { ...state.equippedItems };
+        let newInventory = [...state.inventory];
+
+        const itemSlotKey = originalItem.type as keyof EquippedItems;
+        if (newEquippedItems[itemSlotKey]?.id === originalItem.id) {
+          // 장착된 아이템 제거
+          newEquippedItems[itemSlotKey] = null;
+        } else {
+          // 인벤토리에서 아이템 제거
+          newInventory = newInventory.filter(
+            (item) => item.id !== originalItem.id
+          );
+        }
+
+        const newPlayerStats =
+          calculatePlayerStatsFromEquipment(newEquippedItems);
+
+        return {
+          ...state,
+          credits: newCredits,
+          equippedItems: newEquippedItems,
+          inventory: newInventory,
+          playerStats: newPlayerStats,
+          lastSaveTime: Date.now(),
+        };
+      }
+
+      // 파괴가 아닌 경우 기존 로직 유지
       let newEquippedItems = { ...state.equippedItems };
       let newInventory = [...state.inventory];
 
@@ -309,6 +375,23 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
       return {
         ...state,
         credits: newCredits,
+        inventory: newInventory,
+        lastSaveTime: Date.now(),
+      };
+    }
+
+    case "PERFORM_SYNTHESIS": {
+      const { synthesizedItem, usedItems } = action.payload;
+
+      // 사용된 아이템들을 인벤토리에서 제거
+      const usedItemIds = usedItems.map((item) => item.id);
+      const newInventory = [
+        ...state.inventory.filter((item) => !usedItemIds.includes(item.id)),
+        synthesizedItem,
+      ];
+
+      return {
+        ...state,
         inventory: newInventory,
         lastSaveTime: Date.now(),
       };
@@ -571,6 +654,16 @@ export function GameProvider({ children }: GameProviderProps) {
 
         if (!inheritanceResult.success) {
           console.warn("Failed to inherit item:", inheritanceResult.error);
+
+          // 계승 실패 시에도 소스 아이템 제거 (파괴)
+          dispatch({
+            type: "INHERIT_ITEM_FAILED",
+            payload: {
+              sourceItem,
+              targetItem,
+            },
+          });
+
           return false;
         }
 
@@ -658,6 +751,33 @@ export function GameProvider({ children }: GameProviderProps) {
         });
 
         return gachaResult.result!;
+      },
+
+      performSynthesis: (
+        grade: ItemGrade
+      ): { success: boolean; synthesizedItem?: Item; error?: string } => {
+        const allItems = [...gameState.inventory];
+        const synthesisResult = performSynthesis(allItems, grade);
+
+        if (!synthesisResult.success) {
+          return {
+            success: false,
+            error: synthesisResult.error,
+          };
+        }
+
+        dispatch({
+          type: "PERFORM_SYNTHESIS",
+          payload: {
+            synthesizedItem: synthesisResult.synthesizedItem!,
+            usedItems: synthesisResult.usedItems!,
+          },
+        });
+
+        return {
+          success: true,
+          synthesizedItem: synthesisResult.synthesizedItem!,
+        };
       },
 
       sellMultipleItems: (items: Item[]): ItemSaleResult => {

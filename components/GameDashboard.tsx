@@ -19,7 +19,13 @@ import InventoryModal from "./InventoryModal";
 import ItemSelectionModal from "./ItemSelectionModal";
 import ClientOnly from "./ClientOnly";
 import { useGame } from "../contexts/GameContext";
-import { Item, Boss, GachaResult, MultiGachaResult } from "../types/game";
+import {
+  Item,
+  Boss,
+  GachaResult,
+  MultiGachaResult,
+  ItemGrade,
+} from "../types/game";
 import { ItemDropResult } from "../utils/itemDropSystem";
 
 /**
@@ -238,18 +244,71 @@ export function GameDashboard() {
                 <h3 className="text-xl font-bold hero-text-primary mb-4">
                   📦 인벤토리
                 </h3>
-                <p className="hero-text-secondary mb-4 text-sm">
+                <p className="hero-text-secondary mb-3 text-sm">
                   보유한 아이템을 관리하세요
                 </p>
-                <div className="flex items-center justify-center mb-2">
-                  <span className="hero-text-accent font-bold text-lg">
-                    {gameState.inventory.length}
-                  </span>
-                  <span className="hero-text-secondary ml-1">/ 100 아이템</span>
+
+                {/* 등급별 아이템 개수 표시 - 컴팩트 버전 */}
+                <div className="flex flex-wrap justify-center gap-2 mb-3 text-xs">
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-red-500 rounded"></span>
+                    <span className="text-red-400">
+                      {
+                        gameState.inventory.filter(
+                          (item) => item.grade === ItemGrade.MYTHIC
+                        ).length
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-yellow-500 rounded"></span>
+                    <span className="text-yellow-400">
+                      {
+                        gameState.inventory.filter(
+                          (item) => item.grade === ItemGrade.LEGENDARY
+                        ).length
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-purple-500 rounded"></span>
+                    <span className="text-purple-400">
+                      {
+                        gameState.inventory.filter(
+                          (item) => item.grade === ItemGrade.EPIC
+                        ).length
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-blue-500 rounded"></span>
+                    <span className="text-blue-400">
+                      {
+                        gameState.inventory.filter(
+                          (item) => item.grade === ItemGrade.RARE
+                        ).length
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-gray-500 rounded"></span>
+                    <span className="text-gray-400">
+                      {
+                        gameState.inventory.filter(
+                          (item) => item.grade === ItemGrade.COMMON
+                        ).length
+                      }
+                    </span>
+                  </div>
                 </div>
+
+                <div className="text-sm hero-text-muted mb-3">
+                  총 {gameState.inventory.length}개 아이템
+                </div>
+
                 {gameState.inventory.length >= 90 && (
                   <div className="text-xs hero-text-red mb-2">
-                    ⚠️ 인벤토리가 거의 가득참
+                    ⚠️ 인벤토리가 거의 가득함
                   </div>
                 )}
                 <button
