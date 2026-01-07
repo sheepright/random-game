@@ -18,7 +18,23 @@ console.log("--------|-------------|-----------|----------------");
 let oldCumulativeRate = BASE_CREDIT_PER_SECOND; // 기존 누적 방식
 let totalRewards = 0;
 
-for (let stage = 1; stage <= 20; stage++) {
+// 전체 스테이지 테스트 (100스테이지까지)
+const testStages = [
+  ...Array.from({ length: 20 }, (_, i) => i + 1), // 1-20
+  25,
+  30,
+  35,
+  40,
+  45,
+  50, // 중간 스테이지들
+  60,
+  70,
+  80,
+  90,
+  100, // 후반 스테이지들
+];
+
+for (const stage of testStages) {
   // 새로운 방식: 기본값 기준 계산
   const newRate = calculateNewCreditRate(BASE_CREDIT_PER_SECOND, stage);
 
@@ -40,7 +56,37 @@ for (let stage = 1; stage <= 20; stage++) {
   );
 }
 
-console.log("\n=== 밸런스 분석 ===");
+console.log("\n=== 전체 스테이지 밸런스 분석 ===");
+
+// 전체 스테이지 총 보상 계산
+let totalAllRewards = 0;
+for (let i = 1; i <= 100; i++) {
+  totalAllRewards += calculateStageClearReward(i);
+}
+
+console.log(
+  `100스테이지까지 총 클리어 보상: ${totalAllRewards.toLocaleString()} 크레딧`
+);
+
+// 주요 구간별 분석
+const keyStages = [1, 10, 20, 30, 50, 100];
+console.log("\n=== 주요 스테이지별 상세 정보 ===");
+console.log("스테이지 | 생성률 | 클리어보상 | 시간당크레딧");
+console.log("--------|--------|-----------|------------");
+
+for (const stage of keyStages) {
+  const rate = calculateNewCreditRate(BASE_CREDIT_PER_SECOND, stage);
+  const reward = calculateStageClearReward(stage);
+  const hourlyRate = rate * 3600;
+
+  console.log(
+    `${stage.toString().padStart(7)} | ` +
+      `${rate.toFixed(2).padStart(6)} | ` +
+      `${reward.toLocaleString().padStart(9)} | ` +
+      `${hourlyRate.toLocaleString().padStart(10)}`
+  );
+}
+
 console.log(
   `20스테이지까지 총 클리어 보상: ${totalRewards.toLocaleString()} 크레딧`
 );

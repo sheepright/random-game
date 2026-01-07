@@ -157,21 +157,21 @@ export function loadBossForStage(stage: number): Boss | null {
 }
 
 /**
- * 스테이지 클리어 시 즉시 크레딧 보상 계산 (대폭 너프됨)
+ * 스테이지 클리어 시 즉시 크레딧 보상 계산 (밸런스 조정)
  * Requirements: 13.2 - 스테이지 클리어 보상 추가
  */
 export function calculateStageClearReward(stage: number): number {
-  const baseReward = 10; // 기본 보상 크레딧 (100 -> 10으로 대폭 감소)
+  const baseReward = 50; // 기본 보상 크레딧 (10 -> 50으로 증가)
 
-  // 스테이지별 보상 (선형 증가로 변경하여 너프)
+  // 스테이지별 보상 (적당한 지수 증가로 조정)
   if (stage <= 10) {
-    return baseReward + (stage - 1) * 2; // 10~28 크레딧
+    return Math.floor(baseReward * Math.pow(1.15, stage - 1)); // 50~202 크레딧
   } else if (stage <= 30) {
-    return 28 + (stage - 10) * 3; // 31~88 크레딧
+    return Math.floor(202 * Math.pow(1.12, stage - 10)); // 202~620 크레딧
   } else if (stage <= 50) {
-    return 88 + (stage - 30) * 4; // 92~168 크레딧
+    return Math.floor(620 * Math.pow(1.1, stage - 30)); // 620~1,670 크레딧
   } else {
-    return 168 + (stage - 50) * 5; // 173~418 크레딧 (100스테이지)
+    return Math.floor(1670 * Math.pow(1.08, stage - 50)); // 1,670~7,800 크레딧 (100스테이지)
   }
 }
 
