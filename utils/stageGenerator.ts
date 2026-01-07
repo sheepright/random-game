@@ -6,114 +6,44 @@
 import { StageInfo, BossInfo, DropRateTable, ItemGrade } from "../types/game";
 
 /**
- * 스테이지별 요구 스탯 계산 (밸런스 조정됨)
+ * 스테이지별 요구 스탯 계산 (이전 설정으로 복원)
  */
 export function calculateStageRequirements(stage: number): {
   requiredAttack: number;
   requiredDefense: number;
 } {
-  // 플레이어 파워 진행도에 맞춘 새로운 성장률
-  let requiredAttack: number;
-  let requiredDefense: number;
-
-  if (stage <= 10) {
-    // 1-10: 초반 난이도 상향 (너무 쉬웠음)
-    const baseAttack = 25;
-    const baseDefense = 20;
-    const attackGrowth = 1.08; // 8% 증가
-    const defenseGrowth = 1.07; // 7% 증가
-
-    requiredAttack = Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1));
-    requiredDefense = Math.floor(
-      baseDefense * Math.pow(defenseGrowth, stage - 1)
-    );
-  } else if (stage <= 20) {
-    // 11-20: 레어 장비 구간
-    const stage10Attack = 54;
-    const stage10Defense = 40;
-    const attackGrowth = 1.08; // 8% 증가
-    const defenseGrowth = 1.07; // 7% 증가
-
-    requiredAttack = Math.floor(
-      stage10Attack * Math.pow(attackGrowth, stage - 10)
-    );
-    requiredDefense = Math.floor(
-      stage10Defense * Math.pow(defenseGrowth, stage - 10)
-    );
-  } else if (stage <= 35) {
-    // 21-35: 에픽 장비 구간, 더 가파른 증가
-    const stage20Attack = 117;
-    const stage20Defense = 80;
-    const attackGrowth = 1.09; // 9% 증가
-    const defenseGrowth = 1.08; // 8% 증가
-
-    requiredAttack = Math.floor(
-      stage20Attack * Math.pow(attackGrowth, stage - 20)
-    );
-    requiredDefense = Math.floor(
-      stage20Defense * Math.pow(defenseGrowth, stage - 20)
-    );
-  } else if (stage <= 60) {
-    // 36-60: 레전드리 장비 구간, 강화 시스템 고려
-    const stage35Attack = 320; // 370 → 320으로 감소
-    const stage35Defense = 210; // 240 → 210으로 감소
-    const attackGrowth = 1.065; // 7% → 6.5%로 감소
-    const defenseGrowth = 1.055; // 6% → 5.5%로 감소
-
-    requiredAttack = Math.floor(
-      stage35Attack * Math.pow(attackGrowth, stage - 35)
-    );
-    requiredDefense = Math.floor(
-      stage35Defense * Math.pow(defenseGrowth, stage - 35)
-    );
-  } else {
-    // 61-100: 미식 장비 구간, 고강화 고려
-    const stage60Attack = 900; // 1100 → 900으로 감소
-    const stage60Defense = 600; // 700 → 600으로 감소
-    const attackGrowth = 1.035; // 4% → 3.5%로 감소
-    const defenseGrowth = 1.03; // 3.5% → 3%로 감소
-
-    requiredAttack = Math.floor(
-      stage60Attack * Math.pow(attackGrowth, stage - 60)
-    );
-    requiredDefense = Math.floor(
-      stage60Defense * Math.pow(defenseGrowth, stage - 60)
-    );
-  }
+  const baseAttack = 10;
+  const baseDefense = 10;
+  const attackGrowth = 1.15; // 15% 증가
+  const defenseGrowth = 1.12; // 12% 증가
 
   return {
-    requiredAttack,
-    requiredDefense,
+    requiredAttack: Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1)),
+    requiredDefense: Math.floor(
+      baseDefense * Math.pow(defenseGrowth, stage - 1)
+    ),
   };
 }
 
 /**
- * 보스 스탯 계산 (밸런스 조정됨)
+ * 보스 스탯 계산 (이전 설정으로 복원)
  */
 export function calculateBossStats(stage: number): {
   maxHP: number;
   attack: number;
   defense: number;
 } {
-  // 스테이지 요구사항에 비례한 보스 스탯 계산
-  const stageReq = calculateStageRequirements(stage);
-
-  // 보스 HP는 플레이어 공격력의 8-12배 정도로 설정 (전투 시간 고려)
-  const hpMultiplier = 8 + (stage % 10) * 0.4; // 8.0 ~ 11.6배
-  const maxHP = Math.floor(stageReq.requiredAttack * hpMultiplier);
-
-  // 보스 공격력은 플레이어 방어력의 70-90% 정도 (너무 강하지 않게)
-  const attackMultiplier = 0.7 + (stage % 20) * 0.01; // 0.7 ~ 0.89배
-  const attack = Math.floor(stageReq.requiredDefense * attackMultiplier);
-
-  // 보스 방어력은 플레이어 공격력의 15-25% 정도 (방어 무시 고려)
-  const defenseMultiplier = 0.15 + (stage % 30) * 0.003; // 0.15 ~ 0.237배
-  const defense = Math.floor(stageReq.requiredAttack * defenseMultiplier);
+  const baseHP = 50;
+  const baseAttack = 8;
+  const baseDefense = 3;
+  const hpGrowth = 1.18; // 18% 증가
+  const attackGrowth = 1.14; // 14% 증가
+  const defenseGrowth = 1.13; // 13% 증가
 
   return {
-    maxHP: Math.max(50, maxHP), // 최소 HP 보장
-    attack: Math.max(5, attack), // 최소 공격력 보장
-    defense: Math.max(1, defense), // 최소 방어력 보장
+    maxHP: Math.floor(baseHP * Math.pow(hpGrowth, stage - 1)),
+    attack: Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1)),
+    defense: Math.floor(baseDefense * Math.pow(defenseGrowth, stage - 1)),
   };
 }
 
