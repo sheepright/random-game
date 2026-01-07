@@ -137,7 +137,7 @@ export function GameDashboard() {
 
   return (
     <div
-      className="min-h-screen overflow-y-auto flex items-start justify-center"
+      className="min-h-screen overflow-y-auto flex items-center justify-center"
       style={{
         background:
           "linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%)",
@@ -149,7 +149,7 @@ export function GameDashboard() {
       <OfflineProgressModalManager />
       <SaveStatusIndicator />
 
-      <div className="flex flex-col justify-start items-center p-4 max-w-7xl w-full min-h-screen py-8">
+      <div className="flex flex-col justify-center items-center p-4 max-w-7xl w-full py-8">
         {/* 메인 게임 영역 */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
           {/* 좌측: 크레딧 & 장비 */}
