@@ -157,20 +157,20 @@ export function loadBossForStage(stage: number): Boss | null {
 }
 
 /**
- * 스테이지 클리어 시 즉시 크레딧 보상 계산 (초반 구간 보상 상향)
+ * 스테이지 클리어 시 즉시 크레딧 보상 계산 (초반 구간 보상 대폭 상향)
  * Requirements: 13.2 - 스테이지 클리어 보상 추가
  */
 export function calculateStageClearReward(stage: number): number {
-  // 스테이지별 보상 (초반 구간 보상 상향 조정)
+  // 스테이지별 보상 (초반 구간 보상 대폭 상향 조정)
   if (stage <= 10) {
-    const baseReward = 100; // 초반 구간 기본 보상 크레딧 (50 -> 100으로 증가)
-    return Math.floor(baseReward * Math.pow(1.2, stage - 1)); // 100~516 크레딧 (기존 50~202에서 대폭 상향)
+    const baseReward = 200; // 초반 구간 기본 보상 크레딧 (100 -> 200으로 대폭 증가)
+    return Math.floor(baseReward * Math.pow(1.25, stage - 1)); // 200~1,863 크레딧 (기존 100~516에서 대폭 상향)
   } else if (stage <= 30) {
-    return Math.floor(516 * Math.pow(1.12, stage - 10)); // 516~1,587 크레딧
+    return Math.floor(1863 * Math.pow(1.12, stage - 10)); // 1,863~5,730 크레딧
   } else if (stage <= 50) {
-    return Math.floor(1587 * Math.pow(1.1, stage - 30)); // 1,587~4,275 크레딧
+    return Math.floor(5730 * Math.pow(1.1, stage - 30)); // 5,730~15,434 크레딧
   } else {
-    return Math.floor(4275 * Math.pow(1.08, stage - 50)); // 4,275~19,980 크레딧 (100스테이지)
+    return Math.floor(15434 * Math.pow(1.08, stage - 50)); // 15,434~72,200 크레딧 (100스테이지)
   }
 }
 

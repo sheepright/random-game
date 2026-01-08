@@ -138,7 +138,7 @@ export function getEnhancementDestructionRate(
   return destructionRates[enhancementLevel] || 0.8;
 }
 
-// Enhancement stat increase calculation (높은 스탯 증가량으로 보상)
+// Enhancement stat increase calculation (매우 높은 스탯 증가량으로 보상 대폭 상향)
 export function getEnhancementStatIncrease(
   enhancementLevel: number,
   grade: ItemGrade,
@@ -146,27 +146,27 @@ export function getEnhancementStatIncrease(
 ): ItemStats {
   // 등급별 기본 증가량 (대폭 증가)
   const baseIncrease = {
-    [ItemGrade.COMMON]: 2.0, // 1.0 → 2.0
-    [ItemGrade.RARE]: 3.5, // 1.5 → 3.5
-    [ItemGrade.EPIC]: 5.5, // 2.2 → 5.5
-    [ItemGrade.LEGENDARY]: 8.0, // 3.0 → 8.0
-    [ItemGrade.MYTHIC]: 12.0, // 새로 추가
+    [ItemGrade.COMMON]: 3.0, // 2.0 → 3.0
+    [ItemGrade.RARE]: 5.0, // 3.5 → 5.0
+    [ItemGrade.EPIC]: 8.0, // 5.5 → 8.0
+    [ItemGrade.LEGENDARY]: 12.0, // 8.0 → 12.0
+    [ItemGrade.MYTHIC]: 18.0, // 12.0 → 18.0
   };
 
-  // 레벨별 효율 증가 (더 높은 보상)
+  // 레벨별 효율 증가 (훨씬 더 높은 보상)
   let levelMultiplier: number;
   if (enhancementLevel <= 5) {
-    levelMultiplier = 1.0; // 1~5강: 기본 효율
+    levelMultiplier = 1.2; // 1.0 → 1.2 (초반부터 더 높은 효율)
   } else if (enhancementLevel <= 10) {
-    levelMultiplier = 1.2 + (enhancementLevel - 5) * 0.1; // 6~10강: 1.2 ~ 1.7
+    levelMultiplier = 1.5 + (enhancementLevel - 5) * 0.15; // 6~10강: 1.5 ~ 2.25
   } else if (enhancementLevel <= 15) {
-    levelMultiplier = 1.8 + (enhancementLevel - 10) * 0.2; // 11~15강: 1.8 ~ 2.8
+    levelMultiplier = 2.5 + (enhancementLevel - 10) * 0.25; // 11~15강: 2.5 ~ 3.75
   } else if (enhancementLevel <= 19) {
-    levelMultiplier = 3.0 + (enhancementLevel - 15) * 0.3; // 16~19강: 3.0 ~ 4.2
+    levelMultiplier = 4.0 + (enhancementLevel - 15) * 0.4; // 16~19강: 4.0 ~ 5.6
   } else {
-    // 20~25강: 매우 높은 효율 (위험 대비 높은 보상)
+    // 20~25강: 극도로 높은 효율 (위험 대비 매우 높은 보상)
     const levelAbove20 = enhancementLevel - 19;
-    levelMultiplier = 5.0 + levelAbove20 * 1.0; // 5.0 ~ 11.0
+    levelMultiplier = 6.5 + levelAbove20 * 1.5; // 6.5 ~ 15.5
   }
 
   const primaryStat = ITEM_PRIMARY_STATS[itemType];
@@ -183,16 +183,16 @@ export function getEnhancementStatIncrease(
   // 해당 아이템의 주요 스탯만 증가 (Requirements 10.2)
   switch (primaryStat) {
     case "attack":
-      statIncrease.attack = Math.max(2, Math.floor(baseValue)); // 최소 2 보장
+      statIncrease.attack = Math.max(3, Math.floor(baseValue)); // 최소 3 보장 (2 → 3)
       break;
     case "defense":
-      statIncrease.defense = Math.max(2, Math.floor(baseValue)); // 최소 2 보장
+      statIncrease.defense = Math.max(3, Math.floor(baseValue)); // 최소 3 보장 (2 → 3)
       break;
     case "defensePenetration":
-      statIncrease.defensePenetration = Math.max(2, Math.floor(baseValue)); // 최소 2 보장
+      statIncrease.defensePenetration = Math.max(3, Math.floor(baseValue)); // 최소 3 보장 (2 → 3)
       break;
     case "additionalAttackChance":
-      statIncrease.additionalAttackChance = Math.max(0.002, baseValue * 0.001); // 최소 0.2% 보장
+      statIncrease.additionalAttackChance = Math.max(0.003, baseValue * 0.0015); // 최소 0.3% 보장 (0.002 → 0.003, 배율 증가)
       break;
   }
 
