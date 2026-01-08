@@ -50,6 +50,11 @@ interface ItemSelectorProps {
   disabled?: boolean;
 }
 
+// 필터 타입 정의
+type FilterType = "all" | "grade" | "type";
+type GradeFilter = ItemGrade | "all";
+type TypeFilter = ItemType | "all";
+
 function ItemSelector({
   title,
   selectedItem,
@@ -58,6 +63,43 @@ function ItemSelector({
   disabled,
 }: ItemSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [filterType, setFilterType] = useState<FilterType>("all");
+  const [gradeFilter, setGradeFilter] = useState<GradeFilter>("all");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+
+  // 필터링된 아이템 목록
+  const filteredItems = useMemo(() => {
+    let filtered = [...availableItems];
+
+    if (filterType === "grade" && gradeFilter !== "all") {
+      filtered = filtered.filter((item) => item.grade === gradeFilter);
+    } else if (filterType === "type" && typeFilter !== "all") {
+      filtered = filtered.filter((item) => item.type === typeFilter);
+    }
+
+    // 등급순으로 정렬 (높은 등급부터)
+    filtered.sort((a, b) => {
+      const gradeOrder = GRADE_ORDER[b.grade] - GRADE_ORDER[a.grade];
+      if (gradeOrder !== 0) return gradeOrder;
+
+      // 같은 등급이면 강화 레벨순으로 정렬 (높은 강화부터)
+      return b.enhancementLevel - a.enhancementLevel;
+    });
+
+    return filtered;
+  }, [availableItems, filterType, gradeFilter, typeFilter]);
+
+  // 사용 가능한 등급 목록
+  const availableGrades = useMemo(() => {
+    const grades = new Set(availableItems.map((item) => item.grade));
+    return Array.from(grades).sort((a, b) => GRADE_ORDER[b] - GRADE_ORDER[a]);
+  }, [availableItems]);
+
+  // 사용 가능한 부위 목록
+  const availableTypes = useMemo(() => {
+    const types = new Set(availableItems.map((item) => item.type));
+    return Array.from(types);
+  }, [availableItems]);
 
   return (
     <div className="space-y-3">
@@ -128,52 +170,158 @@ function ItemSelector({
 
       {/* 아이템 목록 */}
       {isOpen && !disabled && (
-        <div className="hero-card border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-          {availableItems.length === 0 ? (
-            <div className="p-4 text-center hero-text-muted">
-              선택 가능한 아이템이 없습니다
+        <div className="hero-card border border-gray-300 rounded-lg shadow-lg">
+          {/* 필터 컨트롤 */}
+          <div className="p-4 border-b border-gray-200 space-y-3">
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setFilterType("all")}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  filterType === "all"
+                    ? "hero-btn-accent text-white"
+                    : "hero-btn-secondary"
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => setFilterType("grade")}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  filterType === "grade"
+                    ? "hero-btn-accent text-white"
+                    : "hero-btn-secondary"
+                }`}
+              >
+                등급별
+              </button>
+              <button
+                onClick={() => setFilterType("type")}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  filterType === "type"
+                    ? "hero-btn-accent text-white"
+                    : "hero-btn-secondary"
+                }`}
+              >
+                부위별
+              </button>
             </div>
-          ) : (
-            <div className="p-2 space-y-1">
-              {availableItems.map((item) => (
-                <div
-                  key={item.id}
-                  className={`
-                    p-3 rounded cursor-pointer transition-all hover:shadow-sm flex items-center gap-3
-                    ${GRADE_COLORS[item.grade]}
-                  `}
-                  onClick={() => {
-                    onSelectItem(item);
-                    setIsOpen(false);
-                  }}
-                >
-                  {/* 아이템 이미지 */}
-                  <div className="shrink-0">
-                    <ResponsiveItemImage item={item} size="small" />
-                  </div>
 
-                  {/* 아이템 정보 */}
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-medium hero-text-primary">
-                          {ITEM_TYPE_NAMES[item.type]}
+            {/* 등급 필터 */}
+            {filterType === "grade" && (
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => setGradeFilter("all")}
+                  className={`px-2 py-1 rounded text-xs transition-colors ${
+                    gradeFilter === "all"
+                      ? "hero-btn-primary text-white"
+                      : "hero-btn-secondary"
+                  }`}
+                >
+                  전체
+                </button>
+                {availableGrades.map((grade) => (
+                  <button
+                    key={grade}
+                    onClick={() => setGradeFilter(grade)}
+                    className={`px-2 py-1 rounded text-xs transition-colors ${
+                      gradeFilter === grade
+                        ? "hero-btn-primary text-white"
+                        : "hero-btn-secondary"
+                    }`}
+                  >
+                    {GRADE_NAMES[grade]}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* 부위 필터 */}
+            {filterType === "type" && (
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => setTypeFilter("all")}
+                  className={`px-2 py-1 rounded text-xs transition-colors ${
+                    typeFilter === "all"
+                      ? "hero-btn-primary text-white"
+                      : "hero-btn-secondary"
+                  }`}
+                >
+                  전체
+                </button>
+                {availableTypes.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setTypeFilter(type)}
+                    className={`px-2 py-1 rounded text-xs transition-colors ${
+                      typeFilter === type
+                        ? "hero-btn-primary text-white"
+                        : "hero-btn-secondary"
+                    }`}
+                  >
+                    {ITEM_TYPE_NAMES[type]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 아이템 목록 */}
+          <div className="max-h-64 overflow-y-auto">
+            {filteredItems.length === 0 ? (
+              <div className="p-4 text-center hero-text-muted">
+                {filterType === "all"
+                  ? "선택 가능한 아이템이 없습니다"
+                  : "필터 조건에 맞는 아이템이 없습니다"}
+              </div>
+            ) : (
+              <div className="p-2 space-y-1">
+                {filteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`
+                      p-3 rounded cursor-pointer transition-all hover:shadow-sm flex items-center gap-3
+                      ${GRADE_COLORS[item.grade]}
+                    `}
+                    onClick={() => {
+                      onSelectItem(item);
+                      setIsOpen(false);
+                    }}
+                  >
+                    {/* 아이템 이미지 */}
+                    <div className="shrink-0">
+                      <ResponsiveItemImage item={item} size="small" />
+                    </div>
+
+                    {/* 아이템 정보 */}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium hero-text-primary">
+                            {ITEM_TYPE_NAMES[item.type]}
+                          </div>
+                          <div className="text-sm hero-text-secondary">
+                            {GRADE_NAMES[item.grade]} • 레벨 {item.level}
+                            {item.enhancementLevel > 0 && (
+                              <span className="hero-text-blue font-semibold ml-1">
+                                +{item.enhancementLevel}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-sm hero-text-secondary">
-                          {GRADE_NAMES[item.grade]} • 레벨 {item.level}
+                        <div className="text-right text-sm hero-text-secondary">
+                          <div>공격: {item.enhancedStats.attack}</div>
+                          <div>방어: {item.enhancedStats.defense}</div>
+                          <div>
+                            방무: {item.enhancedStats.defensePenetration}
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right text-sm hero-text-secondary">
-                        <div>공격: {item.enhancedStats.attack}</div>
-                        <div>방어: {item.enhancedStats.defense}</div>
-                        <div>방무: {item.enhancedStats.defensePenetration}</div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
