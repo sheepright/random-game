@@ -73,9 +73,9 @@ export function calculateEnhancementCost(
   return Math.floor(baseCost * gradeMultiplier[grade]);
 }
 
-// Enhancement success rate (대폭 너프된 성공률)
+// Enhancement success rate (10-20강 구간 밸런스 조정)
 export function getEnhancementSuccessRate(enhancementLevel: number): number {
-  // 단계별 차등 확률로 대폭 너프
+  // 단계별 차등 확률 (10-20강 구간 상향 조정)
   const successRates: Record<number, number> = {
     1: 0.95, // 95%
     2: 0.9, // 90%
@@ -86,17 +86,17 @@ export function getEnhancementSuccessRate(enhancementLevel: number): number {
     7: 0.65, // 65%
     8: 0.6, // 60%
     9: 0.55, // 55%
-    10: 0.5, // 50%
-    11: 0.45, // 45%
-    12: 0.4, // 40%
-    13: 0.35, // 35%
-    14: 0.3, // 30%
-    15: 0.25, // 25%
-    16: 0.2, // 20%
-    17: 0.18, // 18%
-    18: 0.16, // 16%
-    19: 0.14, // 14%
-    20: 0.12, // 12%
+    10: 0.55, // 55% (50% → 55%)
+    11: 0.5, // 50% (45% → 50%)
+    12: 0.45, // 45% (40% → 45%)
+    13: 0.42, // 42% (35% → 42%)
+    14: 0.38, // 38% (30% → 38%)
+    15: 0.35, // 35% (25% → 35%)
+    16: 0.32, // 32% (20% → 32%)
+    17: 0.28, // 28% (18% → 28%)
+    18: 0.25, // 25% (16% → 25%)
+    19: 0.22, // 22% (14% → 22%)
+    20: 0.18, // 18% (12% → 18%)
     21: 0.1, // 10%
     22: 0.08, // 8%
     23: 0.06, // 6%
@@ -107,7 +107,7 @@ export function getEnhancementSuccessRate(enhancementLevel: number): number {
   return successRates[enhancementLevel] || 0.01; // 기본 1%
 }
 
-// Enhancement destruction rate (10강 이상에서 파괴 확률)
+// Enhancement destruction rate (파괴 확률 대폭 완화)
 export function getEnhancementDestructionRate(
   enhancementLevel: number
 ): number {
@@ -115,27 +115,27 @@ export function getEnhancementDestructionRate(
     return 0; // 9강 이하는 파괴되지 않음
   }
 
-  // 10강 이상에서 파괴 확률 (단계별 차등)
+  // 10강 이상에서 파괴 확률 (전체적으로 대폭 완화)
   const destructionRates: Record<number, number> = {
-    10: 0.05, // 5%
-    11: 0.08, // 8%
-    12: 0.12, // 12%
-    13: 0.16, // 16%
-    14: 0.2, // 20%
-    15: 0.25, // 25%
-    16: 0.3, // 30%
-    17: 0.35, // 35%
-    18: 0.4, // 40%
-    19: 0.45, // 45%
-    20: 0.5, // 50%
-    21: 0.55, // 55%
-    22: 0.6, // 60%
-    23: 0.65, // 65%
-    24: 0.7, // 70%
-    25: 0.75, // 75%
+    10: 0.01, // 1% (3% → 1%)
+    11: 0.02, // 2% (5% → 2%)
+    12: 0.03, // 3% (7% → 3%)
+    13: 0.04, // 4% (9% → 4%)
+    14: 0.05, // 5% (12% → 5%)
+    15: 0.07, // 7% (15% → 7%)
+    16: 0.09, // 9% (18% → 9%)
+    17: 0.12, // 12% (22% → 12%)
+    18: 0.15, // 15% (25% → 15%)
+    19: 0.18, // 18% (28% → 18%)
+    20: 0.22, // 22% (32% → 22%)
+    21: 0.35, // 35% (55% → 35%)
+    22: 0.4, // 40% (60% → 40%)
+    23: 0.45, // 45% (65% → 45%)
+    24: 0.5, // 50% (70% → 50%)
+    25: 0.55, // 55% (75% → 55%)
   };
 
-  return destructionRates[enhancementLevel] || 0.8;
+  return destructionRates[enhancementLevel] || 0.6;
 }
 
 // Enhancement stat increase calculation (매우 높은 스탯 증가량으로 보상 대폭 상향)
