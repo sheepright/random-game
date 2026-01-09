@@ -163,6 +163,8 @@ export interface OfflineProgress {
 
 export interface GameActions {
   addCredits: (amount: number) => void;
+  enableCrackMode: () => void;
+  addTestCredits: (amount: number) => void;
   saveGame: () => void;
   loadGame: () => GameState | null;
   calculateOfflineProgress: () => OfflineProgress;
@@ -173,7 +175,10 @@ export interface GameActions {
   unequipItem: (itemType: ItemType) => Item | null;
   updatePlayerStats: () => void;
   inheritItem: (sourceItem: Item, targetItem: Item) => boolean;
-  enhanceItem: (item: Item) => EnhancementAttempt;
+  enhanceItem: (
+    item: Item,
+    useDestructionPrevention?: boolean
+  ) => EnhancementAttempt;
   performGachaDraw: (category: GachaCategory) => GachaResult;
   performSynthesis: (grade: ItemGrade) => {
     success: boolean;

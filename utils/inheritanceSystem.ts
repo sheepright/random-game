@@ -18,20 +18,14 @@ const GRADE_HIERARCHY = {
   [ItemGrade.MYTHIC]: 4,
 } as const;
 
-// 등급 차이별 강화 등급 감소량
+// 등급 차이별 강화 등급 감소량 (바로 윗등급만 가능, -3레벨 고정)
 const ENHANCEMENT_LEVEL_REDUCTION = {
-  1: 1, // 1등급 차이: -1 레벨
-  2: 2, // 2등급 차이: -2 레벨
-  3: 3, // 3등급 차이: -3 레벨
-  4: 4, // 4등급 차이: -4 레벨
+  1: 3, // 1등급 차이: -3 레벨 (고정)
 } as const;
 
-// 등급 차이별 계승 성공률 (대폭 너프)
+// 등급 차이별 계승 성공률 (바로 윗등급만 가능, 100% 성공률)
 const INHERITANCE_SUCCESS_RATES = {
-  1: 0.7, // 1등급 차이: 70% 성공률 (90% → 70%)
-  2: 0.5, // 2등급 차이: 50% 성공률 (70% → 50%)
-  3: 0.3, // 3등급 차이: 30% 성공률 (50% → 30%)
-  4: 0.15, // 4등급 차이: 15% 성공률 (30% → 15%)
+  1: 1.0, // 1등급 차이: 100% 성공률
 } as const;
 
 export interface InheritancePreview {
@@ -71,15 +65,11 @@ export function getInheritanceSuccessRate(gradeDifference: number): number {
     return 0; // Cannot inherit to same or lower grade
   }
 
-  if (gradeDifference > 4) {
-    return 0; // Maximum 4 grade difference
+  if (gradeDifference !== 1) {
+    return 0; // Only 1 grade difference allowed
   }
 
-  return (
-    INHERITANCE_SUCCESS_RATES[
-      gradeDifference as keyof typeof INHERITANCE_SUCCESS_RATES
-    ] || 0
-  );
+  return INHERITANCE_SUCCESS_RATES[1]; // 100% success rate
 }
 
 /**
@@ -88,15 +78,11 @@ export function getInheritanceSuccessRate(gradeDifference: number): number {
 export function calculateEnhancementLevelReduction(
   gradeDifference: number
 ): number {
-  if (gradeDifference <= 0 || gradeDifference > 4) {
-    return 0;
+  if (gradeDifference !== 1) {
+    return 0; // Only 1 grade difference allowed
   }
 
-  return (
-    ENHANCEMENT_LEVEL_REDUCTION[
-      gradeDifference as keyof typeof ENHANCEMENT_LEVEL_REDUCTION
-    ] || 0
-  );
+  return ENHANCEMENT_LEVEL_REDUCTION[1]; // -3 levels
 }
 
 /**
@@ -137,11 +123,11 @@ export function validateInheritance(
     };
   }
 
-  // Check if grade difference is within allowed range
-  if (gradeDifference > 4) {
+  // Check if grade difference is exactly 1 (바로 윗등급만 가능)
+  if (gradeDifference !== 1) {
     return {
       valid: false,
-      error: "등급 차이가 너무 큽니다. (최대 4등급 차이)",
+      error: "바로 윗등급으로만 계승할 수 있습니다.",
     };
   }
 

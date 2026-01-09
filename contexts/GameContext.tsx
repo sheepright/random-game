@@ -522,6 +522,16 @@ export function GameProvider({ children }: GameProviderProps) {
         dispatch({ type: "ADD_CREDITS", payload: amount });
       },
 
+      enableCrackMode: (): void => {
+        console.log("🚀 크랙모드 활성화! 테스트용 크레딧 999,999,999 지급!");
+        dispatch({ type: "ADD_CREDITS", payload: 999999999 });
+      },
+
+      addTestCredits: (amount: number): void => {
+        console.log(`💰 테스트 크레딧 ${amount.toLocaleString()} 지급!`);
+        dispatch({ type: "ADD_CREDITS", payload: amount });
+      },
+
       saveGame: (): void => {
         const result = forceSaveWithRetry(gameState, 3);
         if (!result.success) {
@@ -669,7 +679,10 @@ export function GameProvider({ children }: GameProviderProps) {
         return true;
       },
 
-      enhanceItem: (item: Item): EnhancementAttempt => {
+      enhanceItem: (
+        item: Item,
+        useDestructionPrevention: boolean = false
+      ): EnhancementAttempt => {
         console.log("enhanceItem 호출됨:", item);
         console.log("현재 크레딧:", gameState.credits);
 
@@ -700,7 +713,8 @@ export function GameProvider({ children }: GameProviderProps) {
         try {
           const enhancementAttempt = performEnhancement(
             item,
-            gameState.credits
+            gameState.credits,
+            useDestructionPrevention
           );
           console.log("강화 시도 결과:", enhancementAttempt);
 

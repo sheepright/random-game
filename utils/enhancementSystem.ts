@@ -17,6 +17,64 @@ import {
 // Maximum enhancement level
 export const MAX_ENHANCEMENT_LEVEL = 25;
 
+// Safe enhancement levels (안전 등급 - 이 레벨 아래로는 하락하지 않음)
+export const SAFE_ENHANCEMENT_LEVELS = [15, 20];
+
+// Destruction prevention enhancement (파괴방지 강화 - 20강부터 사용 가능)
+export const DESTRUCTION_PREVENTION_MIN_LEVEL = 20;
+
+// Calculate destruction prevention cost (파괴방지 강화 비용 계산)
+export function calculateDestructionPreventionCost(
+  enhancementLevel: number,
+  grade: ItemGrade
+): number {
+  if (enhancementLevel < DESTRUCTION_PREVENTION_MIN_LEVEL) {
+    return 0; // 20강 미만에서는 사용 불가
+  }
+
+  // 적정 수준의 파괴방지 비용 (50만 ~ 150만)
+  let baseCost: number;
+
+  switch (enhancementLevel) {
+    case 20:
+      baseCost = 500000; // 50만
+      break;
+    case 21:
+      baseCost = 650000; // 65만
+      break;
+    case 22:
+      baseCost = 800000; // 80만
+      break;
+    case 23:
+      baseCost = 1000000; // 100만
+      break;
+    case 24:
+      baseCost = 1250000; // 125만
+      break;
+    case 25:
+      baseCost = 1500000; // 150만 (최대)
+      break;
+    default:
+      // 25강 이상은 150만으로 고정
+      baseCost = 1500000;
+      break;
+  }
+
+  return baseCost;
+}
+
+// Get the minimum safe level for the current enhancement level
+export function getMinimumSafeLevel(currentLevel: number): number {
+  // 현재 레벨에서 도달한 가장 높은 안전 등급을 찾음
+  let minSafeLevel = 0;
+  for (const safeLevel of SAFE_ENHANCEMENT_LEVELS) {
+    if (currentLevel >= safeLevel) {
+      minSafeLevel = safeLevel;
+    }
+  }
+  return minSafeLevel;
+}
+
 // 아이템 타입별 주요 스탯 정의 (Requirements 10.2, 10.12)
 export const ITEM_PRIMARY_STATS: Record<ItemType, keyof ItemStats> = {
   // 방어구 (방어력)
@@ -78,69 +136,61 @@ export function calculateEnhancementCost(
   return Math.floor(baseCost * gradeMultiplier[grade]);
 }
 
-// Enhancement success rate (10-20강 구간 밸런스 조정)
+// Enhancement success rate (전체적으로 상향 조정)
 export function getEnhancementSuccessRate(enhancementLevel: number): number {
-  // 단계별 차등 확률 (10-20강 구간 상향 조정)
+  // 단계별 차등 확률 (전체적으로 상향 조정)
   const successRates: Record<number, number> = {
-    1: 0.95, // 95%
-    2: 0.9, // 90%
-    3: 0.85, // 85%
-    4: 0.8, // 80%
-    5: 0.75, // 75%
-    6: 0.7, // 70%
-    7: 0.65, // 65%
-    8: 0.6, // 60%
-    9: 0.55, // 55%
-    10: 0.55, // 55% (50% → 55%)
-    11: 0.5, // 50% (45% → 50%)
-    12: 0.45, // 45% (40% → 45%)
-    13: 0.42, // 42% (35% → 42%)
-    14: 0.38, // 38% (30% → 38%)
-    15: 0.35, // 35% (25% → 35%)
-    16: 0.32, // 32% (20% → 32%)
-    17: 0.28, // 28% (18% → 28%)
-    18: 0.25, // 25% (16% → 25%)
-    19: 0.22, // 22% (14% → 22%)
-    20: 0.18, // 18% (12% → 18%)
-    21: 0.1, // 10%
-    22: 0.08, // 8%
-    23: 0.06, // 6%
-    24: 0.04, // 4%
-    25: 0.02, // 2%
+    1: 0.98, // 98% (95% → 98%)
+    2: 0.95, // 95% (90% → 95%)
+    3: 0.92, // 92% (85% → 92%)
+    4: 0.88, // 88% (80% → 88%)
+    5: 0.85, // 85% (75% → 85%)
+    6: 0.8, // 80% (70% → 80%)
+    7: 0.75, // 75% (65% → 75%)
+    8: 0.7, // 70% (60% → 70%)
+    9: 0.65, // 65% (55% → 65%)
+    10: 0.65, // 65% (55% → 65%)
+    11: 0.6, // 60% (50% → 60%)
+    12: 0.55, // 55% (45% → 55%)
+    13: 0.52, // 52% (42% → 52%)
+    14: 0.48, // 48% (38% → 48%)
+    15: 0.45, // 45% (35% → 45%)
+    16: 0.42, // 42% (32% → 42%)
+    17: 0.38, // 38% (28% → 38%)
+    18: 0.35, // 35% (25% → 35%)
+    19: 0.32, // 32% (22% → 32%)
+    20: 0.3, // 30% (18% → 30%) - 기준점
+    21: 0.26, // 26% (10% → 26%)
+    22: 0.23, // 23% (8% → 23%)
+    23: 0.2, // 20% (6% → 20%)
+    24: 0.17, // 17% (4% → 17%)
+    25: 0.15, // 15% (2% → 15%) - 기준점
   };
 
   return successRates[enhancementLevel] || 0.01; // 기본 1%
 }
 
-// Enhancement destruction rate (파괴 확률 대폭 완화)
+// Enhancement destruction rate (18강부터 파괴 확률 시작)
 export function getEnhancementDestructionRate(
   enhancementLevel: number
 ): number {
-  if (enhancementLevel < 10) {
-    return 0; // 9강 이하는 파괴되지 않음
+  if (enhancementLevel < 18) {
+    return 0; // 17강 이하는 파괴되지 않음
   }
 
-  // 10강 이상에서 파괴 확률 (전체적으로 대폭 완화)
+  // 18강 이상에서 파괴 확률 (낮은 확률로 시작)
   const destructionRates: Record<number, number> = {
-    10: 0.01, // 1% (3% → 1%)
-    11: 0.02, // 2% (5% → 2%)
-    12: 0.03, // 3% (7% → 3%)
-    13: 0.04, // 4% (9% → 4%)
-    14: 0.05, // 5% (12% → 5%)
-    15: 0.07, // 7% (15% → 7%)
-    16: 0.09, // 9% (18% → 9%)
-    17: 0.12, // 12% (22% → 12%)
-    18: 0.15, // 15% (25% → 15%)
-    19: 0.18, // 18% (28% → 18%)
-    20: 0.22, // 22% (32% → 22%)
-    21: 0.35, // 35% (55% → 35%)
-    22: 0.4, // 40% (60% → 40%)
-    23: 0.45, // 45% (65% → 45%)
-    24: 0.5, // 50% (70% → 50%)
-    25: 0.55, // 55% (75% → 55%)
+    18: 0.02, // 2% (파괴 확률 시작)
+    19: 0.03, // 3%
+    20: 0.05, // 5%
+    21: 0.07, // 7%
+    22: 0.1, // 10%
+    23: 0.13, // 13%
+    24: 0.16, // 16%
+    25: 0.2, // 20%
   };
 
-  return destructionRates[enhancementLevel] || 0.6;
+  return destructionRates[enhancementLevel] || 0.25;
 }
 
 // Enhancement stat increase calculation (매우 높은 스탯 증가량으로 보상 대폭 상향)
@@ -304,7 +354,8 @@ export function canEnhanceItem(item: Item, availableCredits: number): boolean {
 // Perform enhancement attempt (파괴 확률 추가)
 export function performEnhancement(
   item: Item,
-  availableCredits: number
+  availableCredits: number,
+  useDestructionPrevention: boolean = false
 ): EnhancementAttempt {
   if (!item) {
     throw new Error("Item is null or undefined");
@@ -319,7 +370,29 @@ export function performEnhancement(
   const enhancementInfo = getEnhancementInfo(item);
   const previousLevel = item.enhancementLevel;
   const successRate = enhancementInfo.successRate;
-  const destructionRate = enhancementInfo.destructionRate || 0;
+  let destructionRate = enhancementInfo.destructionRate || 0;
+  let totalCost = enhancementInfo.cost;
+
+  // 파괴방지 강화 사용 시
+  if (useDestructionPrevention) {
+    if (previousLevel < DESTRUCTION_PREVENTION_MIN_LEVEL) {
+      throw new Error("파괴방지 강화는 20강부터 사용 가능합니다.");
+    }
+
+    const preventionCost = calculateDestructionPreventionCost(
+      previousLevel,
+      item.grade
+    );
+    totalCost += preventionCost;
+
+    if (availableCredits < totalCost) {
+      throw new Error(
+        `파괴방지 강화에 필요한 크레딧이 부족합니다. 필요: ${totalCost}, 보유: ${availableCredits}`
+      );
+    }
+
+    destructionRate = 0; // 파괴 확률 제거
+  }
 
   const randomValue = Math.random();
 
@@ -348,26 +421,45 @@ export function performEnhancement(
       criticalChance: 0,
     };
   } else {
-    // 실패: 레벨 감소 (11강 이상에서만)
+    // 실패: 레벨 감소 (11강 이상에서만, 단 안전 등급 적용)
     if (previousLevel >= 11) {
       result = EnhancementResult.DOWNGRADE;
-      newLevel = Math.max(0, previousLevel - 1);
 
-      // 감소된 레벨의 스탯 증가량을 음수로 적용
-      const lostStatIncrease = getEnhancementStatIncrease(
-        previousLevel,
-        item.grade,
-        item.type
-      );
-      statChange = {
-        attack: -lostStatIncrease.attack,
-        defense: -lostStatIncrease.defense,
-        defensePenetration: -lostStatIncrease.defensePenetration,
-        additionalAttackChance: -lostStatIncrease.additionalAttackChance,
-        creditPerSecondBonus: -lostStatIncrease.creditPerSecondBonus,
-        criticalDamageMultiplier: -lostStatIncrease.criticalDamageMultiplier,
-        criticalChance: -lostStatIncrease.criticalChance,
-      };
+      // 안전 등급 시스템 적용
+      const minSafeLevel = getMinimumSafeLevel(previousLevel);
+      const targetLevel = previousLevel - 1;
+      newLevel = Math.max(minSafeLevel, targetLevel);
+
+      // 실제로 레벨이 감소한 경우에만 스탯 감소 적용
+      if (newLevel < previousLevel) {
+        // 감소된 레벨의 스탯 증가량을 음수로 적용
+        const lostStatIncrease = getEnhancementStatIncrease(
+          previousLevel,
+          item.grade,
+          item.type
+        );
+        statChange = {
+          attack: -lostStatIncrease.attack,
+          defense: -lostStatIncrease.defense,
+          defensePenetration: -lostStatIncrease.defensePenetration,
+          additionalAttackChance: -lostStatIncrease.additionalAttackChance,
+          creditPerSecondBonus: -lostStatIncrease.creditPerSecondBonus,
+          criticalDamageMultiplier: -lostStatIncrease.criticalDamageMultiplier,
+          criticalChance: -lostStatIncrease.criticalChance,
+        };
+      } else {
+        // 안전 등급으로 인해 레벨이 유지된 경우
+        result = EnhancementResult.FAILURE;
+        statChange = {
+          attack: 0,
+          defense: 0,
+          defensePenetration: 0,
+          additionalAttackChance: 0,
+          creditPerSecondBonus: 0,
+          criticalDamageMultiplier: 0,
+          criticalChance: 0,
+        };
+      }
     } else {
       // 10강 이하에서는 실패해도 레벨 유지
       result = EnhancementResult.FAILURE;
@@ -388,7 +480,7 @@ export function performEnhancement(
     result,
     previousLevel,
     newLevel,
-    costPaid: enhancementInfo.cost,
+    costPaid: totalCost, // 파괴방지 비용 포함
     statChange,
   };
 }

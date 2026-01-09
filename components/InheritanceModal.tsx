@@ -498,20 +498,21 @@ function InheritancePreview({
       </div>
 
       {/* 주의사항 */}
-      <div className="hero-card-red rounded p-3">
-        <div className="text-sm font-semibold hero-text-red mb-1">
-          ⚠️ 중요한 주의사항
+      <div className="hero-card-green rounded p-3">
+        <div className="text-sm font-semibold hero-text-green mb-1">
+          ✅ 계승 시스템 정보
         </div>
         <div className="text-sm hero-text-secondary space-y-1">
-          <div className="hero-text-red font-medium">
-            • 계승 성공률: {(successRate! * 100).toFixed(1)}% (등급이 높을수록
-            낮아짐)
+          <div className="hero-text-green font-medium">
+            • 계승 성공률: {(successRate! * 100).toFixed(1)}% (100% 보장)
           </div>
-          <div className="hero-text-red font-medium">
-            • 계승 실패 시 소스 아이템({ITEM_TYPE_NAMES[sourceItem.type]} +
-            {sourceItem.enhancementLevel})이 완전히 파괴됩니다!
+          <div className="hero-text-blue font-medium">
+            • 바로 윗등급으로만 계승 가능 (1등급 차이)
           </div>
-          <div>• 계승 성공 시에도 소스 아이템은 소멸됩니다</div>
+          <div className="hero-text-blue font-medium">
+            • 강화 등급 -3레벨 감소 (고정)
+          </div>
+          <div>• 계승 성공 시 소스 아이템은 소멸됩니다</div>
           <div>• 계승은 되돌릴 수 없습니다</div>
           <div>• 강화 등급에 따른 스탯은 자동으로 재계산됩니다</div>
         </div>
@@ -543,26 +544,27 @@ export function InheritanceModal({
     return [...equippedItems, ...gameState.inventory];
   }, [gameState.equippedItems, gameState.inventory]);
 
-  // 소스 아이템으로 선택 가능한 아이템들 (낮은 등급)
+  // 소스 아이템으로 선택 가능한 아이템들 (바로 아래 등급만)
   const availableSourceItems = useMemo(() => {
     if (!targetItem) return allItems;
 
     return allItems.filter(
       (item) =>
         item.type === targetItem.type &&
-        GRADE_ORDER[item.grade] < GRADE_ORDER[targetItem.grade] &&
-        item.id !== targetItem.id
+        GRADE_ORDER[item.grade] === GRADE_ORDER[targetItem.grade] - 1 && // 바로 아래 등급만
+        item.id !== targetItem.id &&
+        item.enhancementLevel > 0 // 강화된 아이템만
     );
   }, [allItems, targetItem]);
 
-  // 타겟 아이템으로 선택 가능한 아이템들 (높은 등급)
+  // 타겟 아이템으로 선택 가능한 아이템들 (바로 위 등급만)
   const availableTargetItems = useMemo(() => {
     if (!sourceItem) return allItems;
 
     return allItems.filter(
       (item) =>
         item.type === sourceItem.type &&
-        GRADE_ORDER[item.grade] > GRADE_ORDER[sourceItem.grade] &&
+        GRADE_ORDER[item.grade] === GRADE_ORDER[sourceItem.grade] + 1 && // 바로 위 등급만
         item.id !== sourceItem.id
     );
   }, [allItems, sourceItem]);
@@ -596,7 +598,11 @@ export function InheritanceModal({
       if (success) {
         // 성공 시 모달 닫기
         alert(
-          `계승 성공! ${targetItem.type} 아이템의 강화 등급이 증가했습니다.`
+          `계승 성공! ${
+            ITEM_TYPE_NAMES[targetItem.type]
+          } 아이템의 강화 등급이 +${
+            inheritancePreview.targetEnhancementLevel
+          }로 증가했습니다.`
         );
         setTimeout(() => {
           onClose();
@@ -604,10 +610,8 @@ export function InheritanceModal({
           setTargetItem(null);
         }, 1000);
       } else {
-        // 실패 시 소스 아이템이 이미 제거되었으므로 상태 초기화
-        alert(
-          `계승 실패! ${sourceItem.type} +${sourceItem.enhancementLevel} 아이템이 파괴되었습니다.`
-        );
+        // 이론적으로 100% 성공률이므로 실패는 없어야 함
+        alert("계승 중 예상치 못한 오류가 발생했습니다.");
         setSourceItem(null);
         setTargetItem(null);
       }
@@ -639,7 +643,8 @@ export function InheritanceModal({
                 아이템 계승 (강화 등급 전승)
               </h2>
               <p className="hero-text-secondary mt-1">
-                낮은 등급 아이템의 강화 등급을 높은 등급 아이템으로 전승합니다
+                바로 윗등급 아이템으로 강화 등급을 100% 성공률로 전승합니다
+                (-3레벨)
               </p>
             </div>
             <button
@@ -657,7 +662,7 @@ export function InheritanceModal({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* 소스 아이템 선택 */}
             <ItemSelector
-              title="소스 아이템 (강화 등급을 전승할 아이템)"
+              title="소스 아이템 (강화 등급을 전승할 아이템 - 바로 아래 등급)"
               selectedItem={sourceItem}
               availableItems={availableSourceItems}
               onSelectItem={setSourceItem}
@@ -666,7 +671,7 @@ export function InheritanceModal({
 
             {/* 타겟 아이템 선택 */}
             <ItemSelector
-              title="타겟 아이템 (강화 등급을 전승받을 아이템)"
+              title="타겟 아이템 (강화 등급을 전승받을 아이템 - 바로 위 등급)"
               selectedItem={targetItem}
               availableItems={availableTargetItems}
               onSelectItem={setTargetItem}

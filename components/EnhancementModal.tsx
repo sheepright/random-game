@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useGame } from "../contexts/GameContext";
 import {
   Item,
@@ -15,6 +15,10 @@ import {
   MAX_ENHANCEMENT_LEVEL,
   calculateTotalItemStats,
   ITEM_PRIMARY_STATS,
+  SAFE_ENHANCEMENT_LEVELS,
+  getMinimumSafeLevel,
+  DESTRUCTION_PREVENTION_MIN_LEVEL,
+  calculateDestructionPreventionCost,
 } from "../utils/enhancementSystem";
 import { ITEM_TYPE_NAMES, GRADE_NAMES, STAT_NAMES } from "../constants/game";
 import ResponsiveItemImage from "./ResponsiveItemImage";
@@ -35,6 +39,17 @@ export default function EnhancementModal({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [lastEnhancementResult, setLastEnhancementResult] =
     useState<EnhancementAttempt | null>(null);
+  const [useDestructionPrevention, setUseDestructionPrevention] =
+    useState(false);
+
+  // 모달이 열릴 때마다 이전 강화 결과 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setLastEnhancementResult(null);
+      setUseDestructionPrevention(false);
+      setIsEnhancing(false);
+    }
+  }, [isOpen, item?.id]); // item.id가 변경될 때도 초기화
 
   // 게임 상태에서 최신 아이템 정보를 가져옵니다 (항상 실행)
   const currentItem = useMemo(() => {
@@ -88,10 +103,37 @@ export default function EnhancementModal({
     type: currentItem.type,
   });
 
-  const canEnhance = canEnhanceItem(currentItem, gameState.credits);
   const isMaxLevel = currentItem.enhancementLevel >= MAX_ENHANCEMENT_LEVEL;
   const enhancementInfo = !isMaxLevel ? getEnhancementInfo(currentItem) : null;
   const totalStats = calculateTotalItemStats(currentItem);
+
+  // 파괴된 아이템인지 확인 (추가 보안)
+  const isItemDestroyed =
+    lastEnhancementResult?.result === EnhancementResult.DESTRUCTION;
+
+  // 안전 등급 정보
+  const currentSafeLevel = getMinimumSafeLevel(currentItem.enhancementLevel);
+  const nextSafeLevel = SAFE_ENHANCEMENT_LEVELS.find(
+    (level) => level > currentItem.enhancementLevel
+  );
+
+  // 파괴방지 강화 정보
+  const canUseDestructionPrevention =
+    currentItem.enhancementLevel >= DESTRUCTION_PREVENTION_MIN_LEVEL;
+  const destructionPreventionCost = canUseDestructionPrevention
+    ? calculateDestructionPreventionCost(
+        currentItem.enhancementLevel,
+        currentItem.grade
+      )
+    : 0;
+  const totalEnhancementCost = enhancementInfo
+    ? enhancementInfo.cost +
+      (useDestructionPrevention ? destructionPreventionCost : 0)
+    : 0;
+
+  const canEnhance =
+    canEnhanceItem(currentItem, gameState.credits) &&
+    (!useDestructionPrevention || gameState.credits >= totalEnhancementCost);
 
   // 아이템의 주요 스탯 정보
   const primaryStat = ITEM_PRIMARY_STATS[currentItem.type as ItemType];
@@ -156,22 +198,21 @@ export default function EnhancementModal({
     : null;
 
   const handleEnhance = async () => {
-    if (!canEnhance || isMaxLevel || !currentItem) return;
+    if (!canEnhance || isMaxLevel || !currentItem || isItemDestroyed) return;
 
     setIsEnhancing(true);
     setLastEnhancementResult(null);
 
     try {
       console.log("강화 시도:", currentItem);
-      const result = actions.enhanceItem(currentItem);
+      const result = actions.enhanceItem(currentItem, useDestructionPrevention);
       console.log("강화 결과:", result);
       setLastEnhancementResult(result);
 
-      // 아이템이 파괴된 경우 3초 후 모달 자동 닫기
+      // 아이템이 파괴된 경우 즉시 모달 닫기
       if (result.result === EnhancementResult.DESTRUCTION) {
-        setTimeout(() => {
-          onClose();
-        }, 3000);
+        onClose();
+        return;
       }
     } catch (error) {
       console.error("Enhancement failed:", error);
@@ -191,6 +232,11 @@ export default function EnhancementModal({
       case EnhancementResult.SUCCESS:
         return `강화 성공! +${result.newLevel}강으로 업그레이드되었습니다.`;
       case EnhancementResult.FAILURE:
+        // 안전 등급으로 인해 레벨이 유지된 경우 추가 메시지
+        const safeLevel = getMinimumSafeLevel(result.previousLevel);
+        if (result.previousLevel >= 11 && result.previousLevel > safeLevel) {
+          return `강화 실패! 레벨은 유지됩니다. (안전 등급 +${safeLevel}강 보호)`;
+        }
         return `강화 실패! 레벨은 유지됩니다.`;
       case EnhancementResult.DOWNGRADE:
         return `강화 실패! +${result.newLevel}강으로 하락했습니다.`;
@@ -464,7 +510,9 @@ export default function EnhancementModal({
               <div className="flex justify-between">
                 <span>비용:</span>
                 <span className="font-medium hero-text-primary">
-                  {enhancementInfo.cost.toLocaleString()} 크레딧
+                  {useDestructionPrevention
+                    ? `${totalEnhancementCost.toLocaleString()} 크레딧 (파괴방지 포함)`
+                    : `${enhancementInfo.cost.toLocaleString()} 크레딧`}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -482,16 +530,115 @@ export default function EnhancementModal({
                 </span>
               </div>
 
-              {/* 파괴 확률 표시 (10강 이상) */}
+              {/* 파괴 확률 표시 (18강 이상) */}
               {enhancementInfo.destructionRate &&
                 enhancementInfo.destructionRate > 0 && (
                   <div className="flex justify-between">
                     <span>파괴 확률:</span>
-                    <span className="font-medium hero-text-red">
-                      {(enhancementInfo.destructionRate * 100).toFixed(1)}%
+                    <span
+                      className={`font-medium ${
+                        useDestructionPrevention
+                          ? "hero-text-green"
+                          : "hero-text-red"
+                      }`}
+                    >
+                      {useDestructionPrevention
+                        ? "0% (파괴방지)"
+                        : `${(enhancementInfo.destructionRate * 100).toFixed(
+                            1
+                          )}%`}
                     </span>
                   </div>
                 )}
+
+              {/* 안전 등급 정보 */}
+              {currentSafeLevel > 0 && (
+                <div className="flex justify-between">
+                  <span>현재 안전 등급:</span>
+                  <span className="font-medium hero-text-green">
+                    +{currentSafeLevel}강 보장
+                  </span>
+                </div>
+              )}
+              {nextSafeLevel && (
+                <div className="flex justify-between">
+                  <span>다음 안전 등급:</span>
+                  <span className="font-medium hero-text-blue">
+                    +{nextSafeLevel}강 (
+                    {nextSafeLevel - currentItem.enhancementLevel}단계 남음)
+                  </span>
+                </div>
+              )}
+
+              {/* 파괴방지 강화 옵션 */}
+              {canUseDestructionPrevention && (
+                <div className="pt-2 border-t border-gray-300">
+                  <div className="hero-card-accent rounded p-3 mb-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={useDestructionPrevention}
+                          onChange={(e) =>
+                            setUseDestructionPrevention(e.target.checked)
+                          }
+                          className="mr-2"
+                        />
+                        <span className="text-sm font-medium hero-text-accent">
+                          파괴방지 강화 사용
+                        </span>
+                      </label>
+                      <span className="text-xs hero-text-secondary">
+                        (20강 이상 사용 가능)
+                      </span>
+                    </div>
+
+                    {/* 파괴방지 정보 표시 */}
+                    <div className="space-y-1 text-xs hero-text-secondary mb-2">
+                      <div className="flex justify-between">
+                        <span>기본 비용:</span>
+                        <span className="font-medium hero-text-primary">
+                          {enhancementInfo?.cost.toLocaleString() || 0} 크레딧
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>파괴방지 추가 비용:</span>
+                        <span className="font-medium hero-text-red">
+                          +{destructionPreventionCost.toLocaleString()} 크레딧
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t border-gray-200 pt-1">
+                        <span className="font-medium">총 비용:</span>
+                        <span className="font-bold hero-text-primary">
+                          {totalEnhancementCost.toLocaleString()} 크레딧
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 파괴방지 효과 설명 */}
+                    <div className="hero-card-blue rounded p-2 text-xs border border-blue-300">
+                      <div className="hero-text-blue font-medium mb-1">
+                        🛡️ 파괴방지 효과:
+                      </div>
+                      <div className="hero-text-secondary space-y-1">
+                        <div>• 파괴 확률 0% (완전 보호)</div>
+                        <div>• 성공/실패 확률은 동일</div>
+                        <div>• 실패 시 레벨 하락은 여전히 발생</div>
+                        {enhancementInfo?.destructionRate &&
+                          enhancementInfo.destructionRate > 0 && (
+                            <div className="hero-text-red">
+                              • 원래 파괴 확률:{" "}
+                              {(enhancementInfo.destructionRate * 100).toFixed(
+                                1
+                              )}
+                              %
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* 효율성 정보 */}
               {efficiency && efficiencyLevel && (
@@ -579,16 +726,21 @@ export default function EnhancementModal({
                 </div>
               </div>
 
-              {/* 실패 시 경고 (11강 이상) */}
+              {/* 실패 시 경고 (11강 이상, 안전 등급 고려) */}
               {currentItem.enhancementLevel >= 11 && (
                 <div className="pt-2 border-t border-gray-300">
                   <div className="hero-text-red font-medium text-xs">
                     ⚠️ 실패 시 강화 레벨이 1 감소합니다!
+                    {currentSafeLevel > 0 && (
+                      <div className="hero-text-green text-xs mt-1">
+                        (단, +{currentSafeLevel}강 아래로는 하락하지 않음)
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* 파괴 경고 (10강 이상) */}
+              {/* 파괴 경고 (18강 이상) */}
               {enhancementInfo.destructionRate &&
                 enhancementInfo.destructionRate > 0 && (
                   <div className="pt-2 border-t border-gray-300">
@@ -658,7 +810,7 @@ export default function EnhancementModal({
           >
             닫기
           </button>
-          {!isMaxLevel && (
+          {!isMaxLevel && !isItemDestroyed && (
             <button
               onClick={handleEnhance}
               disabled={!canEnhance || isEnhancing}
@@ -668,20 +820,38 @@ export default function EnhancementModal({
                   : "hero-btn hero-btn-disabled flex-1"
               }
             >
-              {isEnhancing ? "강화 중..." : "강화하기"}
+              {isEnhancing
+                ? "강화 중..."
+                : useDestructionPrevention
+                ? "파괴방지 강화하기"
+                : "강화하기"}
             </button>
           )}
         </div>
 
         {/* 크레딧 부족 경고 */}
         {!isMaxLevel &&
+          !isItemDestroyed &&
           enhancementInfo &&
-          gameState.credits < enhancementInfo.cost && (
+          gameState.credits < totalEnhancementCost && (
             <div className="mt-3 text-center text-sm hero-text-red">
-              크레딧이 부족합니다. ({enhancementInfo.cost.toLocaleString()}{" "}
+              크레딧이 부족합니다. ({totalEnhancementCost.toLocaleString()}{" "}
               필요)
+              {useDestructionPrevention && (
+                <div className="text-xs mt-1">
+                  (파괴방지 비용 {destructionPreventionCost.toLocaleString()}{" "}
+                  포함)
+                </div>
+              )}
             </div>
           )}
+
+        {/* 아이템 파괴 메시지 */}
+        {isItemDestroyed && (
+          <div className="mt-3 text-center text-sm hero-text-red font-bold">
+            아이템이 파괴되어 더 이상 강화할 수 없습니다.
+          </div>
+        )}
       </div>
     </div>
   );
