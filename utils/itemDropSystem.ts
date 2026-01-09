@@ -14,6 +14,8 @@ import {
 import {
   ITEM_BASE_STATS,
   GRADE_MULTIPLIERS,
+  GRADE_BASE_STATS,
+  RANDOM_BONUS_RANGE,
   STAGE_CLEAR_DROP_RATES,
   IDLE_DROP_RATES,
   DROP_CHECK_INTERVALS,
@@ -146,8 +148,9 @@ export class ItemDropSystem {
     const random = Math.random();
     let cumulativeProbability = 0;
 
-    // 등급별 누적 확률 계산
+    // 등급별 누적 확률 계산 (미식 등급 포함)
     const grades = [
+      ItemGrade.MYTHIC,
       ItemGrade.LEGENDARY,
       ItemGrade.EPIC,
       ItemGrade.RARE,
@@ -155,7 +158,8 @@ export class ItemDropSystem {
     ];
 
     for (const grade of grades) {
-      cumulativeProbability += dropRates[grade];
+      const gradeRate = dropRates[grade] || 0; // 정의되지 않은 등급은 0% 확률
+      cumulativeProbability += gradeRate;
       if (random <= cumulativeProbability) {
         return grade;
       }
@@ -175,7 +179,7 @@ export class ItemDropSystem {
   }
 
   /**
-   * 아이템 스탯 랜덤 생성 (등급과 스테이지 기반)
+   * 아이템 스탯 랜덤 생성 (등급별 고정 기본값 + 랜덤 보너스)
    * Requirements: 3.9
    */
   private generateItemStats(
@@ -184,47 +188,63 @@ export class ItemDropSystem {
     stage: number
   ): ItemStats {
     const baseStats = ITEM_BASE_STATS[itemType];
-    const gradeMultiplier = GRADE_MULTIPLIERS[grade];
-    const stageMultiplier = 1 + (stage - 1) * 0.2; // 스테이지당 20% 증가
+    const gradeBaseStats = GRADE_BASE_STATS[grade];
+    const stageMultiplier = 1 + (stage - 1) * 0.1; // 스테이지당 10% 증가
 
-    // 기본 스탯에 등급 배수와 스테이지 배수 적용
+    // 랜덤 보너스 (1~5)
+    const getRandomBonus = () =>
+      RANDOM_BONUS_RANGE.min +
+      Math.floor(
+        Math.random() * (RANDOM_BONUS_RANGE.max - RANDOM_BONUS_RANGE.min + 1)
+      );
+
+    // 아이템 타입별 스탯 적용 (해당 스탯만 적용)
     const enhancedStats: ItemStats = {
-      attack: Math.floor(baseStats.attack * gradeMultiplier * stageMultiplier),
-      defense: Math.floor(
-        baseStats.defense * gradeMultiplier * stageMultiplier
-      ),
-      defensePenetration: Math.floor(
-        baseStats.defensePenetration * gradeMultiplier * stageMultiplier
-      ),
+      attack:
+        baseStats.attack > 0
+          ? Math.floor(
+              (gradeBaseStats.attack + getRandomBonus()) * stageMultiplier
+            )
+          : 0,
+      defense:
+        baseStats.defense > 0
+          ? Math.floor(
+              (gradeBaseStats.defense + getRandomBonus()) * stageMultiplier
+            )
+          : 0,
+      defensePenetration:
+        baseStats.defensePenetration > 0
+          ? Math.floor(
+              (gradeBaseStats.defensePenetration + getRandomBonus()) *
+                stageMultiplier
+            )
+          : 0,
       additionalAttackChance:
-        baseStats.additionalAttackChance * gradeMultiplier * stageMultiplier,
+        baseStats.additionalAttackChance > 0
+          ? (gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001) *
+            stageMultiplier
+          : 0,
+      creditPerSecondBonus:
+        baseStats.creditPerSecondBonus > 0
+          ? Math.floor(
+              (gradeBaseStats.creditPerSecondBonus + getRandomBonus()) *
+                stageMultiplier
+            )
+          : 0,
+      criticalDamageMultiplier:
+        baseStats.criticalDamageMultiplier > 0
+          ? (gradeBaseStats.criticalDamageMultiplier +
+              getRandomBonus() * 0.01) *
+            stageMultiplier
+          : 0,
+      criticalChance:
+        baseStats.criticalChance > 0
+          ? (gradeBaseStats.criticalChance + getRandomBonus() * 0.01) *
+            stageMultiplier
+          : 0,
     };
 
-    // 랜덤 변동 적용 (±10%)
-    const applyRandomVariation = (value: number): number => {
-      if (value === 0) return 0;
-      const variation = 0.1; // ±10%
-      const randomFactor = 1 + (Math.random() - 0.5) * 2 * variation;
-      return Math.max(1, Math.floor(value * randomFactor));
-    };
-
-    const applyRandomVariationFloat = (value: number): number => {
-      if (value === 0) return 0;
-      const variation = 0.1; // ±10%
-      const randomFactor = 1 + (Math.random() - 0.5) * 2 * variation;
-      return Math.max(0, value * randomFactor);
-    };
-
-    return {
-      attack: applyRandomVariation(enhancedStats.attack),
-      defense: applyRandomVariation(enhancedStats.defense),
-      defensePenetration: applyRandomVariation(
-        enhancedStats.defensePenetration
-      ),
-      additionalAttackChance: applyRandomVariationFloat(
-        enhancedStats.additionalAttackChance
-      ),
-    };
+    return enhancedStats;
   }
 
   /**
@@ -318,30 +338,59 @@ export function createRandomItem(
   grade: ItemGrade
 ): Item {
   const baseStats = ITEM_BASE_STATS[itemType];
-  const gradeMultiplier = GRADE_MULTIPLIERS[grade];
+  const gradeBaseStats = GRADE_BASE_STATS[grade];
+  const stageMultiplier = 1 + (stage - 1) * 0.1; // 스테이지당 10% 증가
 
-  // 스테이지와 등급에 따른 스탯 계산
-  const stageMultiplier = 1 + (stage - 1) * 0.2; // 스테이지당 20% 증가
-  const randomVariation = 0.8 + Math.random() * 0.4; // 80-120% 랜덤 변화
+  // 랜덤 보너스 (1~5)
+  const getRandomBonus = () =>
+    RANDOM_BONUS_RANGE.min +
+    Math.floor(
+      Math.random() * (RANDOM_BONUS_RANGE.max - RANDOM_BONUS_RANGE.min + 1)
+    );
 
+  // 아이템 타입별 스탯 적용 (해당 스탯만 적용)
   const enhancedStats: ItemStats = {
-    attack: Math.floor(
-      baseStats.attack * gradeMultiplier * stageMultiplier * randomVariation
-    ),
-    defense: Math.floor(
-      baseStats.defense * gradeMultiplier * stageMultiplier * randomVariation
-    ),
-    defensePenetration: Math.floor(
-      baseStats.defensePenetration *
-        gradeMultiplier *
-        stageMultiplier *
-        randomVariation
-    ),
+    attack:
+      baseStats.attack > 0
+        ? Math.floor(
+            (gradeBaseStats.attack + getRandomBonus()) * stageMultiplier
+          )
+        : 0,
+    defense:
+      baseStats.defense > 0
+        ? Math.floor(
+            (gradeBaseStats.defense + getRandomBonus()) * stageMultiplier
+          )
+        : 0,
+    defensePenetration:
+      baseStats.defensePenetration > 0
+        ? Math.floor(
+            (gradeBaseStats.defensePenetration + getRandomBonus()) *
+              stageMultiplier
+          )
+        : 0,
     additionalAttackChance:
-      baseStats.additionalAttackChance *
-      gradeMultiplier *
-      stageMultiplier *
-      randomVariation,
+      baseStats.additionalAttackChance > 0
+        ? (gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001) *
+          stageMultiplier
+        : 0,
+    creditPerSecondBonus:
+      baseStats.creditPerSecondBonus > 0
+        ? Math.floor(
+            (gradeBaseStats.creditPerSecondBonus + getRandomBonus()) *
+              stageMultiplier
+          )
+        : 0,
+    criticalDamageMultiplier:
+      baseStats.criticalDamageMultiplier > 0
+        ? (gradeBaseStats.criticalDamageMultiplier + getRandomBonus() * 0.01) *
+          stageMultiplier
+        : 0,
+    criticalChance:
+      baseStats.criticalChance > 0
+        ? (gradeBaseStats.criticalChance + getRandomBonus() * 0.01) *
+          stageMultiplier
+        : 0,
   };
 
   return {

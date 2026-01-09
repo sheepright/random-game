@@ -18,6 +18,7 @@ import {
   STAGE_CLEAR_DROP_RATES,
   IDLE_DROP_RATES,
   GRADE_MULTIPLIERS,
+  GRADE_BASE_STATS,
   BASE_DROP_RATES,
   ITEM_BASE_STATS,
   DROP_CHECK_INTERVALS,
@@ -157,7 +158,7 @@ describe("Item Drop System Property Tests", () => {
 
   /**
    * **Feature: idle-gacha-game, Property 18: Item Stat Scaling**
-   * For any item grade and type, the item's stats should be within the expected range based on base stats and grade multipliers
+   * For any item grade and type, the item's stats should be within the expected range based on grade base stats and random bonus
    * **Validates: Requirements 4.3**
    */
   test("Property 18: Item stats should scale correctly with grade and stage", () => {
@@ -165,12 +166,6 @@ describe("Item Drop System Property Tests", () => {
       fc.property(
         fc.integer({ min: 1, max: 5 }), // stage
         (stage) => {
-          // Mock Math.random for consistent item generation
-          (Math.random as any)
-            .mockReturnValueOnce(0.1) // ensure drop succeeds
-            .mockReturnValueOnce(0.1) // select first grade (will be overridden by our test)
-            .mockReturnValue(0.5); // for stat variation (no variation)
-
           // Generate item through drop system
           const testDropSystem = new ItemDropSystem();
           const result = testDropSystem.checkStageClearDrop(stage);
@@ -178,67 +173,102 @@ describe("Item Drop System Property Tests", () => {
           if (result.success && result.item) {
             const item = result.item;
             const baseStats = ITEM_BASE_STATS[item.type];
-            const gradeMultiplier = GRADE_MULTIPLIERS[item.grade];
-            const stageMultiplier = 1 + (stage - 1) * 0.2;
+            const gradeBaseStats = GRADE_BASE_STATS[item.grade];
+            const stageMultiplier = 1 + (stage - 1) * 0.1; // 스테이지당 10% 증가
 
-            // Calculate expected stat ranges (considering ±10% variation)
-            const expectedAttack =
-              baseStats.attack * gradeMultiplier * stageMultiplier;
-            const expectedDefense =
-              baseStats.defense * gradeMultiplier * stageMultiplier;
-            const expectedDefensePenetration =
-              baseStats.defensePenetration * gradeMultiplier * stageMultiplier;
+            // 새로운 스텟 시스템: 등급별 기본값 + 랜덤 보너스(1~5) * 스테이지 배수
+            const minExpectedAttack =
+              baseStats.attack > 0
+                ? Math.floor((gradeBaseStats.attack + 1) * stageMultiplier)
+                : 0;
+            const maxExpectedAttack =
+              baseStats.attack > 0
+                ? Math.floor((gradeBaseStats.attack + 5) * stageMultiplier)
+                : 0;
 
-            // Allow for ±10% variation plus rounding
-            const tolerance = 0.2; // 20% tolerance for rounding and variation
+            const minExpectedDefense =
+              baseStats.defense > 0
+                ? Math.floor((gradeBaseStats.defense + 1) * stageMultiplier)
+                : 0;
+            const maxExpectedDefense =
+              baseStats.defense > 0
+                ? Math.floor((gradeBaseStats.defense + 5) * stageMultiplier)
+                : 0;
 
-            if (expectedAttack > 0) {
-              const attackDiff =
-                Math.abs(item.enhancedStats.attack - expectedAttack) /
-                expectedAttack;
-              expect(attackDiff).toBeLessThanOrEqual(tolerance);
+            const minExpectedDefensePenetration =
+              baseStats.defensePenetration > 0
+                ? Math.floor(
+                    (gradeBaseStats.defensePenetration + 1) * stageMultiplier
+                  )
+                : 0;
+            const maxExpectedDefensePenetration =
+              baseStats.defensePenetration > 0
+                ? Math.floor(
+                    (gradeBaseStats.defensePenetration + 5) * stageMultiplier
+                  )
+                : 0;
+
+            // 스탯이 예상 범위 내에 있는지 확인
+            if (baseStats.attack > 0) {
+              expect(item.enhancedStats.attack).toBeGreaterThanOrEqual(
+                minExpectedAttack
+              );
+              expect(item.enhancedStats.attack).toBeLessThanOrEqual(
+                maxExpectedAttack
+              );
             } else {
               expect(item.enhancedStats.attack).toBe(0);
             }
 
-            if (expectedDefense > 0) {
-              const defenseDiff =
-                Math.abs(item.enhancedStats.defense - expectedDefense) /
-                expectedDefense;
-              expect(defenseDiff).toBeLessThanOrEqual(tolerance);
+            if (baseStats.defense > 0) {
+              expect(item.enhancedStats.defense).toBeGreaterThanOrEqual(
+                minExpectedDefense
+              );
+              expect(item.enhancedStats.defense).toBeLessThanOrEqual(
+                maxExpectedDefense
+              );
             } else {
               expect(item.enhancedStats.defense).toBe(0);
             }
 
-            if (expectedDefensePenetration > 0) {
-              const defPenDiff =
-                Math.abs(
-                  item.enhancedStats.defensePenetration -
-                    expectedDefensePenetration
-                ) / expectedDefensePenetration;
-              expect(defPenDiff).toBeLessThanOrEqual(tolerance);
+            if (baseStats.defensePenetration > 0) {
+              expect(
+                item.enhancedStats.defensePenetration
+              ).toBeGreaterThanOrEqual(minExpectedDefensePenetration);
+              expect(item.enhancedStats.defensePenetration).toBeLessThanOrEqual(
+                maxExpectedDefensePenetration
+              );
             } else {
               expect(item.enhancedStats.defensePenetration).toBe(0);
             }
 
-            // Stats should be non-negative and at least 1 if base stat > 0
+            // 추가타격 확률 검증 (별도 로직)
+            if (baseStats.additionalAttackChance > 0) {
+              const minExpectedChance =
+                (gradeBaseStats.additionalAttackChance + 1 * 0.001) *
+                stageMultiplier;
+              const maxExpectedChance =
+                (gradeBaseStats.additionalAttackChance + 5 * 0.001) *
+                stageMultiplier;
+              expect(
+                item.enhancedStats.additionalAttackChance
+              ).toBeGreaterThanOrEqual(minExpectedChance);
+              expect(
+                item.enhancedStats.additionalAttackChance
+              ).toBeLessThanOrEqual(maxExpectedChance);
+            } else {
+              expect(item.enhancedStats.additionalAttackChance).toBe(0);
+            }
+
+            // 스탯은 항상 0 이상이어야 함
             expect(item.enhancedStats.attack).toBeGreaterThanOrEqual(0);
             expect(item.enhancedStats.defense).toBeGreaterThanOrEqual(0);
             expect(
               item.enhancedStats.defensePenetration
             ).toBeGreaterThanOrEqual(0);
-
-            if (baseStats.attack > 0) {
-              expect(item.enhancedStats.attack).toBeGreaterThanOrEqual(1);
-            }
-            if (baseStats.defense > 0) {
-              expect(item.enhancedStats.defense).toBeGreaterThanOrEqual(1);
-            }
-            if (baseStats.defensePenetration > 0) {
-              expect(
-                item.enhancedStats.defensePenetration
-              ).toBeGreaterThanOrEqual(1);
-            }
+            expect(
+              item.enhancedStats.additionalAttackChance
+            ).toBeGreaterThanOrEqual(0);
           }
         }
       ),

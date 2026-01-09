@@ -25,6 +25,10 @@ const getSlotIcon = (slotType: ItemType): string => {
     [ItemType.MAIN_WEAPON]: "⚔️",
     [ItemType.SUB_WEAPON]: "🛡️",
     [ItemType.PET]: "🐾",
+    // 물약 아이콘들
+    [ItemType.WEALTH_POTION]: "💰",
+    [ItemType.BOSS_POTION]: "⚡",
+    [ItemType.ARTISAN_POTION]: "🔨",
   };
   return icons[slotType] || "❓";
 };
@@ -174,6 +178,28 @@ export function EquipmentPanel() {
               item={gameState.equippedItems.pet}
               slotType={ItemType.PET}
               slotName="펫"
+              onUnequip={handleUnequipItem}
+            />
+          </div>
+
+          {/* 5행: 물약 슬롯들 */}
+          <div className="flex justify-center items-center space-x-6">
+            <EquipmentSlot
+              item={gameState.equippedItems.wealthPotion}
+              slotType={ItemType.WEALTH_POTION}
+              slotName="재물 물약"
+              onUnequip={handleUnequipItem}
+            />
+            <EquipmentSlot
+              item={gameState.equippedItems.bossPotion}
+              slotType={ItemType.BOSS_POTION}
+              slotName="보스 물약"
+              onUnequip={handleUnequipItem}
+            />
+            <EquipmentSlot
+              item={gameState.equippedItems.artisanPotion}
+              slotType={ItemType.ARTISAN_POTION}
+              slotName="장인 물약"
               onUnequip={handleUnequipItem}
             />
           </div>

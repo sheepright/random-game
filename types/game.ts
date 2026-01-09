@@ -26,7 +26,10 @@ export interface BattleState {
   bossHP: number;
   isPlayerTurn: boolean;
   battleLog: BattleLogEntry[];
-  battleResult: "ongoing" | "victory" | "defeat" | null;
+  battleResult: "ongoing" | "victory" | "defeat" | "timeout" | null;
+  // 턴 제한 시스템
+  currentTurn: number;
+  maxTurns: number;
 }
 
 export interface Boss {
@@ -61,6 +64,10 @@ export interface EquippedItems {
   mainWeapon: Item | null;
   subWeapon: Item | null;
   pet: Item | null;
+  // 물약 슬롯들
+  wealthPotion: Item | null; // 재물 물약
+  bossPotion: Item | null; // 보스 물약
+  artisanPotion: Item | null; // 장인 물약
 }
 
 export interface Item {
@@ -87,6 +94,10 @@ export enum ItemType {
   MAIN_WEAPON = "mainWeapon",
   SUB_WEAPON = "subWeapon",
   PET = "pet",
+  // 물약 아이템들
+  WEALTH_POTION = "wealthPotion", // 재물 물약 (초당 크레딧 증가)
+  BOSS_POTION = "bossPotion", // 보스 물약 (크리티컬 데미지 증가)
+  ARTISAN_POTION = "artisanPotion", // 장인 물약 (크리티컬 확률 증가)
 }
 
 export enum ItemGrade {
@@ -102,6 +113,10 @@ export interface ItemStats {
   defense: number;
   defensePenetration: number;
   additionalAttackChance: number;
+  // 새로운 물약 스탯들
+  creditPerSecondBonus: number; // 재물 물약: 초당 크레딧 보너스
+  criticalDamageMultiplier: number; // 보스 물약: 크리티컬 데미지 배수
+  criticalChance: number; // 장인 물약: 크리티컬 확률
 }
 
 export interface PlayerStats {
@@ -109,6 +124,10 @@ export interface PlayerStats {
   defense: number;
   defensePenetration: number;
   additionalAttackChance: number;
+  // 새로운 물약 스탯들
+  creditPerSecondBonus: number; // 재물 물약: 초당 크레딧 보너스
+  criticalDamageMultiplier: number; // 보스 물약: 크리티컬 데미지 배수
+  criticalChance: number; // 장인 물약: 크리티컬 확률
 }
 
 export interface StageInfo {
@@ -197,6 +216,7 @@ export enum GachaCategory {
   ARMOR = "armor",
   ACCESSORIES = "accessories",
   WEAPONS = "weapons",
+  POTIONS = "potions", // 물약 카테고리 추가
 }
 
 export interface GachaResult {

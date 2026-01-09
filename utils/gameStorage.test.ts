@@ -64,11 +64,19 @@ const validGameStateArbitrary = fc
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           enhancedStats: fc.record({
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           level: fc.integer({ min: 1, max: 100 }),
         })
@@ -82,11 +90,19 @@ const validGameStateArbitrary = fc
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           enhancedStats: fc.record({
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           level: fc.integer({ min: 1, max: 100 }),
         })
@@ -100,11 +116,19 @@ const validGameStateArbitrary = fc
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           enhancedStats: fc.record({
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           level: fc.integer({ min: 1, max: 100 }),
         })
@@ -124,17 +148,28 @@ const validGameStateArbitrary = fc
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           enhancedStats: fc.record({
             attack: fc.nat({ max: 100 }),
             defense: fc.nat({ max: 100 }),
             defensePenetration: fc.nat({ max: 100 }),
+            additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+            creditPerSecondBonus: fc.nat({ max: 100 }),
+            criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+            criticalChance: fc.float({ min: 0, max: 1 }),
           }),
           level: fc.integer({ min: 1, max: 100 }),
         })
       ),
       subWeapon: fc.constant(null),
       pet: fc.constant(null),
+      wealthPotion: fc.constant(null),
+      bossPotion: fc.constant(null),
+      artisanPotion: fc.constant(null),
     }),
     inventory: fc.array(
       fc.record({
@@ -151,7 +186,10 @@ const validGameStateArbitrary = fc
           "necklace",
           "mainWeapon",
           "subWeapon",
-          "pet"
+          "pet",
+          "wealthPotion",
+          "bossPotion",
+          "artisanPotion"
         ),
         grade: fc.constantFrom("common", "rare", "epic", "legendary"),
         baseStats: fc.record({
@@ -159,12 +197,18 @@ const validGameStateArbitrary = fc
           defense: fc.nat({ max: 100 }),
           defensePenetration: fc.nat({ max: 100 }),
           additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+          creditPerSecondBonus: fc.nat({ max: 100 }),
+          criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+          criticalChance: fc.float({ min: 0, max: 1 }),
         }),
         enhancedStats: fc.record({
           attack: fc.nat({ max: 100 }),
           defense: fc.nat({ max: 100 }),
           defensePenetration: fc.nat({ max: 100 }),
           additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+          creditPerSecondBonus: fc.nat({ max: 100 }),
+          criticalDamageMultiplier: fc.float({ min: 0, max: 5 }),
+          criticalChance: fc.float({ min: 0, max: 1 }),
         }),
         level: fc.integer({ min: 1, max: 100 }),
         enhancementLevel: fc.integer({ min: 0, max: 15 }),
@@ -181,6 +225,9 @@ const validGameStateArbitrary = fc
       defense: 10,
       defensePenetration: 0,
       additionalAttackChance: 0,
+      creditPerSecondBonus: 0,
+      criticalDamageMultiplier: 0,
+      criticalChance: 0,
     };
 
     return {
@@ -378,6 +425,9 @@ describe("Property 10: State Restoration Round Trip", () => {
               "mainWeapon",
               "subWeapon",
               "pet",
+              "wealthPotion",
+              "bossPotion",
+              "artisanPotion",
             ];
 
             slots.forEach((slot) => {

@@ -146,19 +146,25 @@ export function GachaModal({
       category: GachaCategory.ARMOR,
       name: "방어구",
       icon: "🛡️",
-      description: "헬멧, 아머, 팬츠, 글러브, 슈즈",
+      description: "헬멧, 아머, 팬츠, 글러브, 슈즈, 숄더",
     },
     {
       category: GachaCategory.ACCESSORIES,
       name: "장신구",
       icon: "💍",
-      description: "귀걸이, 목걸이, 반지, 숄더",
+      description: "귀걸이, 목걸이, 반지",
     },
     {
       category: GachaCategory.WEAPONS,
       name: "무기",
       icon: "⚔️",
       description: "주무기, 보조무기, 펫",
+    },
+    {
+      category: GachaCategory.POTIONS,
+      name: "물약",
+      icon: "🧪",
+      description: "재물 물약, 보스 물약, 장인 물약",
     },
   ];
 

@@ -24,6 +24,9 @@ describe("BattleSystem", () => {
     defense: 10,
     defensePenetration: 5,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   };
 
   const mockBossInfo: BossInfo = {
@@ -45,18 +48,27 @@ describe("BattleSystem", () => {
 
   describe("calculateDamage", () => {
     it("should calculate damage correctly with defense penetration", () => {
-      const damage = calculateDamage(20, 10, 5);
-      expect(damage).toBe(15); // 20 - (10 - 5) = 15
+      const result = calculateDamage(20, 10, 5);
+      expect(result.damage).toBe(15); // 20 - (10 - 5) = 15
+      expect(result.isCritical).toBe(false);
     });
 
     it("should return minimum 1 damage", () => {
-      const damage = calculateDamage(5, 10, 0);
-      expect(damage).toBe(1); // 최소 1 데미지
+      const result = calculateDamage(5, 10, 0);
+      expect(result.damage).toBe(1); // 최소 1 데미지
+      expect(result.isCritical).toBe(false);
     });
 
     it("should handle defense penetration exceeding defense", () => {
-      const damage = calculateDamage(20, 5, 10);
-      expect(damage).toBe(20); // 20 - max(0, 5 - 10) = 20
+      const result = calculateDamage(20, 5, 10);
+      expect(result.damage).toBe(20); // 20 - max(0, 5 - 10) = 20
+      expect(result.isCritical).toBe(false);
+    });
+
+    it("should handle critical hits", () => {
+      const result = calculateDamage(20, 10, 5, 1.0, 0.5); // 100% 크리티컬, 50% 추가 데미지
+      expect(result.damage).toBe(22); // 15 + (15 * 0.5) = 22.5 -> 22 (Math.floor)
+      expect(result.isCritical).toBe(true);
     });
   });
 
@@ -102,12 +114,14 @@ describe("BattleSystem", () => {
         mockPlayerStats
       );
 
-      const expectedDamage = calculateDamage(20, 8, 5); // 17 데미지
-      expect(newBattleState.bossHP).toBe(100 - expectedDamage);
+      const expectedDamageResult = calculateDamage(20, 8, 5, 0, 0); // 17 데미지, 크리티컬 없음
+      expect(newBattleState.bossHP).toBe(100 - expectedDamageResult.damage);
       expect(newBattleState.isPlayerTurn).toBe(false); // 보스 턴으로 변경
       expect(newBattleState.battleLog).toHaveLength(2);
       expect(newBattleState.battleLog[1].type).toBe("player_attack");
-      expect(newBattleState.battleLog[1].damage).toBe(expectedDamage);
+      expect(newBattleState.battleLog[1].damage).toBe(
+        expectedDamageResult.damage
+      );
     });
 
     it("should handle victory condition", () => {
@@ -146,12 +160,14 @@ describe("BattleSystem", () => {
         mockPlayerStats
       );
 
-      const expectedDamage = calculateDamage(15, 10); // 5 데미지
-      expect(newBattleState.playerHP).toBe(120 - expectedDamage);
+      const expectedDamageResult = calculateDamage(15, 10); // 5 데미지, 보스는 크리티컬 없음
+      expect(newBattleState.playerHP).toBe(120 - expectedDamageResult.damage);
       expect(newBattleState.isPlayerTurn).toBe(true); // 플레이어 턴으로 변경
       expect(newBattleState.battleLog).toHaveLength(2);
       expect(newBattleState.battleLog[1].type).toBe("boss_attack");
-      expect(newBattleState.battleLog[1].damage).toBe(expectedDamage);
+      expect(newBattleState.battleLog[1].damage).toBe(
+        expectedDamageResult.damage
+      );
     });
 
     it("should handle defeat condition", () => {
@@ -160,6 +176,9 @@ describe("BattleSystem", () => {
         defense: 0,
         defensePenetration: 0,
         additionalAttackChance: 0,
+        creditPerSecondBonus: 0,
+        criticalDamageMultiplier: 0,
+        criticalChance: 0,
       };
       const initialBattleState = initializeBattle(mockBoss, weakPlayerStats);
       initialBattleState.playerHP = 1; // 약한 HP로 설정
@@ -220,6 +239,9 @@ describe("BattleSystem", () => {
         defense: 20,
         defensePenetration: 10,
         additionalAttackChance: 0,
+        creditPerSecondBonus: 0,
+        criticalDamageMultiplier: 0,
+        criticalChance: 0,
       };
 
       const result = simulateBattle(mockBoss, strongPlayerStats);
@@ -235,6 +257,9 @@ describe("BattleSystem", () => {
         defense: 0,
         defensePenetration: 0,
         additionalAttackChance: 0,
+        creditPerSecondBonus: 0,
+        criticalDamageMultiplier: 0,
+        criticalChance: 0,
       };
 
       const result = simulateBattle(mockBoss, weakPlayerStats);

@@ -112,6 +112,11 @@ export function recalculateEnhancedItemStats(item: Item): Item {
 
     // 펫 (공격력)
     [ItemType.PET]: "attack",
+
+    // 물약들
+    [ItemType.WEALTH_POTION]: "creditPerSecondBonus",
+    [ItemType.BOSS_POTION]: "criticalDamageMultiplier",
+    [ItemType.ARTISAN_POTION]: "criticalChance",
   };
 
   const primaryStat = ITEM_PRIMARY_STATS[item.type];
@@ -125,6 +130,14 @@ export function recalculateEnhancedItemStats(item: Item): Item {
     additionalAttackChance:
       item.enhancedStats.additionalAttackChance -
       item.baseStats.additionalAttackChance,
+    creditPerSecondBonus:
+      item.enhancedStats.creditPerSecondBonus -
+      item.baseStats.creditPerSecondBonus,
+    criticalDamageMultiplier:
+      item.enhancedStats.criticalDamageMultiplier -
+      item.baseStats.criticalDamageMultiplier,
+    criticalChance:
+      item.enhancedStats.criticalChance - item.baseStats.criticalChance,
   };
 
   // 모든 강화 보너스의 합계 계산 (추가타격 확률은 1000배로 계산하여 정수로 변환)
@@ -132,7 +145,10 @@ export function recalculateEnhancedItemStats(item: Item): Item {
     currentEnhancementBonus.attack +
     currentEnhancementBonus.defense +
     currentEnhancementBonus.defensePenetration +
-    currentEnhancementBonus.additionalAttackChance * 1000;
+    currentEnhancementBonus.additionalAttackChance * 1000 +
+    currentEnhancementBonus.creditPerSecondBonus +
+    currentEnhancementBonus.criticalDamageMultiplier * 100 +
+    currentEnhancementBonus.criticalChance * 1000;
 
   // 새로운 강화 스탯 초기화 (기본 스탯만 유지)
   const newEnhancedStats: ItemStats = { ...item.baseStats };
@@ -155,6 +171,20 @@ export function recalculateEnhancedItemStats(item: Item): Item {
         // 추가타격 확률은 1000으로 나누어 원래 비율로 복원
         newEnhancedStats.additionalAttackChance =
           item.baseStats.additionalAttackChance + totalEnhancementValue / 1000;
+        break;
+      case "creditPerSecondBonus":
+        newEnhancedStats.creditPerSecondBonus =
+          item.baseStats.creditPerSecondBonus + totalEnhancementValue;
+        break;
+      case "criticalDamageMultiplier":
+        // 크리티컬 데미지는 100으로 나누어 원래 비율로 복원
+        newEnhancedStats.criticalDamageMultiplier =
+          item.baseStats.criticalDamageMultiplier + totalEnhancementValue / 100;
+        break;
+      case "criticalChance":
+        // 크리티컬 확률은 1000으로 나누어 원래 비율로 복원
+        newEnhancedStats.criticalChance =
+          item.baseStats.criticalChance + totalEnhancementValue / 1000;
         break;
     }
 
@@ -284,6 +314,9 @@ export function recalculatePlayerStats(
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   };
 
   // 모든 장착된 아이템의 스탯을 합산
@@ -295,6 +328,11 @@ export function recalculatePlayerStats(
       stats.defensePenetration += item.enhancedStats.defensePenetration || 0;
       stats.additionalAttackChance +=
         item.enhancedStats.additionalAttackChance || 0;
+      stats.creditPerSecondBonus +=
+        item.enhancedStats.creditPerSecondBonus || 0;
+      stats.criticalDamageMultiplier +=
+        item.enhancedStats.criticalDamageMultiplier || 0;
+      stats.criticalChance += item.enhancedStats.criticalChance || 0;
     }
   });
 

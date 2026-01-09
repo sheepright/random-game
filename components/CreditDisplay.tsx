@@ -41,10 +41,17 @@ export function CreditDisplay() {
         <div className="flex items-center justify-center mb-1">
           <span className="text-lg mr-2">⚡</span>
           <div className="text-lg font-semibold hero-text-green">
-            +{gameState.creditPerSecond}/초
+            +
+            {gameState.creditPerSecond +
+              gameState.playerStats.creditPerSecondBonus}
+            /초
           </div>
         </div>
-        <div className="text-xs hero-text-muted">자동 생성</div>
+        <div className="text-xs hero-text-muted">
+          기본 {gameState.creditPerSecond}
+          {gameState.playerStats.creditPerSecondBonus > 0 &&
+            ` + 물약 ${gameState.playerStats.creditPerSecondBonus}`}
+        </div>
       </div>
     </div>
   );

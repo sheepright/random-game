@@ -17,6 +17,8 @@ import {
   GACHA_ITEM_TYPES,
   ITEM_BASE_STATS,
   GRADE_MULTIPLIERS,
+  GRADE_BASE_STATS,
+  RANDOM_BONUS_RANGE,
   getItemImagePath,
 } from "../constants/game";
 
@@ -67,18 +69,19 @@ export function performGachaDraw(
 
 /**
  * 가챠 확률에 따른 아이템 등급 선택
- * Requirements: 11.3 - Common (80%), Rare (18%), Epic (2.5%), Legendary (0.5%)
+ * Requirements: 11.3 - Common (70%), Rare (20%), Epic (7%), Legendary (2.5%), Mythic (0.5%)
  */
 function selectItemGrade(): ItemGrade {
   const random = Math.random();
   let cumulativeProbability = 0;
 
-  // 확률 순서대로 체크 (Common -> Rare -> Epic -> Legendary)
+  // 확률 순서대로 체크 (Common -> Rare -> Epic -> Legendary -> Mythic)
   const grades = [
     ItemGrade.COMMON,
     ItemGrade.RARE,
     ItemGrade.EPIC,
     ItemGrade.LEGENDARY,
+    ItemGrade.MYTHIC,
   ];
 
   for (const grade of grades) {
@@ -98,27 +101,40 @@ function selectItemGrade(): ItemGrade {
  */
 function generateGachaItem(type: ItemType, grade: ItemGrade): Item {
   const baseStats = { ...ITEM_BASE_STATS[type] };
-  const gradeMultiplier = GRADE_MULTIPLIERS[grade];
+  const gradeBaseStats = GRADE_BASE_STATS[grade];
 
-  // 등급에 따른 스탯 배수 적용
-  const enhancedStats = {
-    attack: Math.floor(baseStats.attack * gradeMultiplier),
-    defense: Math.floor(baseStats.defense * gradeMultiplier),
-    defensePenetration: Math.floor(
-      baseStats.defensePenetration * gradeMultiplier
-    ),
-    additionalAttackChance: baseStats.additionalAttackChance * gradeMultiplier,
-  };
+  // 랜덤 보너스 (1~5)
+  const getRandomBonus = () =>
+    RANDOM_BONUS_RANGE.min +
+    Math.floor(
+      Math.random() * (RANDOM_BONUS_RANGE.max - RANDOM_BONUS_RANGE.min + 1)
+    );
 
-  // 가챠 아이템은 약간의 랜덤 보너스 추가 (±10%)
-  const randomBonus = 0.9 + Math.random() * 0.2; // 0.9 ~ 1.1
+  // 아이템 타입별 스탯 적용 (해당 스탯만 적용)
   const finalStats = {
-    attack: Math.floor(enhancedStats.attack * randomBonus),
-    defense: Math.floor(enhancedStats.defense * randomBonus),
-    defensePenetration: Math.floor(
-      enhancedStats.defensePenetration * randomBonus
-    ),
-    additionalAttackChance: enhancedStats.additionalAttackChance * randomBonus,
+    attack: baseStats.attack > 0 ? gradeBaseStats.attack + getRandomBonus() : 0,
+    defense:
+      baseStats.defense > 0 ? gradeBaseStats.defense + getRandomBonus() : 0,
+    defensePenetration:
+      baseStats.defensePenetration > 0
+        ? gradeBaseStats.defensePenetration + getRandomBonus()
+        : 0,
+    additionalAttackChance:
+      baseStats.additionalAttackChance > 0
+        ? gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001
+        : 0,
+    creditPerSecondBonus:
+      baseStats.creditPerSecondBonus > 0
+        ? gradeBaseStats.creditPerSecondBonus + getRandomBonus()
+        : 0,
+    criticalDamageMultiplier:
+      baseStats.criticalDamageMultiplier > 0
+        ? gradeBaseStats.criticalDamageMultiplier + getRandomBonus() * 0.01
+        : 0,
+    criticalChance:
+      baseStats.criticalChance > 0
+        ? gradeBaseStats.criticalChance + getRandomBonus() * 0.01
+        : 0,
   };
 
   return {

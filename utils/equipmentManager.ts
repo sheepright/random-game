@@ -92,6 +92,9 @@ export function calculatePlayerStatsFromEquipment(
       defense: 0,
       defensePenetration: 0,
       additionalAttackChance: 0,
+      creditPerSecondBonus: 0,
+      criticalDamageMultiplier: 0,
+      criticalChance: 0,
     };
   }
 
@@ -100,6 +103,9 @@ export function calculatePlayerStatsFromEquipment(
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   };
 
   // 모든 장착된 아이템의 스탯을 합산
@@ -109,6 +115,10 @@ export function calculatePlayerStatsFromEquipment(
       stats.defense += item.enhancedStats.defense;
       stats.defensePenetration += item.enhancedStats.defensePenetration;
       stats.additionalAttackChance += item.enhancedStats.additionalAttackChance;
+      stats.creditPerSecondBonus += item.enhancedStats.creditPerSecondBonus;
+      stats.criticalDamageMultiplier +=
+        item.enhancedStats.criticalDamageMultiplier;
+      stats.criticalChance += item.enhancedStats.criticalChance;
     }
   });
 

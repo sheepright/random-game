@@ -35,6 +35,7 @@ import {
   loadGameState,
   forceSaveWithRetry,
 } from "../utils/gameStorage";
+import { initializeBattle } from "../utils/battleSystem";
 import {
   equipItem as performEquipItem,
   unequipItem as performUnequipItem,
@@ -426,23 +427,7 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
 
     case "START_BATTLE": {
       const { boss } = action.payload;
-      const playerMaxHP = 100 + state.playerStats.defense * 2;
-
-      const newBattleState: BattleState = {
-        boss: { ...boss, currentHP: boss.maxHP },
-        playerHP: playerMaxHP,
-        bossHP: boss.maxHP,
-        isPlayerTurn: true,
-        battleLog: [
-          {
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            type: "battle_start",
-            message: `${boss.name}과의 전투가 시작되었습니다!`,
-          },
-        ],
-        battleResult: "ongoing",
-      };
+      const newBattleState = initializeBattle(boss, state.playerStats);
 
       return {
         ...state,
@@ -840,6 +825,27 @@ export function GameProvider({ children }: GameProviderProps) {
       clearInterval(autoSaveInterval);
     };
   }, [isClient]); // isClient 의존성 추가
+
+  // Credit auto-generation effect
+  useEffect(() => {
+    if (!isClient) return; // 클라이언트에서만 실행
+
+    const creditGenerationInterval = setInterval(() => {
+      const totalCreditPerSecond =
+        gameState.creditPerSecond + gameState.playerStats.creditPerSecondBonus;
+      if (totalCreditPerSecond > 0) {
+        dispatch({ type: "ADD_CREDITS", payload: totalCreditPerSecond });
+      }
+    }, 1000); // 1초마다 크레딧 생성
+
+    return () => {
+      clearInterval(creditGenerationInterval);
+    };
+  }, [
+    isClient,
+    gameState.creditPerSecond,
+    gameState.playerStats.creditPerSecondBonus,
+  ]);
 
   // Load game state on mount with proper cleanup
   useEffect(() => {

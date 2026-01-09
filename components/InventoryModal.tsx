@@ -238,6 +238,10 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
     { value: ItemType.NECKLACE, label: "목걸이", icon: "📿" },
     { value: ItemType.MAIN_WEAPON, label: "주무기", icon: "⚔️" },
     { value: ItemType.SUB_WEAPON, label: "보조무기", icon: "🗡️" },
+    { value: ItemType.PET, label: "펫", icon: "🐾" },
+    { value: ItemType.WEALTH_POTION, label: "재물 물약", icon: "💰" },
+    { value: ItemType.BOSS_POTION, label: "보스 물약", icon: "⚡" },
+    { value: ItemType.ARTISAN_POTION, label: "장인 물약", icon: "🔨" },
   ];
 
   return (
@@ -776,6 +780,29 @@ export function InventoryModal({ isOpen, onClose }: InventoryModalProps) {
                             {(
                               item.enhancedStats.additionalAttackChance * 100
                             ).toFixed(1)}
+                            %
+                          </div>
+                        )}
+                        {item.enhancedStats.creditPerSecondBonus > 0 && (
+                          <div>
+                            크레딧/초: {item.enhancedStats.creditPerSecondBonus}
+                          </div>
+                        )}
+                        {item.enhancedStats.criticalDamageMultiplier > 0 && (
+                          <div>
+                            크리데미지:{" "}
+                            {(
+                              item.enhancedStats.criticalDamageMultiplier * 100
+                            ).toFixed(1)}
+                            %
+                          </div>
+                        )}
+                        {item.enhancedStats.criticalChance > 0 && (
+                          <div>
+                            크리확률:{" "}
+                            {(item.enhancedStats.criticalChance * 100).toFixed(
+                              1
+                            )}
                             %
                           </div>
                         )}

@@ -321,6 +321,9 @@ export function getItemTypeDisplayName(type: ItemType): string {
     [ItemType.MAIN_WEAPON]: "주무기",
     [ItemType.SUB_WEAPON]: "보조무기",
     [ItemType.PET]: "펫",
+    [ItemType.WEALTH_POTION]: "재물 물약",
+    [ItemType.BOSS_POTION]: "보스 물약",
+    [ItemType.ARTISAN_POTION]: "장인 물약",
   };
 
   return typeNames[type];

@@ -171,6 +171,12 @@ function createSynthesizedItem(grade: ItemGrade): Item {
       baseStats.defensePenetration * gradeMultiplier
     ),
     additionalAttackChance: baseStats.additionalAttackChance * gradeMultiplier,
+    creditPerSecondBonus: Math.floor(
+      baseStats.creditPerSecondBonus * gradeMultiplier
+    ),
+    criticalDamageMultiplier:
+      baseStats.criticalDamageMultiplier * gradeMultiplier,
+    criticalChance: baseStats.criticalChance * gradeMultiplier,
   };
 
   return createItemWithImage(itemType, grade, enhancedStats);

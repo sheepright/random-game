@@ -6,52 +6,201 @@
 import { StageInfo, BossInfo, DropRateTable, ItemGrade } from "../types/game";
 
 /**
- * 스테이지별 요구 스탯 계산 (이전 설정으로 복원)
+ * 스테이지별 요구 스탯 계산 (기본 장비로도 클리어 가능하도록 대폭 완화)
  */
 export function calculateStageRequirements(stage: number): {
   requiredAttack: number;
   requiredDefense: number;
 } {
-  const baseAttack = 10;
-  const baseDefense = 10;
-  const attackGrowth = 1.15; // 15% 증가
-  const defenseGrowth = 1.12; // 12% 증가
+  // 스테이지별 최소 요구 스탯 (기본 장비로도 충분히 클리어 가능하도록 설정)
+  // 기본 장비 스탯: 공격력 10, 방어력 19 (헬멧5 + 아머8 + 팬츠6)
+  let requiredAttack, requiredDefense;
+
+  if (stage <= 10) {
+    // 1-10: 기본 장비만으로도 충분히 클리어 가능
+    requiredAttack = 8 + stage * 0.5; // 1스테이지: 8.5, 10스테이지: 13 (기본 공격력 10보다 낮음)
+    requiredDefense = 15 + stage * 0.5; // 1스테이지: 15.5, 10스테이지: 20 (기본 방어력 19보다 낮음)
+  } else if (stage <= 20) {
+    // 11-20: Rare 장비 수준 (하지만 여전히 완화)
+    requiredAttack = 25 + (stage - 10) * 3;
+    requiredDefense = 25 + (stage - 10) * 2;
+  } else if (stage <= 40) {
+    // 21-40: Epic 장비 수준
+    requiredAttack = 55 + (stage - 20) * 5;
+    requiredDefense = 45 + (stage - 20) * 3;
+  } else if (stage <= 70) {
+    // 41-70: Legendary 장비 수준
+    requiredAttack = 155 + (stage - 40) * 8;
+    requiredDefense = 105 + (stage - 40) * 5;
+  } else {
+    // 71-100: Mythic 장비 수준
+    requiredAttack = 395 + (stage - 70) * 10;
+    requiredDefense = 255 + (stage - 70) * 7;
+  }
 
   return {
-    requiredAttack: Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1)),
-    requiredDefense: Math.floor(
-      baseDefense * Math.pow(defenseGrowth, stage - 1)
-    ),
+    requiredAttack: Math.floor(requiredAttack),
+    requiredDefense: Math.floor(requiredDefense),
   };
 }
 
 /**
- * 보스 스탯 계산 (이전 설정으로 복원)
+ * 보스 스탯 계산 (초반 스테이지도 점진적 난이도 증가)
  */
 export function calculateBossStats(stage: number): {
   maxHP: number;
   attack: number;
   defense: number;
 } {
-  const baseHP = 50;
-  const baseAttack = 8;
-  const baseDefense = 3;
-  const hpGrowth = 1.18; // 18% 증가
-  const attackGrowth = 1.14; // 14% 증가
-  const defenseGrowth = 1.13; // 13% 증가
+  // 실제 기본 장비 스탯: 공격력 10, 방어력 15, HP 130
+  let playerAttack, playerDefense, playerDefensePenetration;
+
+  if (stage <= 10) {
+    // 1-10: 기본 장비 기준으로 점진적 난이도 증가
+    playerAttack = 10; // 기본 장비 공격력 그대로
+    playerDefense = 15; // 기본 장비 방어력 그대로
+    playerDefensePenetration = 0; // 기본 장비는 방어 무시 없음
+  } else if (stage <= 20) {
+    // 11-20: Rare 장비 수준
+    playerAttack = 80 + (stage - 10) * 5;
+    playerDefense = 50 + (stage - 10) * 3;
+    playerDefensePenetration = 30 + (stage - 10) * 2;
+  } else if (stage <= 40) {
+    // 21-40: Epic 장비 수준
+    playerAttack = 150 + (stage - 20) * 8;
+    playerDefense = 80 + (stage - 20) * 5;
+    playerDefensePenetration = 50 + (stage - 20) * 3;
+  } else if (stage <= 70) {
+    // 41-70: Legendary 장비 수준
+    playerAttack = 300 + (stage - 40) * 12;
+    playerDefense = 180 + (stage - 40) * 8;
+    playerDefensePenetration = 110 + (stage - 40) * 5;
+  } else {
+    // 71-100: Mythic 장비 수준
+    playerAttack = 660 + (stage - 70) * 15;
+    playerDefense = 420 + (stage - 70) * 10;
+    playerDefensePenetration = 260 + (stage - 70) * 6;
+  }
+
+  // 턴 제한 계산
+  const baseTurnLimit = 30;
+  const turnLimitReduction = 0.1;
+  const minTurnLimit = 10;
+  const reduction = Math.floor((stage - 1) * turnLimitReduction);
+  const turnLimit = Math.max(minTurnLimit, baseTurnLimit - reduction);
+
+  // 목표: 초반 10스테이지도 점진적 난이도 증가
+  let targetTurnsRatio;
+  if (stage <= 3) {
+    targetTurnsRatio = 0.1; // 1-3스테이지: 3턴 내외 (매우 쉽게)
+  } else if (stage <= 6) {
+    targetTurnsRatio = 0.15; // 4-6스테이지: 4-5턴 (쉽게)
+  } else if (stage <= 10) {
+    targetTurnsRatio = 0.2; // 7-10스테이지: 6턴 (적당히 쉽게)
+  } else if (stage <= 20) {
+    targetTurnsRatio = 0.4; // 40% 턴 내에 처치
+  } else {
+    targetTurnsRatio = 0.75; // 75% 턴 내에 처치
+  }
+  const targetTurns = Math.max(1, Math.floor(turnLimit * targetTurnsRatio));
+
+  // 새로운 데미지 계산 방식 적용
+  function calculateDamage(
+    attack: number,
+    defense: number,
+    defensePenetration: number = 0
+  ): number {
+    const effectiveDefense = Math.max(0, defense - defensePenetration);
+    const damageReduction = effectiveDefense / (effectiveDefense + 100);
+    return Math.max(
+      Math.floor(attack * 0.1), // 최소 10% 데미지 보장
+      Math.floor(attack * (1 - damageReduction))
+    );
+  }
+
+  // 보스 방어력: 초반 스테이지도 약간의 방어력 추가
+  let bossDefense = 0;
+  if (stage <= 10) {
+    // 1-10스테이지: 스테이지가 높아질수록 약간의 방어력 추가
+    if (stage >= 4) {
+      bossDefense = Math.floor((stage - 3) * 0.5); // 4스테이지부터 0.5씩 증가
+    }
+  } else {
+    let targetDamageReduction;
+    if (stage <= 20) {
+      targetDamageReduction = 0.05; // 11-20스테이지는 5% 감소만
+    } else if (stage <= 30) {
+      targetDamageReduction = 0.15; // 중반은 15% 감소
+    } else if (stage <= 50) {
+      targetDamageReduction = 0.2; // 중후반은 20% 감소
+    } else {
+      targetDamageReduction = 0.25; // 후반은 25% 감소
+    }
+    bossDefense = Math.floor(
+      (playerAttack * targetDamageReduction) / (1 - targetDamageReduction)
+    );
+  }
+
+  // 실제 플레이어 데미지 계산
+  const playerDamagePerTurn = calculateDamage(
+    playerAttack,
+    bossDefense,
+    playerDefensePenetration
+  );
+
+  // 보스 HP: 목표 턴 수 * 플레이어 데미지 (스테이지별 점진적 증가)
+  let bossHP = Math.floor(playerDamagePerTurn * targetTurns);
+
+  // 초반 스테이지 HP 추가 조정 (더 세밀한 난이도 곡선)
+  if (stage <= 10) {
+    const stageMultiplier = 0.8 + (stage - 1) * 0.05; // 0.8배에서 1.25배까지 점진적 증가
+    bossHP = Math.floor(bossHP * stageMultiplier);
+  }
+
+  // 보스 공격력: 스테이지별 점진적 증가
+  const playerHP = 100 + playerDefense * 2;
+  let survivalTurns;
+  if (stage <= 3) {
+    survivalTurns = 65; // 1-3 스테이지: 65턴 생존 (거의 죽지 않음)
+  } else if (stage <= 6) {
+    survivalTurns = 43; // 4-6 스테이지: 43턴 생존 (여전히 안전)
+  } else if (stage <= 10) {
+    survivalTurns = 26; // 7-10 스테이지: 26턴 생존 (적당한 위험)
+  } else if (stage <= 20) {
+    survivalTurns = 20; // 11-20 스테이지는 20턴 생존
+  } else if (stage <= 50) {
+    survivalTurns = 12; // 중반은 12턴 생존
+  } else {
+    survivalTurns = 8; // 후반 스테이지는 8턴 생존
+  }
+  const bossAttack = Math.floor(playerHP / survivalTurns);
 
   return {
-    maxHP: Math.floor(baseHP * Math.pow(hpGrowth, stage - 1)),
-    attack: Math.floor(baseAttack * Math.pow(attackGrowth, stage - 1)),
-    defense: Math.floor(baseDefense * Math.pow(defenseGrowth, stage - 1)),
+    maxHP: Math.max(15, bossHP), // 최소 HP 15
+    attack: Math.max(1, bossAttack), // 최소 공격력 1
+    defense: Math.max(0, bossDefense), // 최소 방어력 0
   };
 }
 
 /**
- * 크레딧 배율 계산 (기본값 기준으로 계산하여 기하급수적 증가 방지)
+ * 크레딧 배율 계산 (중간 구간 대폭 상향)
  */
 export function calculateCreditMultiplier(stage: number): number {
-  return 1 + (stage - 1) * 0.02; // 스테이지당 2% 증가 (기본값 기준)
+  if (stage <= 10) {
+    return 1 + (stage - 1) * 0.02; // 스테이지당 2% 증가 (1.00~1.18)
+  } else if (stage <= 20) {
+    // 11-20단계: 더 빠른 성장
+    return 1.18 + (stage - 10) * 0.03; // 스테이지당 3% 증가 (1.18~1.48)
+  } else if (stage <= 40) {
+    // 21-40단계: 중간 구간 대폭 상향
+    return 1.48 + (stage - 20) * 0.04; // 스테이지당 4% 증가 (1.48~2.28)
+  } else if (stage <= 60) {
+    // 41-60단계: 후반 구간
+    return 2.28 + (stage - 40) * 0.03; // 스테이지당 3% 증가 (2.28~2.88)
+  } else {
+    // 61-100단계: 최종 구간
+    return 2.88 + (stage - 60) * 0.02; // 스테이지당 2% 증가 (2.88~3.68)
+  }
 }
 
 /**

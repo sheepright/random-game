@@ -32,12 +32,18 @@ function createTestItem(
       defense: 10,
       defensePenetration: 5,
       additionalAttackChance: 0.01,
+      creditPerSecondBonus: 0,
+      criticalDamageMultiplier: 0,
+      criticalChance: 0,
     },
     enhancedStats: {
       attack: 10,
       defense: 10,
       defensePenetration: 5,
       additionalAttackChance: 0.01,
+      creditPerSecondBonus: 0,
+      criticalDamageMultiplier: 0,
+      criticalChance: 0,
     },
     level: 1,
     enhancementLevel,
@@ -68,6 +74,9 @@ function createTestEquippedItems(): EquippedItems {
     ),
     subWeapon: null,
     pet: null,
+    wealthPotion: null,
+    bossPotion: null,
+    artisanPotion: null,
   };
 }
 

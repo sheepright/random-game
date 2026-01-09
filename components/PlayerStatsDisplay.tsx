@@ -35,15 +35,9 @@ export function PlayerStatsDisplay() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold hero-text-primary mb-2 flex items-center justify-center">
-        <span className="text-lg mr-2 hero-pulse">📊</span>
-        용사 스탯
-      </h2>
-
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-4 gap-1.5 mb-2">
         {/* 공격력 */}
-        <div className="hero-card-red p-2 rounded-lg text-center">
-          <div className="text-sm">⚔️</div>
+        <div className="hero-card-red p-1.5 rounded-lg text-center">
           <div className="text-xs hero-text-secondary">공격력</div>
           <div className="text-sm font-bold hero-text-red font-mono">
             {formatStat(gameState.playerStats.attack)}
@@ -51,8 +45,7 @@ export function PlayerStatsDisplay() {
         </div>
 
         {/* 방어력 */}
-        <div className="hero-card-blue p-2 rounded-lg text-center">
-          <div className="text-sm">🛡️</div>
+        <div className="hero-card-blue p-1.5 rounded-lg text-center">
           <div className="text-xs hero-text-secondary">방어력</div>
           <div className="text-sm font-bold hero-text-blue font-mono">
             {formatStat(gameState.playerStats.defense)}
@@ -60,8 +53,7 @@ export function PlayerStatsDisplay() {
         </div>
 
         {/* 방어율 무시 */}
-        <div className="hero-card-purple p-2 rounded-lg text-center">
-          <div className="text-sm">💥</div>
+        <div className="hero-card-purple p-1.5 rounded-lg text-center">
           <div className="text-xs hero-text-secondary">방무</div>
           <div className="text-sm font-bold hero-text-purple font-mono">
             {formatStat(gameState.playerStats.defensePenetration)}
@@ -69,17 +61,41 @@ export function PlayerStatsDisplay() {
         </div>
 
         {/* 추가타격 확률 */}
-        <div className="hero-card-green p-2 rounded-lg text-center">
-          <div className="text-sm">⚡</div>
+        <div className="hero-card-green p-1.5 rounded-lg text-center">
           <div className="text-xs hero-text-secondary">추가타격</div>
           <div className="text-sm font-bold hero-text-green font-mono">
             {formatPercentage(gameState.playerStats.additionalAttackChance)}
           </div>
         </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-1.5">
+        {/* 크레딧 보너스 */}
+        <div className="hero-card-accent p-1.5 rounded-lg text-center">
+          <div className="text-xs hero-text-secondary">크레딧/초</div>
+          <div className="text-sm font-bold hero-text-accent font-mono">
+            +{formatStat(gameState.playerStats.creditPerSecondBonus)}
+          </div>
+        </div>
+
+        {/* 크리티컬 확률 */}
+        <div className="hero-card-green p-1.5 rounded-lg text-center">
+          <div className="text-xs hero-text-secondary">크리확률</div>
+          <div className="text-sm font-bold hero-text-green font-mono">
+            {formatPercentage(gameState.playerStats.criticalChance)}
+          </div>
+        </div>
+
+        {/* 크리티컬 데미지 */}
+        <div className="hero-card-red p-1.5 rounded-lg text-center">
+          <div className="text-xs hero-text-secondary">크리데미지</div>
+          <div className="text-sm font-bold hero-text-red font-mono">
+            +{formatPercentage(gameState.playerStats.criticalDamageMultiplier)}
+          </div>
+        </div>
 
         {/* 총 전투력 */}
-        <div className="hero-card-accent p-2 rounded-lg text-center">
-          <div className="text-sm">⭐</div>
+        <div className="hero-card-accent p-1.5 rounded-lg text-center">
           <div className="text-xs hero-text-muted">전투력</div>
           <div className="text-sm font-bold hero-text-accent font-mono">
             {formatStat(totalPower)}

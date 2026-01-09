@@ -3,7 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useGame } from "../contexts/GameContext";
 import { BattleState, BattleLogEntry, Boss, PlayerStats } from "../types/game";
-import { calculateAdditionalAttackChance } from "../utils/battleSystem";
+import {
+  calculateAdditionalAttackChance,
+  initializeBattle,
+  processPlayerAttack,
+  processBossAttack,
+} from "../utils/battleSystem";
 
 /**
  * BattleModal 컴포넌트
@@ -146,6 +151,18 @@ function BattleStats({ playerStats, boss }: BattleStatsProps) {
               {(playerStats.additionalAttackChance * 100).toFixed(1)}%
             </span>
           </div>
+          <div className="flex justify-between">
+            <span>크리확률:</span>
+            <span className="font-semibold hero-text-primary">
+              {(playerStats.criticalChance * 100).toFixed(1)}%
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>크리데미지:</span>
+            <span className="font-semibold hero-text-primary">
+              +{(playerStats.criticalDamageMultiplier * 100).toFixed(1)}%
+            </span>
+          </div>
         </div>
       </div>
 
@@ -189,151 +206,32 @@ export function BattleModal({
   // 전투 초기화
   useEffect(() => {
     if (isVisible && !battleState) {
-      initializeBattle();
+      initializeBattleState();
     }
   }, [isVisible]);
-
-  const calculateDamage = (
-    attackerAttack: number,
-    defenderDefense: number,
-    defensePenetration: number = 0
-  ): number => {
-    const effectiveDefense = Math.max(0, defenderDefense - defensePenetration);
-    return Math.max(1, attackerAttack - effectiveDefense);
-  };
 
   const performBossAttack = useCallback(() => {
     setBattleState((prev) => {
       if (!prev || prev.battleResult !== "ongoing") return prev;
 
-      const damage = calculateDamage(
-        boss.attack,
-        gameState.playerStats.defense
-      );
-      const newPlayerHP = Math.max(0, prev.playerHP - damage);
-      const isDefeat = newPlayerHP <= 0;
-
-      const newLog: BattleLogEntry = {
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        type: "boss_attack",
-        damage,
-        message: `${boss.name}이 플레이어를 공격했습니다`,
-      };
-
-      const updatedState = {
-        ...prev,
-        playerHP: newPlayerHP,
-        battleLog: [...prev.battleLog, newLog],
-        isPlayerTurn: true,
-      };
-
-      if (isDefeat) {
-        const defeatLog: BattleLogEntry = {
-          id: `log_${Date.now() + 1}`,
-          timestamp: Date.now(),
-          type: "battle_end",
-          message: `플레이어가 패배했습니다...`,
-        };
-
-        return {
-          ...updatedState,
-          battleResult: "defeat",
-          battleLog: [...updatedState.battleLog, defeatLog],
-        };
-      }
-
-      return updatedState;
+      return processBossAttack(prev, gameState.playerStats);
     });
-  }, [boss.attack, boss.name, gameState.playerStats.defense]);
+  }, [gameState.playerStats]);
 
   const performPlayerAttack = useCallback(() => {
     setBattleState((prev) => {
       if (!prev || prev.battleResult !== "ongoing") return prev;
 
-      // 기본 공격 데미지 계산
-      const baseDamage = calculateDamage(
-        gameState.playerStats.attack,
-        boss.defense,
-        gameState.playerStats.defensePenetration
-      );
+      const newState = processPlayerAttack(prev, gameState.playerStats);
 
-      let totalDamage = baseDamage;
-      let newBattleLog = [...prev.battleLog];
-
-      // 기본 공격 로그
-      const baseAttackLog: BattleLogEntry = {
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        type: "player_attack",
-        damage: baseDamage,
-        message: `플레이어가 ${boss.name}에게 공격했습니다`,
-      };
-      newBattleLog.push(baseAttackLog);
-
-      // 추가타격 확률 체크
-      const additionalChance = calculateAdditionalAttackChance(
-        gameState.playerStats
-      );
-      if (additionalChance > 0 && Math.random() < additionalChance) {
-        const additionalDamage = calculateDamage(
-          gameState.playerStats.attack,
-          boss.defense,
-          gameState.playerStats.defensePenetration
-        );
-        totalDamage += additionalDamage;
-
-        // 추가타격 로그
-        const additionalAttackLog: BattleLogEntry = {
-          id: `log_${Date.now() + 1}`,
-          timestamp: Date.now(),
-          type: "player_attack",
-          damage: additionalDamage,
-          message: `추가타격 발동! ${boss.name}에게 추가 공격했습니다`,
-        };
-        newBattleLog.push(additionalAttackLog);
-      }
-
-      const newBossHP = Math.max(0, prev.bossHP - totalDamage);
-      const isVictory = newBossHP <= 0;
-
-      const updatedState = {
-        ...prev,
-        bossHP: newBossHP,
-        battleLog: newBattleLog,
-        isPlayerTurn: false,
-      };
-
-      if (isVictory) {
-        const victoryLog: BattleLogEntry = {
-          id: `log_${Date.now() + 2}`,
-          timestamp: Date.now(),
-          type: "battle_end",
-          message: `${boss.name}을 물리쳤습니다! 승리!`,
-        };
-
-        return {
-          ...updatedState,
-          battleResult: "victory",
-          battleLog: [...updatedState.battleLog, victoryLog],
-        };
-      }
-
-      // 보스가 살아있으면 보스 공격 예약
-      if (!isVictory) {
+      // 보스가 살아있고 플레이어 턴이 끝났으면 보스 공격 예약
+      if (newState.battleResult === "ongoing" && !newState.isPlayerTurn) {
         setTimeout(() => performBossAttack(), 1000);
       }
 
-      return updatedState;
+      return newState;
     });
-  }, [
-    gameState.playerStats.attack,
-    gameState.playerStats.defensePenetration,
-    gameState.playerStats.additionalAttackChance,
-    boss.defense,
-    boss.name,
-    performBossAttack,
-  ]);
+  }, [gameState.playerStats, performBossAttack]);
 
   // 자동 공격 처리
   useEffect(() => {
@@ -369,30 +267,16 @@ export function BattleModal({
   useEffect(() => {
     if (battleState?.battleResult === "victory") {
       setTimeout(() => onVictory(), 2000);
-    } else if (battleState?.battleResult === "defeat") {
+    } else if (
+      battleState?.battleResult === "defeat" ||
+      battleState?.battleResult === "timeout"
+    ) {
       setTimeout(() => onDefeat(), 2000);
     }
   }, [battleState?.battleResult]);
 
-  const initializeBattle = () => {
-    const playerMaxHP = 100 + gameState.playerStats.defense * 2; // 방어력 기반 HP 계산
-
-    const newBattleState: BattleState = {
-      boss: { ...boss, currentHP: boss.maxHP },
-      playerHP: playerMaxHP,
-      bossHP: boss.maxHP,
-      isPlayerTurn: true,
-      battleLog: [
-        {
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          type: "battle_start",
-          message: `${boss.name}과의 전투가 시작되었습니다!`,
-        },
-      ],
-      battleResult: "ongoing",
-    };
-
+  const initializeBattleState = () => {
+    const newBattleState = initializeBattle(boss, gameState.playerStats);
     setBattleState(newBattleState);
   };
 
@@ -411,6 +295,21 @@ export function BattleModal({
     setBattleState(null);
     onClose();
   };
+
+  // 턴 제한 계산
+  const calculateTurnLimit = (stage: number): number => {
+    const baseTurnLimit = 30;
+    const turnLimitReduction = 0.1;
+    const minTurnLimit = 10;
+    const reduction = Math.floor((stage - 1) * turnLimitReduction);
+    return Math.max(minTurnLimit, baseTurnLimit - reduction);
+  };
+
+  const currentStage = gameState.currentStage;
+  const turnLimit = calculateTurnLimit(currentStage);
+  const remainingTurns = battleState
+    ? turnLimit - battleState.currentTurn
+    : turnLimit;
 
   if (!isVisible) return null;
 
@@ -438,21 +337,46 @@ export function BattleModal({
 
         {/* 메인 콘텐츠 - 고정 높이, 스크롤 없음 */}
         <div className="flex-1 p-4 space-y-4 min-h-0">
-          {/* HP 바 */}
+          {/* HP 바 및 턴 정보 */}
           {battleState && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <HealthBar
-                current={battleState.playerHP}
-                max={playerMaxHP}
-                color="green"
-                label="플레이어 HP"
-              />
-              <HealthBar
-                current={battleState.bossHP}
-                max={boss.maxHP}
-                color="red"
-                label={`${boss.name} HP`}
-              />
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <HealthBar
+                  current={battleState.playerHP}
+                  max={playerMaxHP}
+                  color="green"
+                  label="플레이어 HP"
+                />
+                <HealthBar
+                  current={battleState.bossHP}
+                  max={boss.maxHP}
+                  color="red"
+                  label={`${boss.name} HP`}
+                />
+              </div>
+
+              {/* 간단한 턴 정보 */}
+              <div className="text-center">
+                <span className="text-sm hero-text-secondary">턴: </span>
+                <span className="text-sm font-semibold hero-text-primary">
+                  {battleState.currentTurn}
+                </span>
+                <span className="text-sm hero-text-secondary"> / </span>
+                <span className="text-sm font-semibold hero-text-muted">
+                  {turnLimit}
+                </span>
+                <span
+                  className={`text-sm font-semibold ml-2 ${
+                    remainingTurns <= 5
+                      ? "hero-text-red"
+                      : remainingTurns <= 10
+                      ? "text-yellow-400"
+                      : "hero-text-green"
+                  }`}
+                >
+                  (남은 턴: {remainingTurns})
+                </span>
+              </div>
             </div>
           )}
 
@@ -518,15 +442,23 @@ export function BattleModal({
               className={`text-center p-4 rounded-lg ${
                 battleState?.battleResult === "victory"
                   ? "hero-card-green"
+                  : battleState?.battleResult === "timeout"
+                  ? "hero-card-accent"
                   : "hero-card-red"
               }`}
             >
               <h3 className="text-xl font-bold mb-2 hero-text-primary">
-                {battleState?.battleResult === "victory" ? "승리!" : "패배..."}
+                {battleState?.battleResult === "victory"
+                  ? "승리!"
+                  : battleState?.battleResult === "timeout"
+                  ? "시간 초과!"
+                  : "패배..."}
               </h3>
               <p className="text-sm hero-text-secondary">
                 {battleState?.battleResult === "victory"
                   ? "다음 스테이지가 해금되었습니다!"
+                  : battleState?.battleResult === "timeout"
+                  ? "턴 제한에 도달했습니다. 더 강한 장비가 필요합니다!"
                   : "다시 도전해보세요!"}
               </p>
             </div>

@@ -96,6 +96,9 @@ export function calculateTotalStats(equippedItems: EquippedItems): PlayerStats {
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   };
 
   // Sum stats from all equipped items
@@ -105,6 +108,10 @@ export function calculateTotalStats(equippedItems: EquippedItems): PlayerStats {
       stats.defense += item.enhancedStats.defense;
       stats.defensePenetration += item.enhancedStats.defensePenetration;
       stats.additionalAttackChance += item.enhancedStats.additionalAttackChance;
+      stats.creditPerSecondBonus += item.enhancedStats.creditPerSecondBonus;
+      stats.criticalDamageMultiplier +=
+        item.enhancedStats.criticalDamageMultiplier;
+      stats.criticalChance += item.enhancedStats.criticalChance;
     }
   });
 

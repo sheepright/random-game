@@ -158,6 +158,29 @@ function ItemSelector({
                   ).toFixed(1)}
                   %
                 </div>
+                {selectedItem.enhancedStats.creditPerSecondBonus > 0 && (
+                  <div>
+                    크레딧/초: {selectedItem.enhancedStats.creditPerSecondBonus}
+                  </div>
+                )}
+                {selectedItem.enhancedStats.criticalDamageMultiplier > 0 && (
+                  <div>
+                    크리데미지:{" "}
+                    {(
+                      selectedItem.enhancedStats.criticalDamageMultiplier * 100
+                    ).toFixed(1)}
+                    %
+                  </div>
+                )}
+                {selectedItem.enhancedStats.criticalChance > 0 && (
+                  <div>
+                    크리확률:{" "}
+                    {(selectedItem.enhancedStats.criticalChance * 100).toFixed(
+                      1
+                    )}
+                    %
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -314,6 +337,31 @@ function ItemSelector({
                           <div>
                             방무: {item.enhancedStats.defensePenetration}
                           </div>
+                          {item.enhancedStats.creditPerSecondBonus > 0 && (
+                            <div>
+                              크레딧/초:{" "}
+                              {item.enhancedStats.creditPerSecondBonus}
+                            </div>
+                          )}
+                          {item.enhancedStats.criticalDamageMultiplier > 0 && (
+                            <div>
+                              크리데미지:{" "}
+                              {(
+                                item.enhancedStats.criticalDamageMultiplier *
+                                100
+                              ).toFixed(1)}
+                              %
+                            </div>
+                          )}
+                          {item.enhancedStats.criticalChance > 0 && (
+                            <div>
+                              크리확률:{" "}
+                              {(
+                                item.enhancedStats.criticalChance * 100
+                              ).toFixed(1)}
+                              %
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

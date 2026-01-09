@@ -40,6 +40,11 @@ export const ITEM_PRIMARY_STATS: Record<ItemType, keyof ItemStats> = {
 
   // 펫 (공격력)
   [ItemType.PET]: "attack",
+
+  // 물약들
+  [ItemType.WEALTH_POTION]: "creditPerSecondBonus",
+  [ItemType.BOSS_POTION]: "criticalDamageMultiplier",
+  [ItemType.ARTISAN_POTION]: "criticalChance",
 };
 
 // Enhancement cost calculation (밸런스 조정됨 - Requirements 10.12)
@@ -178,6 +183,9 @@ export function getEnhancementStatIncrease(
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   };
 
   // 해당 아이템의 주요 스탯만 증가 (Requirements 10.2)
@@ -193,6 +201,18 @@ export function getEnhancementStatIncrease(
       break;
     case "additionalAttackChance":
       statIncrease.additionalAttackChance = Math.max(0.003, baseValue * 0.0015); // 최소 0.3% 보장 (0.002 → 0.003, 배율 증가)
+      break;
+    case "creditPerSecondBonus":
+      statIncrease.creditPerSecondBonus = Math.max(
+        1,
+        Math.floor(baseValue * 0.5)
+      ); // 최소 1 보장
+      break;
+    case "criticalDamageMultiplier":
+      statIncrease.criticalDamageMultiplier = Math.max(0.01, baseValue * 0.01); // 최소 1% 보장
+      break;
+    case "criticalChance":
+      statIncrease.criticalChance = Math.max(0.005, baseValue * 0.005); // 최소 0.5% 보장
       break;
   }
 
@@ -312,6 +332,9 @@ export function performEnhancement(
       defense: 0,
       defensePenetration: 0,
       additionalAttackChance: 0,
+      creditPerSecondBonus: 0,
+      criticalDamageMultiplier: 0,
+      criticalChance: 0,
     };
   } else {
     // 실패: 레벨 감소 (11강 이상에서만)
@@ -330,6 +353,9 @@ export function performEnhancement(
         defense: -lostStatIncrease.defense,
         defensePenetration: -lostStatIncrease.defensePenetration,
         additionalAttackChance: -lostStatIncrease.additionalAttackChance,
+        creditPerSecondBonus: -lostStatIncrease.creditPerSecondBonus,
+        criticalDamageMultiplier: -lostStatIncrease.criticalDamageMultiplier,
+        criticalChance: -lostStatIncrease.criticalChance,
       };
     } else {
       // 10강 이하에서는 실패해도 레벨 유지
@@ -340,6 +366,9 @@ export function performEnhancement(
         defense: 0,
         defensePenetration: 0,
         additionalAttackChance: 0,
+        creditPerSecondBonus: 0,
+        criticalDamageMultiplier: 0,
+        criticalChance: 0,
       };
     }
   }
@@ -367,6 +396,15 @@ export function applyEnhancementResult(
     additionalAttackChance:
       item.enhancedStats.additionalAttackChance +
       enhancementAttempt.statChange.additionalAttackChance,
+    creditPerSecondBonus:
+      item.enhancedStats.creditPerSecondBonus +
+      enhancementAttempt.statChange.creditPerSecondBonus,
+    criticalDamageMultiplier:
+      item.enhancedStats.criticalDamageMultiplier +
+      enhancementAttempt.statChange.criticalDamageMultiplier,
+    criticalChance:
+      item.enhancedStats.criticalChance +
+      enhancementAttempt.statChange.criticalChance,
   };
 
   return {
@@ -392,6 +430,10 @@ export function recalculateEnhancedStats(item: Item): Item {
     enhancedStats.defense += statIncrease.defense;
     enhancedStats.defensePenetration += statIncrease.defensePenetration;
     enhancedStats.additionalAttackChance += statIncrease.additionalAttackChance;
+    enhancedStats.creditPerSecondBonus += statIncrease.creditPerSecondBonus;
+    enhancedStats.criticalDamageMultiplier +=
+      statIncrease.criticalDamageMultiplier;
+    enhancedStats.criticalChance += statIncrease.criticalChance;
   }
 
   return {
@@ -410,5 +452,13 @@ export function calculateTotalItemStats(item: Item): ItemStats {
     additionalAttackChance:
       item.baseStats.additionalAttackChance +
       item.enhancedStats.additionalAttackChance,
+    creditPerSecondBonus:
+      item.baseStats.creditPerSecondBonus +
+      item.enhancedStats.creditPerSecondBonus,
+    criticalDamageMultiplier:
+      item.baseStats.criticalDamageMultiplier +
+      item.enhancedStats.criticalDamageMultiplier,
+    criticalChance:
+      item.baseStats.criticalChance + item.enhancedStats.criticalChance,
   };
 }

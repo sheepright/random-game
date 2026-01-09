@@ -5,7 +5,6 @@ import { CreditGenerator } from "./CreditGenerator";
 import { CreditDisplay } from "./CreditDisplay";
 import { EquipmentPanel } from "./EquipmentPanel";
 import { StageProgress } from "./StageProgress";
-import { PlayerStatsDisplay } from "./PlayerStatsDisplay";
 import { OfflineProgressModalManager } from "./OfflineProgressModal";
 import { ItemDropSystem } from "./ItemDropSystem";
 import { BattleModal } from "./BattleModal";
@@ -169,19 +168,12 @@ export function GameDashboard() {
             </div>
           </div>
 
-          {/* 중앙: 스테이지 & 스탯 */}
+          {/* 중앙: 스테이지 */}
           <div className="space-y-4">
             {/* 스테이지 진행 */}
             <div className="hero-card hero-card-purple">
               <div className="p-4">
                 <StageProgress onStartBattle={handleStartBattle} />
-              </div>
-            </div>
-
-            {/* 플레이어 스탯 */}
-            <div className="hero-card hero-card-blue">
-              <div className="p-4">
-                <PlayerStatsDisplay />
               </div>
             </div>
           </div>

@@ -80,18 +80,21 @@ const GRADE_PRIORITY: Record<ItemGrade, number> = {
  * 아이템 타입별 우선순위 (정렬용)
  */
 const TYPE_PRIORITY: Record<ItemType, number> = {
-  [ItemType.MAIN_WEAPON]: 11,
-  [ItemType.SUB_WEAPON]: 10,
-  [ItemType.PET]: 9,
-  [ItemType.HELMET]: 8,
-  [ItemType.ARMOR]: 7,
-  [ItemType.PANTS]: 6,
-  [ItemType.GLOVES]: 5,
-  [ItemType.SHOES]: 4,
-  [ItemType.SHOULDER]: 3,
-  [ItemType.NECKLACE]: 2,
-  [ItemType.EARRING]: 1,
-  [ItemType.RING]: 0,
+  [ItemType.MAIN_WEAPON]: 14,
+  [ItemType.SUB_WEAPON]: 13,
+  [ItemType.PET]: 12,
+  [ItemType.HELMET]: 11,
+  [ItemType.ARMOR]: 10,
+  [ItemType.PANTS]: 9,
+  [ItemType.GLOVES]: 8,
+  [ItemType.SHOES]: 7,
+  [ItemType.SHOULDER]: 6,
+  [ItemType.NECKLACE]: 5,
+  [ItemType.EARRING]: 4,
+  [ItemType.RING]: 3,
+  [ItemType.WEALTH_POTION]: 2,
+  [ItemType.BOSS_POTION]: 1,
+  [ItemType.ARTISAN_POTION]: 0,
 };
 
 /**
@@ -326,6 +329,9 @@ export function getItemDisplayName(item: Item): string {
     [ItemType.MAIN_WEAPON]: "주무기",
     [ItemType.SUB_WEAPON]: "보조무기",
     [ItemType.PET]: "펫",
+    [ItemType.WEALTH_POTION]: "재물 물약",
+    [ItemType.BOSS_POTION]: "보스 물약",
+    [ItemType.ARTISAN_POTION]: "장인 물약",
   };
 
   const gradeNames: Record<ItemGrade, string> = {

@@ -288,6 +288,10 @@ body {
   background: linear-gradient(90deg, var(--accent-green), #22c55e);
 }
 
+.hero-progress-yellow {
+  background: linear-gradient(90deg, #eab308, #f59e0b);
+}
+
 /* 입력 필드 */
 .hero-input {
   background: var(--bg-secondary);
@@ -342,22 +346,37 @@ body {
   }
 }
 
-/* 스크롤바 */
+/* 스크롤바 숨김 (기능은 유지) */
 ::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Firefox용 스크롤바 숨김 */
+html {
+  scrollbar-width: none;
+}
+
+/* 스크롤바 (기존 스타일 - 필요시 사용) */
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: var(--bg-secondary);
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--bg-tertiary);
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--border-primary);
 }
 

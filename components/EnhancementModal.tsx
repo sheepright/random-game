@@ -100,6 +100,9 @@ export default function EnhancementModal({
     defense: "방어력",
     defensePenetration: "방어율 무시",
     additionalAttackChance: "추가타격 확률",
+    creditPerSecondBonus: "초당 크레딧 보너스",
+    criticalDamageMultiplier: "크리티컬 데미지",
+    criticalChance: "크리티컬 확률",
   }[primaryStat];
 
   // 효율성 계산 (비용 대비 스탯 증가량)
@@ -122,6 +125,15 @@ export default function EnhancementModal({
         break;
       case "additionalAttackChance":
         primaryStatIncrease = statIncrease.additionalAttackChance * 100; // 퍼센트로 변환
+        break;
+      case "creditPerSecondBonus":
+        primaryStatIncrease = statIncrease.creditPerSecondBonus;
+        break;
+      case "criticalDamageMultiplier":
+        primaryStatIncrease = statIncrease.criticalDamageMultiplier * 100; // 퍼센트로 변환
+        break;
+      case "criticalChance":
+        primaryStatIncrease = statIncrease.criticalChance * 100; // 퍼센트로 변환
         break;
     }
 
@@ -238,6 +250,33 @@ export default function EnhancementModal({
             `추가타격 확률 ${
               statChange.additionalAttackChance > 0 ? "+" : ""
             }${(statChange.additionalAttackChance * 100).toFixed(1)}%`
+          );
+        }
+        break;
+      case "creditPerSecondBonus":
+        if (statChange.creditPerSecondBonus !== 0) {
+          changes.push(
+            `초당 크레딧 보너스 ${
+              statChange.creditPerSecondBonus > 0 ? "+" : ""
+            }${statChange.creditPerSecondBonus}`
+          );
+        }
+        break;
+      case "criticalDamageMultiplier":
+        if (statChange.criticalDamageMultiplier !== 0) {
+          changes.push(
+            `크리티컬 데미지 ${
+              statChange.criticalDamageMultiplier > 0 ? "+" : ""
+            }${(statChange.criticalDamageMultiplier * 100).toFixed(1)}%`
+          );
+        }
+        break;
+      case "criticalChance":
+        if (statChange.criticalChance !== 0) {
+          changes.push(
+            `크리티컬 확률 ${statChange.criticalChance > 0 ? "+" : ""}${(
+              statChange.criticalChance * 100
+            ).toFixed(1)}%`
           );
         }
         break;
@@ -383,6 +422,30 @@ export default function EnhancementModal({
                 </span>
               </div>
             )}
+            {primaryStat === "creditPerSecondBonus" && (
+              <div className="flex justify-between">
+                <span>초당 크레딧 보너스:</span>
+                <span className="hero-text-primary font-medium">
+                  {totalStats.creditPerSecondBonus}
+                </span>
+              </div>
+            )}
+            {primaryStat === "criticalDamageMultiplier" && (
+              <div className="flex justify-between">
+                <span>크리티컬 데미지:</span>
+                <span className="hero-text-primary font-medium">
+                  {(totalStats.criticalDamageMultiplier * 100).toFixed(1)}%
+                </span>
+              </div>
+            )}
+            {primaryStat === "criticalChance" && (
+              <div className="flex justify-between">
+                <span>크리티컬 확률:</span>
+                <span className="hero-text-primary font-medium">
+                  {(totalStats.criticalChance * 100).toFixed(1)}%
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -484,27 +547,35 @@ export default function EnhancementModal({
                         %
                       </div>
                     )}
-                </div>
-              </div>
-
-              {/* 레벨별 효율 가이드 */}
-              <div className="pt-2 border-t border-gray-300">
-                <div className="text-xs hero-text-muted">
-                  <div className="mb-1 font-medium">강화 효율 가이드:</div>
-                  <div className="space-y-1">
-                    <div>
-                      • 1~5강:{" "}
-                      <span className="hero-text-red">매우 낮은 효율</span>
-                    </div>
-                    <div>
-                      • 6~11강:{" "}
-                      <span className="hero-text-accent">점진적 효율 증가</span>
-                    </div>
-                    <div>
-                      • 12~25강:{" "}
-                      <span className="hero-text-green">높은 효율</span>
-                    </div>
-                  </div>
+                  {primaryStat === "creditPerSecondBonus" &&
+                    enhancementInfo.statIncrease.creditPerSecondBonus > 0 && (
+                      <div className="hero-text-green font-medium">
+                        초당 크레딧 보너스 +
+                        {enhancementInfo.statIncrease.creditPerSecondBonus}
+                      </div>
+                    )}
+                  {primaryStat === "criticalDamageMultiplier" &&
+                    enhancementInfo.statIncrease.criticalDamageMultiplier >
+                      0 && (
+                      <div className="hero-text-green font-medium">
+                        크리티컬 데미지 +
+                        {(
+                          enhancementInfo.statIncrease
+                            .criticalDamageMultiplier * 100
+                        ).toFixed(1)}
+                        %
+                      </div>
+                    )}
+                  {primaryStat === "criticalChance" &&
+                    enhancementInfo.statIncrease.criticalChance > 0 && (
+                      <div className="hero-text-green font-medium">
+                        크리티컬 확률 +
+                        {(
+                          enhancementInfo.statIncrease.criticalChance * 100
+                        ).toFixed(1)}
+                        %
+                      </div>
+                    )}
                 </div>
               </div>
 

@@ -25,13 +25,68 @@ export const CREDIT_GENERATION_INTERVAL = 1000; // 1 second in milliseconds
 export const BASE_CREDIT_PER_SECOND = 1;
 export const MAX_OFFLINE_HOURS = 24;
 
-// Item grade multipliers for stat scaling
+// Item grade multipliers for stat scaling (기존 방식 - 호환성 유지)
 export const GRADE_MULTIPLIERS = {
   [ItemGrade.COMMON]: 1.0,
   [ItemGrade.RARE]: 1.5,
   [ItemGrade.EPIC]: 2.0,
   [ItemGrade.LEGENDARY]: 3.0,
   [ItemGrade.MYTHIC]: 4.5,
+} as const;
+
+// 등급별 고정 기본 스텟 (새로운 시스템)
+export const GRADE_BASE_STATS = {
+  [ItemGrade.COMMON]: {
+    attack: 10,
+    defense: 5,
+    defensePenetration: 2,
+    additionalAttackChance: 0.01, // 1%
+    creditPerSecondBonus: 2,
+    criticalDamageMultiplier: 0.2, // 20%
+    criticalChance: 0.05, // 5%
+  },
+  [ItemGrade.RARE]: {
+    attack: 30,
+    defense: 15,
+    defensePenetration: 6,
+    additionalAttackChance: 0.03, // 3%
+    creditPerSecondBonus: 5,
+    criticalDamageMultiplier: 0.4, // 40%
+    criticalChance: 0.1, // 10%
+  },
+  [ItemGrade.EPIC]: {
+    attack: 60,
+    defense: 30,
+    defensePenetration: 12,
+    additionalAttackChance: 0.06, // 6%
+    creditPerSecondBonus: 10,
+    criticalDamageMultiplier: 0.8, // 80%
+    criticalChance: 0.15, // 15%
+  },
+  [ItemGrade.LEGENDARY]: {
+    attack: 120,
+    defense: 60,
+    defensePenetration: 24,
+    additionalAttackChance: 0.12, // 12%
+    creditPerSecondBonus: 20,
+    criticalDamageMultiplier: 1.5, // 150%
+    criticalChance: 0.25, // 25%
+  },
+  [ItemGrade.MYTHIC]: {
+    attack: 200,
+    defense: 100,
+    defensePenetration: 40,
+    additionalAttackChance: 0.2, // 20%
+    creditPerSecondBonus: 35,
+    criticalDamageMultiplier: 2.5, // 250%
+    criticalChance: 0.4, // 40%
+  },
+} as const;
+
+// 랜덤 보너스 범위 (1~5 추가)
+export const RANDOM_BONUS_RANGE = {
+  min: 1,
+  max: 5,
 } as const;
 
 // Item type base stats configuration
@@ -42,18 +97,27 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     defense: 5,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
   [ItemType.ARMOR]: {
     attack: 0,
     defense: 8,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
   [ItemType.PANTS]: {
     attack: 0,
     defense: 6,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
 
   // 방어구 (추가타격 확률)
@@ -62,18 +126,27 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0.02,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   }, // 2%
   [ItemType.SHOES]: {
     attack: 0,
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0.015,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   }, // 1.5%
   [ItemType.SHOULDER]: {
     attack: 0,
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0.025,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   }, // 2.5%
 
   // 장신구 (방어력 무시)
@@ -82,18 +155,27 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     defense: 0,
     defensePenetration: 3,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
   [ItemType.RING]: {
     attack: 0,
     defense: 0,
     defensePenetration: 2,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
   [ItemType.NECKLACE]: {
     attack: 0,
     defense: 0,
     defensePenetration: 4,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
 
   // 무기 (공격력)
@@ -102,12 +184,18 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
   [ItemType.SUB_WEAPON]: {
     attack: 6,
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
 
   // 펫 (공격력)
@@ -116,6 +204,38 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
+  },
+
+  // 물약들
+  [ItemType.WEALTH_POTION]: {
+    attack: 0,
+    defense: 0,
+    defensePenetration: 0,
+    additionalAttackChance: 0,
+    creditPerSecondBonus: 5, // 초당 5 크레딧 보너스
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
+  },
+  [ItemType.BOSS_POTION]: {
+    attack: 0,
+    defense: 0,
+    defensePenetration: 0,
+    additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0.5, // 50% 크리티컬 데미지 증가
+    criticalChance: 0,
+  },
+  [ItemType.ARTISAN_POTION]: {
+    attack: 0,
+    defense: 0,
+    defensePenetration: 0,
+    additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0.1, // 10% 크리티컬 확률
   },
 } as const;
 
@@ -183,16 +303,43 @@ export const BASE_DROP_RATES = {
 // Boss information for each stage - now removed (generated dynamically above)
 
 // Default starting equipment (helmet, armor, pants, main weapon only)
-export const createDefaultItem = (type: ItemType, grade: ItemGrade): Item => ({
-  id: `default-${type}-${Date.now()}-${Math.random()}`,
-  type,
-  grade,
-  baseStats: { ...ITEM_BASE_STATS[type] },
-  enhancedStats: { ...ITEM_BASE_STATS[type] },
-  level: 1,
-  enhancementLevel: 0,
-  imagePath: getItemImagePath(type),
-});
+export const createDefaultItem = (type: ItemType, grade: ItemGrade): Item => {
+  const baseStats = { ...ITEM_BASE_STATS[type] };
+  const gradeBaseStats = GRADE_BASE_STATS[grade];
+
+  // 기본 아이템은 랜덤 보너스 없이 등급 기본값만 적용
+  const finalStats = {
+    attack: baseStats.attack > 0 ? gradeBaseStats.attack : 0,
+    defense: baseStats.defense > 0 ? gradeBaseStats.defense : 0,
+    defensePenetration:
+      baseStats.defensePenetration > 0 ? gradeBaseStats.defensePenetration : 0,
+    additionalAttackChance:
+      baseStats.additionalAttackChance > 0
+        ? gradeBaseStats.additionalAttackChance
+        : 0,
+    creditPerSecondBonus:
+      baseStats.creditPerSecondBonus > 0
+        ? gradeBaseStats.creditPerSecondBonus
+        : 0,
+    criticalDamageMultiplier:
+      baseStats.criticalDamageMultiplier > 0
+        ? gradeBaseStats.criticalDamageMultiplier
+        : 0,
+    criticalChance:
+      baseStats.criticalChance > 0 ? gradeBaseStats.criticalChance : 0,
+  };
+
+  return {
+    id: `default-${type}-${Date.now()}-${Math.random()}`,
+    type,
+    grade,
+    baseStats: finalStats,
+    enhancedStats: { ...finalStats },
+    level: 1,
+    enhancementLevel: 0,
+    imagePath: getItemImagePath(type),
+  };
+};
 
 // Default equipped items configuration (lazy initialization to avoid circular dependency)
 export const getDefaultEquippedItems = (): EquippedItems => ({
@@ -208,6 +355,10 @@ export const getDefaultEquippedItems = (): EquippedItems => ({
   mainWeapon: createDefaultItem(ItemType.MAIN_WEAPON, ItemGrade.COMMON),
   subWeapon: null,
   pet: null,
+  // 물약 슬롯들은 기본적으로 비어있음
+  wealthPotion: null,
+  bossPotion: null,
+  artisanPotion: null,
 });
 
 // Default game state with new item system (lazy initialization)
@@ -223,6 +374,9 @@ export const getDefaultGameState = (): GameState => ({
     defense: 10,
     defensePenetration: 0,
     additionalAttackChance: 0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 0,
+    criticalChance: 0,
   },
   battleState: null,
   recentStageClearDrops: null,
@@ -254,6 +408,9 @@ export const ITEM_TYPE_NAMES: Record<ItemType, string> = {
   [ItemType.MAIN_WEAPON]: "주무기",
   [ItemType.SUB_WEAPON]: "보조무기",
   [ItemType.PET]: "펫",
+  [ItemType.WEALTH_POTION]: "재물 물약",
+  [ItemType.BOSS_POTION]: "보스 물약",
+  [ItemType.ARTISAN_POTION]: "장인 물약",
 };
 
 // Item grade names for UI (Korean)
@@ -271,14 +428,21 @@ export const STAT_NAMES = {
   defense: "방어력",
   defensePenetration: "방어율 무시",
   additionalAttackChance: "추가타격 확률",
+  creditPerSecondBonus: "초당 크레딧 보너스",
+  criticalDamageMultiplier: "크리티컬 데미지",
+  criticalChance: "크리티컬 확률",
 } as const;
 
 // Battle system constants
 export const BATTLE_SETTINGS = {
   playerFirst: true, // 플레이어가 먼저 공격
-  maxBattleRounds: 100, // 무한 루프 방지
+  maxBattleRounds: 100, // 무한 루프 방지 (시뮬레이션용)
   autoAttackDelay: 1000, // 자동 공격 간격 (ms)
   maxAdditionalAttackChance: 0.5, // 최대 추가타격 확률 50%
+  // 스테이지별 턴 제한 (실제 전투용)
+  baseTurnLimit: 30, // 기본 턴 제한
+  turnLimitReduction: 0.1, // 스테이지당 턴 제한 감소율 (10%)
+  minTurnLimit: 10, // 최소 턴 제한
 } as const;
 
 // Gacha system constants (균형 조정됨)
@@ -286,6 +450,7 @@ export const GACHA_COSTS = {
   [GachaCategory.ARMOR]: 800, // 방어구 가챠 (1000 -> 800으로 감소)
   [GachaCategory.ACCESSORIES]: 1200, // 장신구 가챠 (1500 -> 1200으로 감소)
   [GachaCategory.WEAPONS]: 1600, // 무기 가챠 (2000 -> 1600으로 감소)
+  [GachaCategory.POTIONS]: 1000, // 물약 가챠 (새로 추가)
 } as const;
 
 // Gacha rates (모든 카테고리 동일) - 레전드리 상향 및 미식 등급 추가
@@ -317,6 +482,11 @@ export const GACHA_ITEM_TYPES = {
     ItemType.SUB_WEAPON,
     ItemType.PET,
   ],
+  [GachaCategory.POTIONS]: [
+    ItemType.WEALTH_POTION,
+    ItemType.BOSS_POTION,
+    ItemType.ARTISAN_POTION,
+  ],
 } as const;
 
 // Gacha category names for UI (Korean)
@@ -324,6 +494,7 @@ export const GACHA_CATEGORY_NAMES = {
   [GachaCategory.ARMOR]: "방어구",
   [GachaCategory.ACCESSORIES]: "장신구",
   [GachaCategory.WEAPONS]: "무기",
+  [GachaCategory.POTIONS]: "물약",
 } as const;
 
 // Item type image paths mapping
@@ -340,6 +511,9 @@ export const ITEM_IMAGE_PATHS = {
   [ItemType.MAIN_WEAPON]: "/Items/Weapon.png",
   [ItemType.SUB_WEAPON]: "/Items/SubWeapon.png",
   [ItemType.PET]: "/Items/Pet.png",
+  [ItemType.WEALTH_POTION]: "/Items/WealthPotion.png",
+  [ItemType.BOSS_POTION]: "/Items/BossPotion.png",
+  [ItemType.ARTISAN_POTION]: "/Items/ArtisanPotion.png",
 } as const;
 
 // Get item image path by item type
@@ -351,14 +525,41 @@ export const getItemImagePath = (itemType: ItemType): string => {
 export const createItemWithImage = (
   type: ItemType,
   grade: ItemGrade,
-  baseStats: ItemStats
+  baseStats?: ItemStats
 ): Item => {
+  const itemBaseStats = baseStats || { ...ITEM_BASE_STATS[type] };
+  const gradeBaseStats = GRADE_BASE_STATS[grade];
+
+  // baseStats가 제공되지 않은 경우 등급별 기본값 사용
+  const finalStats = baseStats || {
+    attack: itemBaseStats.attack > 0 ? gradeBaseStats.attack : 0,
+    defense: itemBaseStats.defense > 0 ? gradeBaseStats.defense : 0,
+    defensePenetration:
+      itemBaseStats.defensePenetration > 0
+        ? gradeBaseStats.defensePenetration
+        : 0,
+    additionalAttackChance:
+      itemBaseStats.additionalAttackChance > 0
+        ? gradeBaseStats.additionalAttackChance
+        : 0,
+    creditPerSecondBonus:
+      itemBaseStats.creditPerSecondBonus > 0
+        ? gradeBaseStats.creditPerSecondBonus
+        : 0,
+    criticalDamageMultiplier:
+      itemBaseStats.criticalDamageMultiplier > 0
+        ? gradeBaseStats.criticalDamageMultiplier
+        : 0,
+    criticalChance:
+      itemBaseStats.criticalChance > 0 ? gradeBaseStats.criticalChance : 0,
+  };
+
   return {
     id: `item-${type}-${Date.now()}-${Math.random()}`,
     type,
     grade,
-    baseStats: { ...baseStats },
-    enhancedStats: { ...baseStats },
+    baseStats: { ...finalStats },
+    enhancedStats: { ...finalStats },
     level: 1,
     enhancementLevel: 0,
     imagePath: getItemImagePath(type),

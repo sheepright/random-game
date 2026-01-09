@@ -35,12 +35,18 @@ function createTestItem(
       defense: 10,
       defensePenetration: 5,
       additionalAttackChance: 0.01,
+      creditPerSecondBonus: 0,
+      criticalDamageMultiplier: 0,
+      criticalChance: 0,
     },
     enhancedStats: {
       attack: 10,
       defense: 10,
       defensePenetration: 5,
       additionalAttackChance: 0.01,
+      creditPerSecondBonus: 0,
+      criticalDamageMultiplier: 0,
+      criticalChance: 0,
     },
     level: 1,
     enhancementLevel,
@@ -65,6 +71,9 @@ function createTestEquippedItems(
     mainWeapon: null,
     subWeapon: null,
     pet: null,
+    wealthPotion: null,
+    bossPotion: null,
+    artisanPotion: null,
   };
 
   // 테스트를 위해 특정 아이템들을 장착된 것으로 설정
