@@ -61,7 +61,7 @@ export function ItemInfoModal({ item, isOpen, onClose }: ItemInfoModalProps) {
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999]">
       <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700">
         {/* 헤더 */}
         <div className="flex justify-between items-start mb-4">
