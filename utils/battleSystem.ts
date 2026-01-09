@@ -14,16 +14,14 @@ import {
 import { BATTLE_SETTINGS, BOSS_INFO } from "../constants/game";
 
 /**
- * 추가타격 확률 계산 (최대 50% 제한)
+ * 추가타격 확률 계산 (100%일 때 모든 공격에 추가타격 발동)
  * Requirements: 7.6 - 추가타격 확률 기반 추가 데미지
  */
 export function calculateAdditionalAttackChance(
   playerStats: PlayerStats
 ): number {
-  return Math.min(
-    BATTLE_SETTINGS.maxAdditionalAttackChance,
-    playerStats.additionalAttackChance
-  );
+  // 100% 이상이면 1.0으로 제한 (모든 공격에 추가타격)
+  return Math.min(1.0, playerStats.additionalAttackChance);
 }
 
 /**
@@ -54,8 +52,8 @@ export function calculateDamage(
     Math.floor(attackerAttack * (1 - damageReduction))
   );
 
-  // 크리티컬 확률 체크
-  const isCritical = Math.random() < criticalChance;
+  // 크리티컬 확률 체크 (100%일 때 모든 공격이 크리티컬)
+  const isCritical = criticalChance >= 1.0 || Math.random() < criticalChance;
 
   if (isCritical) {
     // 크리티컬 히트: 기본 데미지 + (기본 데미지 × 크리티컬 데미지 배수)
@@ -184,9 +182,12 @@ export function processPlayerAttack(
   );
   newBattleLog.push(baseAttackLog);
 
-  // 추가타격 확률 체크
+  // 추가타격 확률 체크 (100%일 때 모든 공격에 추가타격)
   const additionalChance = calculateAdditionalAttackChance(playerStats);
-  if (additionalChance > 0 && Math.random() < additionalChance) {
+  if (
+    additionalChance >= 1.0 ||
+    (additionalChance > 0 && Math.random() < additionalChance)
+  ) {
     const additionalDamageResult = calculateDamage(
       playerStats.attack,
       battleState.boss.defense,
@@ -381,8 +382,11 @@ export function simulateBattle(
       );
       let totalPlayerDamage = playerDamageResult.damage;
 
-      // 추가타격 확률 적용
-      if (additionalChance > 0 && Math.random() < additionalChance) {
+      // 추가타격 확률 적용 (100%일 때 모든 공격에 추가타격)
+      if (
+        additionalChance >= 1.0 ||
+        (additionalChance > 0 && Math.random() < additionalChance)
+      ) {
         const additionalDamageResult = calculateDamage(
           playerStats.attack,
           boss.defense,

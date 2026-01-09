@@ -56,7 +56,6 @@ function EquipmentSlot({
             onUnequip(slotType);
           }
         }}
-        // title 속성 제거하여 중복 툴팁 방지
       >
         {item ? (
           <EquipmentSlotImage item={item} onClick={() => {}} />
@@ -76,7 +75,7 @@ function EquipmentSlot({
 
   // 아이템이 있으면 툴팁으로 감싸고, 없으면 그대로 반환
   return item ? (
-    <ItemTooltip item={item} position="auto" delay={300}>
+    <ItemTooltip item={item} delay={300}>
       {slotContent}
     </ItemTooltip>
   ) : (

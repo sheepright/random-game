@@ -19,3 +19,5 @@ export { BattleModal } from "./BattleModal";
 export { default as GachaPanel } from "./GachaPanel";
 export { default as GachaResultModal } from "./GachaResultModal";
 export { default as ItemImage, SimpleItemImage } from "./ItemImage";
+export { default as ItemInfoModal } from "./ItemInfoModal";
+export { default as ItemInfoPanel } from "./ItemInfoPanel";

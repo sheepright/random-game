@@ -34,52 +34,52 @@ export const GRADE_MULTIPLIERS = {
   [ItemGrade.MYTHIC]: 4.5,
 } as const;
 
-// 등급별 고정 기본 스텟 (새로운 시스템)
+// 등급별 고정 기본 스텟 (크리티컬과 추가타격 100% 목표로 조정)
 export const GRADE_BASE_STATS = {
   [ItemGrade.COMMON]: {
     attack: 10,
     defense: 5,
     defensePenetration: 2,
-    additionalAttackChance: 0.01, // 1%
-    creditPerSecondBonus: 2,
-    criticalDamageMultiplier: 0.2, // 20%
-    criticalChance: 0.05, // 5%
+    additionalAttackChance: 0.005, // 0.5% (0.01 → 0.005)
+    creditPerSecondBonus: 1,
+    criticalDamageMultiplier: 0.1,
+    criticalChance: 0.01, // 1% (0.02 → 0.01)
   },
   [ItemGrade.RARE]: {
     attack: 30,
     defense: 15,
     defensePenetration: 6,
-    additionalAttackChance: 0.03, // 3%
-    creditPerSecondBonus: 5,
-    criticalDamageMultiplier: 0.4, // 40%
-    criticalChance: 0.1, // 10%
+    additionalAttackChance: 0.015, // 1.5% (0.03 → 0.015)
+    creditPerSecondBonus: 2,
+    criticalDamageMultiplier: 0.2,
+    criticalChance: 0.02, // 2% (0.04 → 0.02)
   },
   [ItemGrade.EPIC]: {
     attack: 60,
     defense: 30,
     defensePenetration: 12,
-    additionalAttackChance: 0.06, // 6%
-    creditPerSecondBonus: 10,
-    criticalDamageMultiplier: 0.8, // 80%
-    criticalChance: 0.15, // 15%
+    additionalAttackChance: 0.03, // 3% (0.06 → 0.03)
+    creditPerSecondBonus: 4,
+    criticalDamageMultiplier: 0.4,
+    criticalChance: 0.04, // 4% (0.06 → 0.04)
   },
   [ItemGrade.LEGENDARY]: {
     attack: 120,
     defense: 60,
     defensePenetration: 24,
-    additionalAttackChance: 0.12, // 12%
-    creditPerSecondBonus: 20,
-    criticalDamageMultiplier: 1.5, // 150%
-    criticalChance: 0.25, // 25%
+    additionalAttackChance: 0.06, // 6% (0.12 → 0.06)
+    creditPerSecondBonus: 8,
+    criticalDamageMultiplier: 0.8,
+    criticalChance: 0.08, // 8% (0.1 → 0.08)
   },
   [ItemGrade.MYTHIC]: {
     attack: 200,
     defense: 100,
     defensePenetration: 40,
-    additionalAttackChance: 0.2, // 20%
-    creditPerSecondBonus: 35,
-    criticalDamageMultiplier: 2.5, // 250%
-    criticalChance: 0.4, // 40%
+    additionalAttackChance: 0.1, // 10% (0.2 → 0.1)
+    creditPerSecondBonus: 15,
+    criticalDamageMultiplier: 1.5,
+    criticalChance: 0.16, // 16% (0.15 → 0.16)
   },
 } as const;
 
@@ -120,34 +120,34 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     criticalChance: 0,
   },
 
-  // 방어구 (추가타격 확률)
+  // 방어구 (추가타격 확률) - 3부위 신화 25강 기준 100% 목표
   [ItemType.GLOVES]: {
     attack: 0,
     defense: 0,
     defensePenetration: 0,
-    additionalAttackChance: 0.02,
+    additionalAttackChance: 0.01, // 1% (0.02 → 0.01)
     creditPerSecondBonus: 0,
     criticalDamageMultiplier: 0,
     criticalChance: 0,
-  }, // 2%
+  },
   [ItemType.SHOES]: {
     attack: 0,
     defense: 0,
     defensePenetration: 0,
-    additionalAttackChance: 0.015,
+    additionalAttackChance: 0.008, // 0.8% (0.015 → 0.008)
     creditPerSecondBonus: 0,
     criticalDamageMultiplier: 0,
     criticalChance: 0,
-  }, // 1.5%
+  },
   [ItemType.SHOULDER]: {
     attack: 0,
     defense: 0,
     defensePenetration: 0,
-    additionalAttackChance: 0.025,
+    additionalAttackChance: 0.012, // 1.2% (0.025 → 0.012)
     creditPerSecondBonus: 0,
     criticalDamageMultiplier: 0,
     criticalChance: 0,
-  }, // 2.5%
+  },
 
   // 장신구 (방어력 무시)
   [ItemType.EARRING]: {
@@ -209,13 +209,13 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     criticalChance: 0,
   },
 
-  // 물약들
+  // 물약들 (신화 25강 기준 100% 목표로 조정)
   [ItemType.WEALTH_POTION]: {
     attack: 0,
     defense: 0,
     defensePenetration: 0,
     additionalAttackChance: 0,
-    creditPerSecondBonus: 5, // 초당 5 크레딧 보너스
+    creditPerSecondBonus: 2,
     criticalDamageMultiplier: 0,
     criticalChance: 0,
   },
@@ -225,7 +225,7 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     defensePenetration: 0,
     additionalAttackChance: 0,
     creditPerSecondBonus: 0,
-    criticalDamageMultiplier: 0.5, // 50% 크리티컬 데미지 증가
+    criticalDamageMultiplier: 0.2,
     criticalChance: 0,
   },
   [ItemType.ARTISAN_POTION]: {
@@ -235,7 +235,7 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     additionalAttackChance: 0,
     creditPerSecondBonus: 0,
     criticalDamageMultiplier: 0,
-    criticalChance: 0.1, // 10% 크리티컬 확률
+    criticalChance: 0.016, // 1.6% (신화 25강 기준 100% 목표)
   },
 } as const;
 
@@ -438,7 +438,7 @@ export const BATTLE_SETTINGS = {
   playerFirst: true, // 플레이어가 먼저 공격
   maxBattleRounds: 100, // 무한 루프 방지 (시뮬레이션용)
   autoAttackDelay: 1000, // 자동 공격 간격 (ms)
-  maxAdditionalAttackChance: 0.5, // 최대 추가타격 확률 50%
+  maxAdditionalAttackChance: 1.0, // 최대 추가타격 확률 100% (0.5 → 1.0)
   // 스테이지별 턴 제한 (실제 전투용)
   baseTurnLimit: 30, // 기본 턴 제한
   turnLimitReduction: 0.1, // 스테이지당 턴 제한 감소율 (10%)

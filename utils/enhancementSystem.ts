@@ -200,19 +200,30 @@ export function getEnhancementStatIncrease(
       statIncrease.defensePenetration = Math.max(3, Math.floor(baseValue)); // 최소 3 보장 (2 → 3)
       break;
     case "additionalAttackChance":
-      statIncrease.additionalAttackChance = Math.max(0.003, baseValue * 0.0015); // 최소 0.3% 보장 (0.002 → 0.003, 배율 증가)
+      // 추가타격: 3부위 신화 25강 기준 100% 목표 (글러브1% + 슈즈0.8% + 숄더1.2% = 3% 기본)
+      // 신화 25강에서 각각 약 32% 증가 필요 → 총 97% 달성
+      statIncrease.additionalAttackChance = Math.max(
+        0.0005,
+        baseValue * 0.00012
+      ); // 배율 더 하향 (0.00015 → 0.00012)
       break;
     case "creditPerSecondBonus":
+      // 재물 물약: 신화 25강 기준 약 50-100 크레딧/초 목표
       statIncrease.creditPerSecondBonus = Math.max(
-        1,
-        Math.floor(baseValue * 0.5)
-      ); // 최소 1 보장
+        0.2,
+        Math.floor(baseValue * 0.05)
+      ); // 배율 대폭 하향 (0.3 → 0.05)
       break;
     case "criticalDamageMultiplier":
-      statIncrease.criticalDamageMultiplier = Math.max(0.01, baseValue * 0.01); // 최소 1% 보장
+      // 보스 물약: 신화 25강 기준 약 400% 목표 (기본 20% + 신화 150% + 강화로 230% = 400%)
+      statIncrease.criticalDamageMultiplier = Math.max(
+        0.002,
+        baseValue * 0.0015
+      ); // 배율 대폭 하향 (0.006 → 0.0015)
       break;
     case "criticalChance":
-      statIncrease.criticalChance = Math.max(0.005, baseValue * 0.005); // 최소 0.5% 보장
+      // 장인 물약: 신화 25강 기준 100% 목표 (기본 1.6% + 신화 16% + 강화로 82.4% = 100%)
+      statIncrease.criticalChance = Math.max(0.001, baseValue * 0.0004); // 배율 조정 (0.0006 → 0.0004)
       break;
   }
 

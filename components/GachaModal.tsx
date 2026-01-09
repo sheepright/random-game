@@ -252,7 +252,7 @@ export function GachaModal({
                         disabled={!canAfford || isProcessing}
                         className={
                           canAfford && !isProcessing
-                            ? "hero-btn hero-btn-success"
+                            ? "px-4 py-2 rounded-lg font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-green-400"
                             : "hero-btn hero-btn-disabled"
                         }
                       >
@@ -267,11 +267,11 @@ export function GachaModal({
                         disabled={!canAfford10 || isProcessing}
                         className={
                           canAfford10 && !isProcessing
-                            ? "hero-btn hero-btn-primary"
+                            ? "px-4 py-2 rounded-lg font-bold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-pink-400 animate-pulse"
                             : "hero-btn hero-btn-disabled"
                         }
                       >
-                        {isProcessing ? "뽑는 중..." : "10연뽑"}
+                        {isProcessing ? "뽑는 중..." : "✨ 10연뽑 ✨"}
                       </button>
                     </div>
                   </div>
@@ -411,11 +411,11 @@ export function GachaModal({
                           disabled={!canSynthesize || isProcessing}
                           className={
                             canSynthesize && !isProcessing
-                              ? "hero-btn hero-btn-purple"
+                              ? "px-4 py-2 rounded-lg font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-purple-400"
                               : "hero-btn hero-btn-disabled"
                           }
                         >
-                          {isProcessing ? "합성 중..." : "합성"}
+                          {isProcessing ? "합성 중..." : "🔮 합성"}
                         </button>
                       </div>
                     </div>
@@ -444,7 +444,7 @@ export function GachaModal({
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="hero-btn hero-btn-primary disabled:hero-btn-disabled"
+            className="px-6 py-2 rounded-lg font-bold text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             닫기
           </button>
