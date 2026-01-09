@@ -20,12 +20,16 @@ interface GachaResultModalProps {
   result: GachaResult | null;
   isOpen: boolean;
   onClose: () => void;
+  onDrawAgain?: () => void;
+  canDrawAgain?: boolean;
 }
 
 export default function GachaResultModal({
   result,
   isOpen,
   onClose,
+  onDrawAgain,
+  canDrawAgain = false,
 }: GachaResultModalProps) {
   const [showAnimation, setShowAnimation] = useState(false);
 
@@ -210,13 +214,33 @@ export default function GachaResultModal({
             </div>
           </div>
 
-          {/* 확인 버튼 */}
-          <button
-            onClick={onClose}
-            className={`w-full py-3 px-6 rounded-lg font-bold text-white transition-all ${gradeStyles.bg} hover:opacity-90 shadow-lg hover:shadow-xl hero-btn`}
-          >
-            확인
-          </button>
+          {/* 버튼들 */}
+          <div className="flex gap-3">
+            {/* 한번 더 뽑기 버튼 */}
+            {onDrawAgain && (
+              <button
+                onClick={onDrawAgain}
+                disabled={!canDrawAgain}
+                className={`flex-1 py-3 px-6 rounded-lg font-bold text-white transition-all shadow-lg hover:shadow-xl ${
+                  canDrawAgain
+                    ? `${gradeStyles.bg} hover:opacity-90 hero-btn`
+                    : "bg-gray-500 cursor-not-allowed opacity-50"
+                }`}
+              >
+                한번 더 뽑기
+              </button>
+            )}
+
+            {/* 확인 버튼 */}
+            <button
+              onClick={onClose}
+              className={`${
+                onDrawAgain ? "flex-1" : "w-full"
+              } py-3 px-6 rounded-lg font-bold text-white transition-all bg-gray-600 hover:bg-gray-700 shadow-lg hover:shadow-xl hero-btn`}
+            >
+              닫기
+            </button>
+          </div>
 
           {/* 도움말 */}
           <div className="mt-4 text-xs hero-text-muted text-center">

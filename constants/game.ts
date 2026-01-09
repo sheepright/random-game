@@ -453,13 +453,13 @@ export const GACHA_COSTS = {
   [GachaCategory.POTIONS]: 1000, // 물약 가챠 (새로 추가)
 } as const;
 
-// Gacha rates (모든 카테고리 동일) - 레전드리 상향 및 미식 등급 추가
+// Gacha rates (모든 카테고리 동일) - 확률 조정 (합계 100%)
 export const GACHA_RATES: DropRateTable = {
-  [ItemGrade.COMMON]: 0.7, // 70% (80% → 70%)
-  [ItemGrade.RARE]: 0.2, // 20% (18% → 20%)
-  [ItemGrade.EPIC]: 0.07, // 7% (2.5% → 7%)
-  [ItemGrade.LEGENDARY]: 0.025, // 2.5% (0.5% → 2.5%)
-  [ItemGrade.MYTHIC]: 0.005, // 0.5% (새로 추가)
+  [ItemGrade.COMMON]: 0.72, // 72%
+  [ItemGrade.RARE]: 0.25, // 25%
+  [ItemGrade.EPIC]: 0.0245, // 2.45%
+  [ItemGrade.LEGENDARY]: 0.005, // 0.5%
+  [ItemGrade.MYTHIC]: 0.0005, // 0.05%
 } as const;
 
 // Gacha category item types

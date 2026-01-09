@@ -45,7 +45,7 @@ export function calculateStageRequirements(stage: number): {
 }
 
 /**
- * 보스 스탯 계산 (초반 스테이지도 점진적 난이도 증가)
+ * 보스 스탯 계산 (11스테이지부터 난이도 대폭 상승)
  */
 export function calculateBossStats(stage: number): {
   maxHP: number;
@@ -56,30 +56,30 @@ export function calculateBossStats(stage: number): {
   let playerAttack, playerDefense, playerDefensePenetration;
 
   if (stage <= 10) {
-    // 1-10: 기본 장비 기준으로 점진적 난이도 증가
+    // 1-10: 기본 장비 기준으로 점진적 난이도 증가 (기존과 동일)
     playerAttack = 10; // 기본 장비 공격력 그대로
     playerDefense = 15; // 기본 장비 방어력 그대로
     playerDefensePenetration = 0; // 기본 장비는 방어 무시 없음
   } else if (stage <= 20) {
-    // 11-20: Rare 장비 수준
-    playerAttack = 80 + (stage - 10) * 5;
-    playerDefense = 50 + (stage - 10) * 3;
-    playerDefensePenetration = 30 + (stage - 10) * 2;
+    // 11-20: Rare 장비 수준 (난이도 상승)
+    playerAttack = 60 + (stage - 10) * 8; // 더 높은 공격력 요구
+    playerDefense = 40 + (stage - 10) * 5; // 더 높은 방어력 요구
+    playerDefensePenetration = 20 + (stage - 10) * 3;
   } else if (stage <= 40) {
-    // 21-40: Epic 장비 수준
-    playerAttack = 150 + (stage - 20) * 8;
-    playerDefense = 80 + (stage - 20) * 5;
-    playerDefensePenetration = 50 + (stage - 20) * 3;
+    // 21-40: Epic 장비 수준 (더 높은 난이도)
+    playerAttack = 140 + (stage - 20) * 12;
+    playerDefense = 90 + (stage - 20) * 8;
+    playerDefensePenetration = 50 + (stage - 20) * 4;
   } else if (stage <= 70) {
-    // 41-70: Legendary 장비 수준
-    playerAttack = 300 + (stage - 40) * 12;
-    playerDefense = 180 + (stage - 40) * 8;
-    playerDefensePenetration = 110 + (stage - 40) * 5;
+    // 41-70: Legendary 장비 수준 (고난이도)
+    playerAttack = 380 + (stage - 40) * 18;
+    playerDefense = 250 + (stage - 40) * 12;
+    playerDefensePenetration = 130 + (stage - 40) * 7;
   } else {
-    // 71-100: Mythic 장비 수준
-    playerAttack = 660 + (stage - 70) * 15;
-    playerDefense = 420 + (stage - 70) * 10;
-    playerDefensePenetration = 260 + (stage - 70) * 6;
+    // 71-100: Mythic 장비 수준 (최고 난이도)
+    playerAttack = 920 + (stage - 70) * 25;
+    playerDefense = 610 + (stage - 70) * 15;
+    playerDefensePenetration = 340 + (stage - 70) * 10;
   }
 
   // 턴 제한 계산
@@ -89,7 +89,7 @@ export function calculateBossStats(stage: number): {
   const reduction = Math.floor((stage - 1) * turnLimitReduction);
   const turnLimit = Math.max(minTurnLimit, baseTurnLimit - reduction);
 
-  // 목표: 초반 10스테이지도 점진적 난이도 증가
+  // 목표: 초반 10스테이지는 기존과 동일, 11스테이지부터 난이도 상승
   let targetTurnsRatio;
   if (stage <= 3) {
     targetTurnsRatio = 0.1; // 1-3스테이지: 3턴 내외 (매우 쉽게)
@@ -98,9 +98,11 @@ export function calculateBossStats(stage: number): {
   } else if (stage <= 10) {
     targetTurnsRatio = 0.2; // 7-10스테이지: 6턴 (적당히 쉽게)
   } else if (stage <= 20) {
-    targetTurnsRatio = 0.4; // 40% 턴 내에 처치
+    targetTurnsRatio = 0.6; // 11-20스테이지: 60% 턴 내에 처치 (난이도 상승)
+  } else if (stage <= 40) {
+    targetTurnsRatio = 0.75; // 21-40스테이지: 75% 턴 내에 처치
   } else {
-    targetTurnsRatio = 0.75; // 75% 턴 내에 처치
+    targetTurnsRatio = 0.85; // 41-100스테이지: 85% 턴 내에 처치 (고난이도)
   }
   const targetTurns = Math.max(1, Math.floor(turnLimit * targetTurnsRatio));
 
@@ -118,23 +120,23 @@ export function calculateBossStats(stage: number): {
     );
   }
 
-  // 보스 방어력: 초반 스테이지도 약간의 방어력 추가
+  // 보스 방어력: 11스테이지부터 대폭 상승
   let bossDefense = 0;
   if (stage <= 10) {
-    // 1-10스테이지: 스테이지가 높아질수록 약간의 방어력 추가
+    // 1-10스테이지: 기존과 동일 (약간의 방어력만)
     if (stage >= 4) {
       bossDefense = Math.floor((stage - 3) * 0.5); // 4스테이지부터 0.5씩 증가
     }
   } else {
     let targetDamageReduction;
     if (stage <= 20) {
-      targetDamageReduction = 0.05; // 11-20스테이지는 5% 감소만
+      targetDamageReduction = 0.25; // 11-20스테이지: 25% 데미지 감소 (난이도 상승)
     } else if (stage <= 30) {
-      targetDamageReduction = 0.15; // 중반은 15% 감소
+      targetDamageReduction = 0.35; // 21-30스테이지: 35% 데미지 감소
     } else if (stage <= 50) {
-      targetDamageReduction = 0.2; // 중후반은 20% 감소
+      targetDamageReduction = 0.45; // 31-50스테이지: 45% 데미지 감소
     } else {
-      targetDamageReduction = 0.25; // 후반은 25% 감소
+      targetDamageReduction = 0.55; // 51-100스테이지: 55% 데미지 감소 (최고 난이도)
     }
     bossDefense = Math.floor(
       (playerAttack * targetDamageReduction) / (1 - targetDamageReduction)
@@ -151,13 +153,17 @@ export function calculateBossStats(stage: number): {
   // 보스 HP: 목표 턴 수 * 플레이어 데미지 (스테이지별 점진적 증가)
   let bossHP = Math.floor(playerDamagePerTurn * targetTurns);
 
-  // 초반 스테이지 HP 추가 조정 (더 세밀한 난이도 곡선)
+  // 초반 스테이지 HP 추가 조정 (기존과 동일)
   if (stage <= 10) {
     const stageMultiplier = 0.8 + (stage - 1) * 0.05; // 0.8배에서 1.25배까지 점진적 증가
     bossHP = Math.floor(bossHP * stageMultiplier);
+  } else {
+    // 11스테이지부터는 더 높은 HP 배율 적용
+    const stageMultiplier = 1.2 + (stage - 11) * 0.02; // 1.2배에서 시작해서 점진적 증가
+    bossHP = Math.floor(bossHP * stageMultiplier);
   }
 
-  // 보스 공격력: 스테이지별 점진적 증가
+  // 보스 공격력: 11스테이지부터 대폭 상승
   const playerHP = 100 + playerDefense * 2;
   let survivalTurns;
   if (stage <= 3) {
@@ -167,11 +173,13 @@ export function calculateBossStats(stage: number): {
   } else if (stage <= 10) {
     survivalTurns = 26; // 7-10 스테이지: 26턴 생존 (적당한 위험)
   } else if (stage <= 20) {
-    survivalTurns = 20; // 11-20 스테이지는 20턴 생존
-  } else if (stage <= 50) {
-    survivalTurns = 12; // 중반은 12턴 생존
+    survivalTurns = 15; // 11-20 스테이지: 15턴 생존 (위험도 상승)
+  } else if (stage <= 40) {
+    survivalTurns = 10; // 21-40 스테이지: 10턴 생존 (높은 위험)
+  } else if (stage <= 60) {
+    survivalTurns = 8; // 41-60 스테이지: 8턴 생존 (매우 위험)
   } else {
-    survivalTurns = 8; // 후반 스테이지는 8턴 생존
+    survivalTurns = 6; // 61-100 스테이지: 6턴 생존 (극한 위험)
   }
   const bossAttack = Math.floor(playerHP / survivalTurns);
 

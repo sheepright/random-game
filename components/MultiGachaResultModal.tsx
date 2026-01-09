@@ -20,12 +20,16 @@ interface MultiGachaResultModalProps {
   result: MultiGachaResult | null;
   isOpen: boolean;
   onClose: () => void;
+  onDrawAgain?: () => void;
+  canDrawAgain?: boolean;
 }
 
 export default function MultiGachaResultModal({
   result,
   isOpen,
   onClose,
+  onDrawAgain,
+  canDrawAgain = false,
 }: MultiGachaResultModalProps) {
   const { gameState, actions } = useGame();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -387,9 +391,26 @@ export default function MultiGachaResultModal({
             💡 아이템을 선택하여 바로 판매하거나, 모두 인벤토리에 보관할 수
             있습니다
           </div>
-          <button onClick={onClose} className="hero-btn hero-btn-primary">
-            완료
-          </button>
+          <div className="flex gap-3">
+            {/* 한번 더 뽑기 버튼 */}
+            {onDrawAgain && (
+              <button
+                onClick={onDrawAgain}
+                disabled={!canDrawAgain}
+                className={`hero-btn ${
+                  canDrawAgain
+                    ? "hero-btn-accent hover:opacity-90"
+                    : "bg-gray-500 cursor-not-allowed opacity-50"
+                }`}
+              >
+                {count}연뽑 다시하기
+              </button>
+            )}
+
+            <button onClick={onClose} className="hero-btn hero-btn-primary">
+              닫기
+            </button>
+          </div>
         </div>
       </div>
 

@@ -181,6 +181,7 @@ export class ItemDropSystem {
   /**
    * 아이템 스탯 랜덤 생성 (등급별 고정 기본값 + 랜덤 보너스)
    * Requirements: 3.9
+   * 가챠 시스템과 완전히 동일한 로직 적용 (스테이지 배율 없음)
    */
   private generateItemStats(
     itemType: ItemType,
@@ -189,7 +190,6 @@ export class ItemDropSystem {
   ): ItemStats {
     const baseStats = ITEM_BASE_STATS[itemType];
     const gradeBaseStats = GRADE_BASE_STATS[grade];
-    const stageMultiplier = 1 + (stage - 1) * 0.1; // 스테이지당 10% 증가
 
     // 랜덤 보너스 (1~5)
     const getRandomBonus = () =>
@@ -198,49 +198,31 @@ export class ItemDropSystem {
         Math.random() * (RANDOM_BONUS_RANGE.max - RANDOM_BONUS_RANGE.min + 1)
       );
 
-    // 아이템 타입별 스탯 적용 (해당 스탯만 적용)
+    // 가챠 시스템과 완전히 동일한 로직: 아이템 타입별 스탯 적용 (해당 스탯만 적용, 스테이지 배율 없음)
     const enhancedStats: ItemStats = {
       attack:
-        baseStats.attack > 0
-          ? Math.floor(
-              (gradeBaseStats.attack + getRandomBonus()) * stageMultiplier
-            )
-          : 0,
+        baseStats.attack > 0 ? gradeBaseStats.attack + getRandomBonus() : 0,
       defense:
-        baseStats.defense > 0
-          ? Math.floor(
-              (gradeBaseStats.defense + getRandomBonus()) * stageMultiplier
-            )
-          : 0,
+        baseStats.defense > 0 ? gradeBaseStats.defense + getRandomBonus() : 0,
       defensePenetration:
         baseStats.defensePenetration > 0
-          ? Math.floor(
-              (gradeBaseStats.defensePenetration + getRandomBonus()) *
-                stageMultiplier
-            )
+          ? gradeBaseStats.defensePenetration + getRandomBonus()
           : 0,
       additionalAttackChance:
         baseStats.additionalAttackChance > 0
-          ? (gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001) *
-            stageMultiplier
+          ? gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001
           : 0,
       creditPerSecondBonus:
         baseStats.creditPerSecondBonus > 0
-          ? Math.floor(
-              (gradeBaseStats.creditPerSecondBonus + getRandomBonus()) *
-                stageMultiplier
-            )
+          ? gradeBaseStats.creditPerSecondBonus + getRandomBonus()
           : 0,
       criticalDamageMultiplier:
         baseStats.criticalDamageMultiplier > 0
-          ? (gradeBaseStats.criticalDamageMultiplier +
-              getRandomBonus() * 0.01) *
-            stageMultiplier
+          ? gradeBaseStats.criticalDamageMultiplier + getRandomBonus() * 0.01
           : 0,
       criticalChance:
         baseStats.criticalChance > 0
-          ? (gradeBaseStats.criticalChance + getRandomBonus() * 0.01) *
-            stageMultiplier
+          ? gradeBaseStats.criticalChance + getRandomBonus() * 0.01
           : 0,
     };
 
@@ -331,6 +313,7 @@ export function generateItemDrop(
 /**
  * 테스트용 랜덤 아이템 생성 함수
  * Requirements: 테스트 지원
+ * 가챠 시스템과 완전히 동일한 로직 적용 (스테이지 배율 없음)
  */
 export function createRandomItem(
   itemType: ItemType,
@@ -339,7 +322,6 @@ export function createRandomItem(
 ): Item {
   const baseStats = ITEM_BASE_STATS[itemType];
   const gradeBaseStats = GRADE_BASE_STATS[grade];
-  const stageMultiplier = 1 + (stage - 1) * 0.1; // 스테이지당 10% 증가
 
   // 랜덤 보너스 (1~5)
   const getRandomBonus = () =>
@@ -348,48 +330,30 @@ export function createRandomItem(
       Math.random() * (RANDOM_BONUS_RANGE.max - RANDOM_BONUS_RANGE.min + 1)
     );
 
-  // 아이템 타입별 스탯 적용 (해당 스탯만 적용)
+  // 가챠 시스템과 완전히 동일한 로직: 아이템 타입별 스탯 적용 (해당 스탯만 적용, 스테이지 배율 없음)
   const enhancedStats: ItemStats = {
-    attack:
-      baseStats.attack > 0
-        ? Math.floor(
-            (gradeBaseStats.attack + getRandomBonus()) * stageMultiplier
-          )
-        : 0,
+    attack: baseStats.attack > 0 ? gradeBaseStats.attack + getRandomBonus() : 0,
     defense:
-      baseStats.defense > 0
-        ? Math.floor(
-            (gradeBaseStats.defense + getRandomBonus()) * stageMultiplier
-          )
-        : 0,
+      baseStats.defense > 0 ? gradeBaseStats.defense + getRandomBonus() : 0,
     defensePenetration:
       baseStats.defensePenetration > 0
-        ? Math.floor(
-            (gradeBaseStats.defensePenetration + getRandomBonus()) *
-              stageMultiplier
-          )
+        ? gradeBaseStats.defensePenetration + getRandomBonus()
         : 0,
     additionalAttackChance:
       baseStats.additionalAttackChance > 0
-        ? (gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001) *
-          stageMultiplier
+        ? gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001
         : 0,
     creditPerSecondBonus:
       baseStats.creditPerSecondBonus > 0
-        ? Math.floor(
-            (gradeBaseStats.creditPerSecondBonus + getRandomBonus()) *
-              stageMultiplier
-          )
+        ? gradeBaseStats.creditPerSecondBonus + getRandomBonus()
         : 0,
     criticalDamageMultiplier:
       baseStats.criticalDamageMultiplier > 0
-        ? (gradeBaseStats.criticalDamageMultiplier + getRandomBonus() * 0.01) *
-          stageMultiplier
+        ? gradeBaseStats.criticalDamageMultiplier + getRandomBonus() * 0.01
         : 0,
     criticalChance:
       baseStats.criticalChance > 0
-        ? (gradeBaseStats.criticalChance + getRandomBonus() * 0.01) *
-          stageMultiplier
+        ? gradeBaseStats.criticalChance + getRandomBonus() * 0.01
         : 0,
   };
 

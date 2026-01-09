@@ -3,6 +3,7 @@
 import { useGame } from "../contexts/GameContext";
 import { Item, ItemType } from "../types/game";
 import { EquipmentSlotImage } from "./ResponsiveItemImage";
+import ItemTooltip from "./ItemTooltip";
 
 /**
  * EquipmentPanel 컴포넌트
@@ -46,7 +47,7 @@ function EquipmentSlot({
   slotName,
   onUnequip,
 }: EquipmentSlotProps) {
-  return (
+  const slotContent = (
     <div className="flex flex-col items-center space-y-1 min-w-[80px]">
       <div
         className="w-16 h-16 cursor-pointer transition-all hover:shadow-lg hover:scale-105 relative"
@@ -55,11 +56,7 @@ function EquipmentSlot({
             onUnequip(slotType);
           }
         }}
-        title={
-          item
-            ? `${item.grade} ${slotName} (레벨 ${item.level}) - 더블클릭으로 해제`
-            : `빈 ${slotName} 슬롯`
-        }
+        // title 속성 제거하여 중복 툴팁 방지
       >
         {item ? (
           <EquipmentSlotImage item={item} onClick={() => {}} />
@@ -75,6 +72,15 @@ function EquipmentSlot({
         )}
       </div>
     </div>
+  );
+
+  // 아이템이 있으면 툴팁으로 감싸고, 없으면 그대로 반환
+  return item ? (
+    <ItemTooltip item={item} position="auto" delay={300}>
+      {slotContent}
+    </ItemTooltip>
+  ) : (
+    slotContent
   );
 }
 

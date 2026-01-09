@@ -301,11 +301,32 @@ export function GachaModal({
                   <div key={grade} className="flex justify-between">
                     <span className={colorClass}>{GRADE_NAMES[gradeKey]}:</span>
                     <span className="hero-text-primary">
-                      {(rate * 100).toFixed(1)}%
+                      {rate >= 0.01
+                        ? (rate * 100).toFixed(1)
+                        : (rate * 100).toFixed(2)}
+                      %
                     </span>
                   </div>
                 );
               })}
+            </div>
+
+            {/* 추가 확률 정보 */}
+            <div className="mt-4 pt-3 border-t border-gray-600">
+              <div className="text-xs hero-text-muted space-y-1">
+                <div className="flex justify-between">
+                  <span>에픽 이상:</span>
+                  <span className="hero-text-purple">3.00%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>전설 이상:</span>
+                  <span className="hero-text-accent">0.55%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>신화:</span>
+                  <span className="hero-text-red">0.05%</span>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -26,6 +26,7 @@ import {
   ItemGrade,
 } from "../types/game";
 import { ItemDropResult } from "../utils/itemDropSystem";
+import { GACHA_COSTS } from "../constants/game";
 
 /**
  * GameDashboard 컴포넌트 - 용사키우기 메인 UI
@@ -364,6 +365,23 @@ export function GameDashboard() {
           setShowGachaResultModal(false);
           setCurrentGachaResult(null);
         }}
+        onDrawAgain={() => {
+          // 현재 가챠 결과의 카테고리로 다시 뽑기
+          if (currentGachaResult) {
+            const result = actions.performGachaDraw(
+              currentGachaResult.category
+            );
+            if (result) {
+              setCurrentGachaResult(result);
+              // 모달은 그대로 열어둠
+            }
+          }
+        }}
+        canDrawAgain={
+          currentGachaResult
+            ? gameState.credits >= GACHA_COSTS[currentGachaResult.category]
+            : false
+        }
       />
 
       <MultiGachaResultModal
@@ -373,6 +391,40 @@ export function GameDashboard() {
           setShowMultiGachaResultModal(false);
           setCurrentMultiGachaResult(null);
         }}
+        onDrawAgain={() => {
+          // 현재 멀티 가챠 결과의 카테고리로 다시 10연뽑
+          if (currentMultiGachaResult) {
+            const cost = GACHA_COSTS[currentMultiGachaResult.category] * 10;
+            if (gameState.credits >= cost) {
+              const results: GachaResult[] = [];
+              for (let i = 0; i < 10; i++) {
+                const result = actions.performGachaDraw(
+                  currentMultiGachaResult.category
+                );
+                if (result) {
+                  results.push(result);
+                }
+              }
+
+              if (results.length > 0) {
+                const multiResult: MultiGachaResult = {
+                  items: results.map((r) => r.item),
+                  category: currentMultiGachaResult.category,
+                  totalCost: cost,
+                  count: results.length,
+                };
+                setCurrentMultiGachaResult(multiResult);
+                // 모달은 그대로 열어둠
+              }
+            }
+          }
+        }}
+        canDrawAgain={
+          currentMultiGachaResult
+            ? gameState.credits >=
+              GACHA_COSTS[currentMultiGachaResult.category] * 10
+            : false
+        }
       />
 
       <ClientOnly>

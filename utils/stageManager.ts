@@ -157,26 +157,26 @@ export function loadBossForStage(stage: number): Boss | null {
 }
 
 /**
- * 스테이지 클리어 시 즉시 크레딧 보상 계산 (균형잡힌 분포)
+ * 스테이지 클리어 시 즉시 크레딧 보상 계산 (최대 50만 크레딧)
  * Requirements: 13.2 - 스테이지 클리어 보상 추가
  */
 export function calculateStageClearReward(stage: number): number {
-  // 스테이지별 보상 (100단계 최대 150만 크레딧으로 균형 조정)
+  // 스테이지별 보상 (100단계 최대 50만 크레딧으로 조정)
   if (stage <= 10) {
-    const baseReward = 200; // 초반 구간 기본 보상 크레딧
-    return Math.floor(baseReward * Math.pow(1.25, stage - 1)); // 200~1,490 크레딧
+    const baseReward = 100; // 초반 구간 기본 보상 크레딧
+    return Math.floor(baseReward * Math.pow(1.3, stage - 1)); // 100~1,378 크레딧
   } else if (stage <= 20) {
-    // 11-20단계: 1,863에서 시작
-    return Math.floor(1863 * Math.pow(1.18, stage - 10)); // 1,863~9,750 크레딧
+    // 11-20단계: 1,791에서 시작
+    return Math.floor(1791 * Math.pow(1.2, stage - 10)); // 1,791~11,160 크레딧
   } else if (stage <= 40) {
-    // 21-40단계: 11,212에서 시작
-    return Math.floor(11212 * Math.pow(1.15, stage - 20)); // 11,212~159,573 크레딧
+    // 21-40단계: 13,392에서 시작
+    return Math.floor(13392 * Math.pow(1.12, stage - 20)); // 13,392~129,000 크레딧
   } else if (stage <= 60) {
-    // 41-60단계: 183,509에서 시작, 성장률 낮춤
-    return Math.floor(183509 * Math.pow(1.08, stage - 40)); // 183,509~850,000 크레딧
+    // 41-60단계: 144,480에서 시작, 성장률 낮춤
+    return Math.floor(144480 * Math.pow(1.06, stage - 40)); // 144,480~350,000 크레딧
   } else {
-    // 61-100단계: 918,000에서 시작, 성장률 더 낮춤
-    return Math.floor(918000 * Math.pow(1.012, stage - 60)); // 918,000~1,500,000 크레딧
+    // 61-100단계: 371,000에서 시작, 성장률 더 낮춤
+    return Math.floor(371000 * Math.pow(1.008, stage - 60)); // 371,000~500,000 크레딧
   }
 }
 
