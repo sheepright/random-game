@@ -333,8 +333,8 @@ export const createDefaultItem = (type: ItemType, grade: ItemGrade): Item => {
     id: `default-${type}-${Date.now()}-${Math.random()}`,
     type,
     grade,
-    baseStats: finalStats,
-    enhancedStats: { ...finalStats },
+    baseStats: finalStats, // 가챠 시스템과 동일하게 변경
+    enhancedStats: { ...finalStats }, // 가챠 시스템과 동일하게 변경
     level: 1,
     enhancementLevel: 0,
     imagePath: getItemImagePath(type),
@@ -558,8 +558,8 @@ export const createItemWithImage = (
     id: `item-${type}-${Date.now()}-${Math.random()}`,
     type,
     grade,
-    baseStats: { ...finalStats },
-    enhancedStats: { ...finalStats },
+    baseStats: { ...finalStats }, // 가챠 시스템과 동일하게 변경
+    enhancedStats: { ...finalStats }, // 가챠 시스템과 동일하게 변경
     level: 1,
     enhancementLevel: 0,
     imagePath: getItemImagePath(type),

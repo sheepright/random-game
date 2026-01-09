@@ -3,12 +3,8 @@
  * 같은 등급 아이템 10개를 합성하여 상위 등급 아이템 1개를 생성
  */
 
-import { Item, ItemGrade, ItemType, ItemStats } from "../types/game";
-import {
-  ITEM_BASE_STATS,
-  GRADE_MULTIPLIERS,
-  createItemWithImage,
-} from "../constants/game";
+import { Item, ItemGrade, ItemType } from "../types/game";
+import { ITEM_BASE_STATS, createItemWithImage } from "../constants/game";
 
 // 등급 순서 정의
 const GRADE_HIERARCHY = {
@@ -160,26 +156,9 @@ function getRandomItemType(): ItemType {
  */
 function createSynthesizedItem(grade: ItemGrade): Item {
   const itemType = getRandomItemType();
-  const baseStats = { ...ITEM_BASE_STATS[itemType] };
 
-  // 등급에 따른 스탯 배율 적용
-  const gradeMultiplier = GRADE_MULTIPLIERS[grade];
-  const enhancedStats: ItemStats = {
-    attack: Math.floor(baseStats.attack * gradeMultiplier),
-    defense: Math.floor(baseStats.defense * gradeMultiplier),
-    defensePenetration: Math.floor(
-      baseStats.defensePenetration * gradeMultiplier
-    ),
-    additionalAttackChance: baseStats.additionalAttackChance * gradeMultiplier,
-    creditPerSecondBonus: Math.floor(
-      baseStats.creditPerSecondBonus * gradeMultiplier
-    ),
-    criticalDamageMultiplier:
-      baseStats.criticalDamageMultiplier * gradeMultiplier,
-    criticalChance: baseStats.criticalChance * gradeMultiplier,
-  };
-
-  return createItemWithImage(itemType, grade, enhancedStats);
+  // 가챠 시스템과 동일한 방식으로 아이템 생성
+  return createItemWithImage(itemType, grade);
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useGame } from "../contexts/GameContext";
 import { ItemGrade, ItemType } from "../types/game";
+import { ITEM_BASE_STATS, GRADE_BASE_STATS } from "../constants/game";
 
 // 개발자 콘솔용 전역 함수들을 정의
 declare global {
@@ -46,29 +47,46 @@ export default function DevConsole() {
         selectedType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
       }
 
-      // 간단한 신화 아이템 생성
+      // 가챠 시스템과 동일한 방식으로 신화 아이템 생성
+      const baseStats = { ...ITEM_BASE_STATS[selectedType] };
+      const gradeBaseStats = GRADE_BASE_STATS[ItemGrade.MYTHIC];
+
+      // 랜덤 보너스 (1~5)
+      const getRandomBonus = () => 1 + Math.floor(Math.random() * 5);
+
+      const finalStats = {
+        attack:
+          baseStats.attack > 0 ? gradeBaseStats.attack + getRandomBonus() : 0,
+        defense:
+          baseStats.defense > 0 ? gradeBaseStats.defense + getRandomBonus() : 0,
+        defensePenetration:
+          baseStats.defensePenetration > 0
+            ? gradeBaseStats.defensePenetration + getRandomBonus()
+            : 0,
+        additionalAttackChance:
+          baseStats.additionalAttackChance > 0
+            ? gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001
+            : 0,
+        creditPerSecondBonus:
+          baseStats.creditPerSecondBonus > 0
+            ? gradeBaseStats.creditPerSecondBonus + getRandomBonus()
+            : 0,
+        criticalDamageMultiplier:
+          baseStats.criticalDamageMultiplier > 0
+            ? gradeBaseStats.criticalDamageMultiplier + getRandomBonus() * 0.01
+            : 0,
+        criticalChance:
+          baseStats.criticalChance > 0
+            ? gradeBaseStats.criticalChance + getRandomBonus() * 0.01
+            : 0,
+      };
+
       const mythicItem = {
         id: `mythic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         type: selectedType,
         grade: ItemGrade.MYTHIC,
-        baseStats: {
-          attack: 100,
-          defense: 100,
-          defensePenetration: 50,
-          additionalAttackChance: 0.1,
-          creditPerSecondBonus: 10,
-          criticalDamageMultiplier: 0.5,
-          criticalChance: 0.1,
-        },
-        enhancedStats: {
-          attack: 0,
-          defense: 0,
-          defensePenetration: 0,
-          additionalAttackChance: 0,
-          creditPerSecondBonus: 0,
-          criticalDamageMultiplier: 0,
-          criticalChance: 0,
-        },
+        baseStats: finalStats, // 가챠 시스템과 동일하게 변경
+        enhancedStats: { ...finalStats }, // 가챠 시스템과 동일하게 변경
         level: 1,
         enhancementLevel: 0,
         imagePath: `/Items/${selectedType}.png`,

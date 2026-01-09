@@ -235,15 +235,14 @@ export class ItemDropSystem {
   private generateRandomItem(stage: number, dropRates: DropRateTable): Item {
     const itemType = this.getRandomItemType();
     const grade = this.determineItemGrade(dropRates);
-    const baseStats = ITEM_BASE_STATS[itemType];
     const enhancedStats = this.generateItemStats(itemType, grade, stage);
 
     return {
       id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: itemType,
       grade,
-      baseStats: { ...baseStats },
-      enhancedStats,
+      baseStats: enhancedStats, // 가챠 시스템과 동일하게 변경
+      enhancedStats: { ...enhancedStats }, // 가챠 시스템과 동일하게 변경
       level: 1,
       enhancementLevel: 0,
       imagePath: getItemImagePath(itemType),
@@ -331,7 +330,7 @@ export function createRandomItem(
     );
 
   // 가챠 시스템과 완전히 동일한 로직: 아이템 타입별 스탯 적용 (해당 스탯만 적용, 스테이지 배율 없음)
-  const enhancedStats: ItemStats = {
+  const finalStats: ItemStats = {
     attack: baseStats.attack > 0 ? gradeBaseStats.attack + getRandomBonus() : 0,
     defense:
       baseStats.defense > 0 ? gradeBaseStats.defense + getRandomBonus() : 0,
@@ -361,8 +360,8 @@ export function createRandomItem(
     id: `test-item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type: itemType,
     grade,
-    baseStats: { ...baseStats },
-    enhancedStats,
+    baseStats: finalStats, // 가챠 시스템과 동일하게 변경
+    enhancedStats: { ...finalStats }, // 가챠 시스템과 동일하게 변경
     level: 1,
     enhancementLevel: 0,
     imagePath: getItemImagePath(itemType),
