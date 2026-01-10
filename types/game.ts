@@ -196,6 +196,7 @@ export interface GameActions {
   endBattle: (result: "victory" | "defeat") => void;
   loadBossForCurrentStage: () => Boss | null;
   clearRecentStageClearDrops: () => void;
+  setStage: (stage: number) => void; // 개발자 모드용 스테이지 변경
 }
 
 export enum EnhancementResult {

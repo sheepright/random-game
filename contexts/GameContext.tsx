@@ -107,7 +107,8 @@ type GameActionType =
   | { type: "START_BATTLE"; payload: { boss: Boss } }
   | { type: "UPDATE_BATTLE_STATE"; payload: BattleState }
   | { type: "END_BATTLE"; payload: { result: "victory" | "defeat" } }
-  | { type: "CLEAR_RECENT_STAGE_CLEAR_DROPS" };
+  | { type: "CLEAR_RECENT_STAGE_CLEAR_DROPS" }
+  | { type: "SET_STAGE"; payload: number }; // 개발자 모드용 스테이지 변경
 
 // Game context interface
 interface GameContextType {
@@ -500,6 +501,17 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
         lastSaveTime: Date.now(),
       };
 
+    case "SET_STAGE":
+      return {
+        ...state,
+        currentStage: Math.max(
+          1,
+          Math.min(action.payload, GAME_LIMITS.MAX_STAGE)
+        ),
+        isGameComplete: action.payload >= GAME_LIMITS.MAX_STAGE,
+        lastSaveTime: Date.now(),
+      };
+
     default:
       return state;
   }
@@ -824,6 +836,11 @@ export function GameProvider({ children }: GameProviderProps) {
 
       clearRecentStageClearDrops: (): void => {
         dispatch({ type: "CLEAR_RECENT_STAGE_CLEAR_DROPS" });
+      },
+
+      // 개발자 모드용 스테이지 변경
+      setStage: (stage: number): void => {
+        dispatch({ type: "SET_STAGE", payload: stage });
       },
     }),
     [

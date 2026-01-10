@@ -18,6 +18,7 @@ declare global {
     addMythicItem?: (type?: string) => void;
     addZeusSword?: () => void;
     resetGame?: () => void;
+    goToStage?: (stage: number) => void; // 스테이지 이동 명령어 추가
   }
 }
 
@@ -173,6 +174,21 @@ export default function DevConsole() {
       }
     };
 
+    window.goToStage = (stage: number) => {
+      if (typeof stage !== "number" || stage < 1 || stage > 100) {
+        console.error("❌ 올바른 스테이지 번호를 입력하세요. (1-100)");
+        console.log("💡 사용법: goToStage(100)");
+        return;
+      }
+
+      actions.setStage(stage);
+      console.log(`🚀 ${stage}스테이지로 이동했습니다!`);
+
+      if (stage === 100) {
+        console.log("🎉 100스테이지! 게임 완료 상태가 됩니다.");
+      }
+    };
+
     window.showCommands = () => {
       console.log(`
 🎮 개발자 콘솔 명령어 목록:
@@ -188,6 +204,7 @@ export default function DevConsole() {
 
 🎯 게임 관리:
 • resetGame()                    - 게임 완전 초기화
+• goToStage(숫자)                - 원하는 스테이지로 이동 (1-100)
 
 📋 기타:
 • showCommands()                 - 이 도움말 표시
@@ -197,6 +214,7 @@ export default function DevConsole() {
 • addCredits(1000000)            - 100만 크레딧 추가
 • addMythicItem("helmet")        - 신화 헬멧 추가
 • addZeusSword()                 - 전설의 제우스 검 획득
+• goToStage(100)                 - 100스테이지로 바로 이동
 
 ⚡ 제우스 검 특징:
 • 공격력: 99,999,999
@@ -224,6 +242,7 @@ export default function DevConsole() {
 • crackMode()           - 테스트용 크랙모드 활성화
 • addMythicItem()       - 신화 아이템 추가
 • addZeusSword()        - 전설의 제우스 검 획득
+• goToStage(100)        - 100스테이지로 바로 이동
 • showCommands()        - 전체 명령어 목록
     `);
 
@@ -235,6 +254,7 @@ export default function DevConsole() {
       if (window.addMythicItem) delete window.addMythicItem;
       if (window.addZeusSword) delete window.addZeusSword;
       if (window.resetGame) delete window.resetGame;
+      if (window.goToStage) delete window.goToStage;
     };
   }, [actions]);
 

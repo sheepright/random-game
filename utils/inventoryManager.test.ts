@@ -34,6 +34,9 @@ const itemStatsArbitrary = fc.record({
   defense: fc.integer({ min: 0, max: 100 }),
   defensePenetration: fc.integer({ min: 0, max: 50 }),
   additionalAttackChance: fc.float({ min: 0, max: 0.5 }),
+  creditPerSecondBonus: fc.integer({ min: 0, max: 10 }),
+  criticalDamageMultiplier: fc.float({ min: 0, max: 2 }),
+  criticalChance: fc.float({ min: 0, max: 0.5 }),
 });
 
 const itemArbitrary = fc.record({

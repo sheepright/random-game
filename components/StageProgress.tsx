@@ -275,18 +275,7 @@ export function StageProgress({ onStartBattle }: StageProgressProps) {
         </div>
       </div>
 
-      {/* 최고 스테이지 달성 - 100스테이지 클리어 후에만 표시 */}
-      {gameState.isGameComplete && (
-        <div className="hero-card-accent p-4 rounded-lg text-center">
-          <div className="text-2xl mb-2 hero-float">🎊</div>
-          <div className="hero-text-accent font-bold text-lg mb-1">
-            축하합니다!
-          </div>
-          <div className="text-sm hero-text-secondary">
-            모든 스테이지를 클리어했습니다!
-          </div>
-        </div>
-      )}
+      {/* 최고 스테이지 달성 메시지는 EndingModal에서 처리하므로 제거 */}
     </div>
   );
 }

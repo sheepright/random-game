@@ -170,10 +170,12 @@ export class ItemDropSystem {
   }
 
   /**
-   * 랜덤 아이템 타입 선택
+   * 랜덤 아이템 타입 선택 (제우스검 제외)
    */
   private getRandomItemType(): ItemType {
-    const itemTypes = Object.values(ItemType);
+    const itemTypes = Object.values(ItemType).filter(
+      (type) => type !== ItemType.ZEUS_SWORD // 제우스검은 드랍에서 제외
+    );
     const randomIndex = Math.floor(Math.random() * itemTypes.length);
     return itemTypes[randomIndex];
   }
@@ -336,6 +338,12 @@ export function createRandomItem(
   stage: number,
   grade: ItemGrade
 ): Item {
+  // 제우스검은 드랍에서 생성하지 않음 (가챠 전용)
+  if (itemType === ItemType.ZEUS_SWORD) {
+    throw new Error(
+      "제우스검은 드랍에서 생성할 수 없습니다. 가챠 전용 아이템입니다."
+    );
+  }
   const baseStats = ITEM_BASE_STATS[itemType];
   const gradeBaseStats = GRADE_BASE_STATS[grade];
 
