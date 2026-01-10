@@ -110,6 +110,23 @@ function generateGachaItem(type: ItemType, grade: ItemGrade): Item {
       Math.random() * (RANDOM_BONUS_RANGE.max - RANDOM_BONUS_RANGE.min + 1)
     );
 
+  // 재물 물약 전용 랜덤 보너스 (등급별 차등 적용)
+  const getCreditRandomBonus = (grade: ItemGrade) => {
+    switch (grade) {
+      case ItemGrade.COMMON:
+        return 0; // 1+0=1 (레어 기본값 2 미만)
+      case ItemGrade.RARE:
+        return Math.floor(Math.random() * 2); // 0~1 → 2~3 (에픽 기본값 4 미만)
+      case ItemGrade.EPIC:
+        return Math.floor(Math.random() * 4); // 0~3 → 4~7 (전설 기본값 8 미만)
+      case ItemGrade.LEGENDARY:
+      case ItemGrade.MYTHIC:
+        return getRandomBonus(); // 기존 1~5 유지 (문제없음)
+      default:
+        return 0;
+    }
+  };
+
   // 아이템 타입별 스탯 적용 (해당 스탯만 적용)
   const finalStats = {
     attack: baseStats.attack > 0 ? gradeBaseStats.attack + getRandomBonus() : 0,
@@ -125,7 +142,7 @@ function generateGachaItem(type: ItemType, grade: ItemGrade): Item {
         : 0,
     creditPerSecondBonus:
       baseStats.creditPerSecondBonus > 0
-        ? gradeBaseStats.creditPerSecondBonus + getRandomBonus()
+        ? gradeBaseStats.creditPerSecondBonus + getCreditRandomBonus(grade)
         : 0,
     criticalDamageMultiplier:
       baseStats.criticalDamageMultiplier > 0

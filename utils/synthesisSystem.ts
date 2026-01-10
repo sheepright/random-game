@@ -4,7 +4,12 @@
  */
 
 import { Item, ItemGrade, ItemType } from "../types/game";
-import { ITEM_BASE_STATS, createItemWithImage } from "../constants/game";
+import {
+  ITEM_BASE_STATS,
+  GRADE_BASE_STATS,
+  RANDOM_BONUS_RANGE,
+  createItemWithImage,
+} from "../constants/game";
 
 // 등급 순서 정의
 const GRADE_HIERARCHY = {
@@ -156,9 +161,62 @@ function getRandomItemType(): ItemType {
  */
 function createSynthesizedItem(grade: ItemGrade): Item {
   const itemType = getRandomItemType();
+  const baseStats = { ...ITEM_BASE_STATS[itemType] };
+  const gradeBaseStats = GRADE_BASE_STATS[grade];
+
+  // 랜덤 보너스 (1~5)
+  const getRandomBonus = () =>
+    RANDOM_BONUS_RANGE.min +
+    Math.floor(
+      Math.random() * (RANDOM_BONUS_RANGE.max - RANDOM_BONUS_RANGE.min + 1)
+    );
+
+  // 재물 물약 전용 랜덤 보너스 (등급별 차등 적용)
+  const getCreditRandomBonus = (grade: ItemGrade) => {
+    switch (grade) {
+      case ItemGrade.COMMON:
+        return 0; // 1+0=1 (레어 기본값 2 미만)
+      case ItemGrade.RARE:
+        return Math.floor(Math.random() * 2); // 0~1 → 2~3 (에픽 기본값 4 미만)
+      case ItemGrade.EPIC:
+        return Math.floor(Math.random() * 4); // 0~3 → 4~7 (전설 기본값 8 미만)
+      case ItemGrade.LEGENDARY:
+      case ItemGrade.MYTHIC:
+        return getRandomBonus(); // 기존 1~5 유지 (문제없음)
+      default:
+        return 0;
+    }
+  };
+
+  // 가챠 시스템과 동일한 방식으로 스탯 생성
+  const finalStats = {
+    attack: baseStats.attack > 0 ? gradeBaseStats.attack + getRandomBonus() : 0,
+    defense:
+      baseStats.defense > 0 ? gradeBaseStats.defense + getRandomBonus() : 0,
+    defensePenetration:
+      baseStats.defensePenetration > 0
+        ? gradeBaseStats.defensePenetration + getRandomBonus()
+        : 0,
+    additionalAttackChance:
+      baseStats.additionalAttackChance > 0
+        ? gradeBaseStats.additionalAttackChance + getRandomBonus() * 0.001
+        : 0,
+    creditPerSecondBonus:
+      baseStats.creditPerSecondBonus > 0
+        ? gradeBaseStats.creditPerSecondBonus + getCreditRandomBonus(grade)
+        : 0,
+    criticalDamageMultiplier:
+      baseStats.criticalDamageMultiplier > 0
+        ? gradeBaseStats.criticalDamageMultiplier + getRandomBonus() * 0.01
+        : 0,
+    criticalChance:
+      baseStats.criticalChance > 0
+        ? gradeBaseStats.criticalChance + getRandomBonus() * 0.01
+        : 0,
+  };
 
   // 가챠 시스템과 동일한 방식으로 아이템 생성
-  return createItemWithImage(itemType, grade);
+  return createItemWithImage(itemType, grade, finalStats);
 }
 
 /**
