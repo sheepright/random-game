@@ -33,7 +33,15 @@ export function equipItem(
   currentEquippedItems: EquippedItems
 ): EquipResult {
   try {
-    const slotKey = item.type as keyof EquippedItems;
+    let slotKey: keyof EquippedItems;
+
+    // 제우스 검은 mainWeapon 슬롯에 장착
+    if (item.type === ItemType.ZEUS_SWORD) {
+      slotKey = "mainWeapon";
+    } else {
+      slotKey = item.type as keyof EquippedItems;
+    }
+
     const previousItem = currentEquippedItems[slotKey];
 
     return {

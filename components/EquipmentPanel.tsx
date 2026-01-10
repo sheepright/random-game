@@ -30,6 +30,8 @@ const getSlotIcon = (slotType: ItemType): string => {
     [ItemType.WEALTH_POTION]: "💰",
     [ItemType.BOSS_POTION]: "⚡",
     [ItemType.ARTISAN_POTION]: "🔨",
+    // 특별 아이템
+    [ItemType.ZEUS_SWORD]: "⚡",
   };
   return icons[slotType] || "❓";
 };

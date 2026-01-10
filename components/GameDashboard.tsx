@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CreditGenerator } from "./CreditGenerator";
 import { CreditDisplay } from "./CreditDisplay";
 import { EquipmentPanel } from "./EquipmentPanel";
@@ -9,6 +9,7 @@ import { OfflineProgressModalManager } from "./OfflineProgressModal";
 import { ItemDropSystem } from "./ItemDropSystem";
 import { BattleModal } from "./BattleModal";
 import { InheritanceModal } from "./InheritanceModal";
+import EndingModal from "./EndingModal";
 import { SaveStatusIndicator } from "./SaveStatusIndicator";
 import EnhancementModal from "./EnhancementModal";
 import GachaResultModal from "./GachaResultModal";
@@ -45,6 +46,7 @@ export function GameDashboard() {
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
   const [showItemSelectionModal, setShowItemSelectionModal] = useState(false);
+  const [showEndingModal, setShowEndingModal] = useState(false);
   const [currentBoss, setCurrentBoss] = useState<Boss | null>(null);
   const [currentGachaResult, setCurrentGachaResult] =
     useState<GachaResult | null>(null);
@@ -97,6 +99,13 @@ export function GameDashboard() {
   const handleItemDropped = (dropResult: ItemDropResult) => {
     console.log("아이템 드랍됨:", dropResult);
   };
+
+  // 게임 완료 감지
+  useEffect(() => {
+    if (gameState.isGameComplete && !showEndingModal) {
+      setShowEndingModal(true);
+    }
+  }, [gameState.isGameComplete, showEndingModal]);
 
   // 가챠 결과 처리 (단일)
   const handleGachaResult = (result: GachaResult) => {
@@ -435,6 +444,11 @@ export function GameDashboard() {
             setShowEnhancementModal(false);
             setEnhancementItem(null);
           }}
+        />
+
+        <EndingModal
+          isOpen={showEndingModal}
+          onClose={() => setShowEndingModal(false)}
         />
       </ClientOnly>
     </div>

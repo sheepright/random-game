@@ -58,6 +58,13 @@ const GRADE_STYLES = {
     glow: "hero-glow-red",
     particle: "bg-red-300",
   },
+  [ItemGrade.DIVINE]: {
+    bg: "hero-card-gold",
+    border: "border-yellow-600",
+    text: "hero-text-gold",
+    glow: "hero-glow-gold",
+    particle: "bg-yellow-400",
+  },
 };
 
 // 아이템 타입 한글 이름 (constants에서 가져옴)

@@ -287,7 +287,9 @@ export function GachaModal({
               {Object.entries(GACHA_RATES).map(([grade, rate]) => {
                 const gradeKey = grade as keyof typeof GRADE_NAMES;
                 const colorClass =
-                  grade === "mythic"
+                  grade === "divine"
+                    ? "text-gradient bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-bold"
+                    : grade === "mythic"
                     ? "hero-text-red"
                     : grade === "legendary"
                     ? "hero-text-accent"
@@ -303,7 +305,9 @@ export function GachaModal({
                     <span className="hero-text-primary">
                       {rate >= 0.01
                         ? (rate * 100).toFixed(1)
-                        : (rate * 100).toFixed(2)}
+                        : rate >= 0.0001
+                        ? (rate * 100).toFixed(3)
+                        : (rate * 100).toFixed(4)}
                       %
                     </span>
                   </div>
@@ -323,8 +327,16 @@ export function GachaModal({
                   <span className="hero-text-accent">0.55%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>신화:</span>
-                  <span className="hero-text-red">0.05%</span>
+                  <span>신화 이상:</span>
+                  <span className="hero-text-red">0.050%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gradient bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-bold">
+                    신급 (제우스 검):
+                  </span>
+                  <span className="text-gradient bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-bold">
+                    0.001%
+                  </span>
                 </div>
               </div>
             </div>

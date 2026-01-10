@@ -16,6 +16,7 @@ const GRADE_HIERARCHY = {
   [ItemGrade.EPIC]: 2,
   [ItemGrade.LEGENDARY]: 3,
   [ItemGrade.MYTHIC]: 4,
+  [ItemGrade.DIVINE]: 5, // 제우스 검 최고 등급 (계승 불가)
 } as const;
 
 // 등급 차이별 강화 등급 감소량 (바로 윗등급만 가능, -3레벨 고정)
@@ -285,6 +286,7 @@ export function getGradeDisplayName(grade: ItemGrade): string {
     [ItemGrade.EPIC]: "에픽",
     [ItemGrade.LEGENDARY]: "전설",
     [ItemGrade.MYTHIC]: "신화",
+    [ItemGrade.DIVINE]: "신급",
   };
 
   return gradeNames[grade];
@@ -310,6 +312,7 @@ export function getItemTypeDisplayName(type: ItemType): string {
     [ItemType.WEALTH_POTION]: "재물 물약",
     [ItemType.BOSS_POTION]: "보스 물약",
     [ItemType.ARTISAN_POTION]: "장인 물약",
+    [ItemType.ZEUS_SWORD]: "제우스 검",
   };
 
   return typeNames[type];

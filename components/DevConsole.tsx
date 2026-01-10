@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 import { useGame } from "../contexts/GameContext";
 import { ItemGrade, ItemType } from "../types/game";
-import { ITEM_BASE_STATS, GRADE_BASE_STATS } from "../constants/game";
+import {
+  ITEM_BASE_STATS,
+  GRADE_BASE_STATS,
+  getItemImagePath,
+} from "../constants/game";
 
 // 개발자 콘솔용 전역 함수들을 정의
 declare global {
@@ -12,6 +16,7 @@ declare global {
     addCredits?: (amount: number) => void;
     showCommands?: () => void;
     addMythicItem?: (type?: string) => void;
+    addZeusSword?: () => void;
     resetGame?: () => void;
   }
 }
@@ -107,13 +112,53 @@ export default function DevConsole() {
         enhancedStats: { ...finalStats }, // 가챠 시스템과 동일하게 변경
         level: 1,
         enhancementLevel: 0,
-        imagePath: `/Items/${selectedType}.png`,
+        imagePath: getItemImagePath(selectedType), // 올바른 이미지 경로 함수 사용
       };
 
       actions.addItemToInventory(mythicItem);
       console.log(
         `🌟 신화 등급 ${selectedType} 아이템이 인벤토리에 추가되었습니다!`
       );
+    };
+
+    window.addZeusSword = () => {
+      // 제우스 검 생성
+      const zeusSwordStats = ITEM_BASE_STATS[ItemType.ZEUS_SWORD];
+
+      const zeusSword = {
+        id: `zeus-sword-dev-${Date.now()}-${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
+        type: ItemType.ZEUS_SWORD,
+        grade: ItemGrade.DIVINE, // 신급 등급으로 변경
+        baseStats: { ...zeusSwordStats },
+        enhancedStats: { ...zeusSwordStats },
+        level: 1,
+        enhancementLevel: 0, // 강화 불가
+        imagePath: getItemImagePath(ItemType.ZEUS_SWORD),
+      };
+
+      actions.addItemToInventory(zeusSword);
+      console.log("⚡ 제우스 검이 인벤토리에 추가되었습니다!");
+      console.log("📊 제우스 검 스탯:");
+      console.log(`  • 공격력: ${zeusSwordStats.attack.toLocaleString()}`);
+      console.log(
+        `  • 방어무시: ${zeusSwordStats.defensePenetration.toLocaleString()}`
+      );
+      console.log(
+        `  • 추가타격: ${(zeusSwordStats.additionalAttackChance * 100).toFixed(
+          1
+        )}%`
+      );
+      console.log(
+        `  • 크리티컬: ${(zeusSwordStats.criticalChance * 100).toFixed(1)}%`
+      );
+      console.log(
+        `  • 크리데미지: ${(
+          zeusSwordStats.criticalDamageMultiplier * 100
+        ).toFixed(0)}%`
+      );
+      console.log("🛡️ 주무기 슬롯에 장착 가능하며 강화는 불가능합니다.");
     };
 
     window.resetGame = () => {
@@ -139,6 +184,7 @@ export default function DevConsole() {
 🎁 아이템 관련:
 • addMythicItem()                - 랜덤 신화 아이템 추가
 • addMythicItem("helmet")        - 특정 타입 신화 아이템 추가
+• addZeusSword()                 - 제우스 검 획득 (최강 무기)
 
 🎯 게임 관리:
 • resetGame()                    - 게임 완전 초기화
@@ -150,7 +196,15 @@ export default function DevConsole() {
 • crackMode()                    - 즉시 대량 크레딧 지급
 • addCredits(1000000)            - 100만 크레딧 추가
 • addMythicItem("helmet")        - 신화 헬멧 추가
-• addMythicItem("main_weapon")   - 신화 무기 추가
+• addZeusSword()                 - 전설의 제우스 검 획득
+
+⚡ 제우스 검 특징:
+• 공격력: 99,999,999
+• 방어무시: 99,999,999  
+• 추가타격: 100%
+• 크리티컬: 100%
+• 크리데미지: 500%
+• 강화 불가 (이미 최강)
 
 ⚠️ 주의사항:
 • 이 기능은 테스트 목적으로만 사용하세요
@@ -169,6 +223,7 @@ export default function DevConsole() {
 🚀 빠른 시작:
 • crackMode()           - 테스트용 크랙모드 활성화
 • addMythicItem()       - 신화 아이템 추가
+• addZeusSword()        - 전설의 제우스 검 획득
 • showCommands()        - 전체 명령어 목록
     `);
 
@@ -178,6 +233,7 @@ export default function DevConsole() {
       if (window.addCredits) delete window.addCredits;
       if (window.showCommands) delete window.showCommands;
       if (window.addMythicItem) delete window.addMythicItem;
+      if (window.addZeusSword) delete window.addZeusSword;
       if (window.resetGame) delete window.resetGame;
     };
   }, [actions]);

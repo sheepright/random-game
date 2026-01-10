@@ -18,6 +18,7 @@ const GRADE_HIERARCHY = {
   [ItemGrade.EPIC]: 2,
   [ItemGrade.LEGENDARY]: 3,
   [ItemGrade.MYTHIC]: 4,
+  [ItemGrade.DIVINE]: 5,
 } as const;
 
 // 다음 등급 매핑
@@ -64,7 +65,7 @@ export interface SynthesisPreview {
  * 합성 가능한 등급인지 확인
  */
 export function canSynthesizeGrade(grade: ItemGrade): boolean {
-  return grade !== ItemGrade.MYTHIC; // 신화 등급은 합성 불가 (최고 등급)
+  return grade !== ItemGrade.MYTHIC && grade !== ItemGrade.DIVINE; // 신화, 신성 등급은 합성 불가 (최고 등급)
 }
 
 /**
@@ -91,6 +92,7 @@ export function groupItemsByGrade(items: Item[]): Record<ItemGrade, Item[]> {
     [ItemGrade.EPIC]: [],
     [ItemGrade.LEGENDARY]: [],
     [ItemGrade.MYTHIC]: [],
+    [ItemGrade.DIVINE]: [],
   } as Record<ItemGrade, Item[]>;
 
   items.forEach((item) => {
@@ -114,7 +116,7 @@ export function generateSynthesisPreview(
       targetGrade: grade,
       availableItems: [],
       requiredCount: 10,
-      error: "신화 등급은 합성할 수 없습니다.",
+      error: "신화, 신성 등급은 합성할 수 없습니다.",
     };
   }
 
@@ -302,6 +304,7 @@ export function getGradeDisplayName(grade: ItemGrade): string {
     [ItemGrade.EPIC]: "에픽",
     [ItemGrade.LEGENDARY]: "전설",
     [ItemGrade.MYTHIC]: "신화",
+    [ItemGrade.DIVINE]: "신성",
   };
 
   return gradeNames[grade];

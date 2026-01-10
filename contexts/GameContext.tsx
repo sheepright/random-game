@@ -29,6 +29,7 @@ import {
   getDefaultGameState,
   GAME_LIMITS,
   BASE_CREDIT_PER_SECOND,
+  STORAGE_KEY,
 } from "../constants/game";
 import {
   saveGameState,
@@ -175,7 +176,14 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
 
     case "EQUIP_ITEM": {
       const { item, previousItem } = action.payload;
-      const slotKey = item.type as keyof EquippedItems;
+
+      // 제우스 검은 mainWeapon 슬롯에 장착
+      let slotKey: keyof EquippedItems;
+      if (item.type === ItemType.ZEUS_SWORD) {
+        slotKey = "mainWeapon";
+      } else {
+        slotKey = item.type as keyof EquippedItems;
+      }
 
       const newEquippedItems: EquippedItems = {
         ...state.equippedItems,
@@ -473,6 +481,7 @@ function gameStateReducer(state: GameState, action: GameActionType): GameState {
             creditReward: victoryResult.creditReward,
             timestamp: Date.now(),
           },
+          isGameComplete: victoryResult.isGameComplete || false, // 게임 완료 상태 추가
           lastSaveTime: Date.now(),
         };
       }

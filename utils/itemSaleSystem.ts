@@ -14,6 +14,7 @@ export const ITEM_BASE_SALE_PRICES: Record<ItemGrade, number> = {
   [ItemGrade.EPIC]: 25, // 50 -> 25로 감소 (가챠 비용의 1.6-3.1% 수준)
   [ItemGrade.LEGENDARY]: 50, // 100 -> 50으로 감소 (가챠 비용의 3.1-6.3% 수준)
   [ItemGrade.MYTHIC]: 100, // 새로 추가 (가챠 비용의 6.3-12.5% 수준)
+  [ItemGrade.DIVINE]: 0, // 제우스 검 전용 등급 - 판매 불가
 };
 
 /**
@@ -77,7 +78,8 @@ export const SALE_LIMITS = {
     ItemGrade.EPIC,
     ItemGrade.LEGENDARY,
     ItemGrade.MYTHIC,
-  ], // Epic, Legendary, Mythic 등급 판매 시 추가 확인
+    ItemGrade.DIVINE,
+  ], // Epic, Legendary, Mythic, Divine 등급 판매 시 추가 확인
 } as const;
 
 /**
@@ -264,6 +266,7 @@ export function calculateSaleEfficiency(item: Item): {
     [ItemGrade.EPIC]: 1.7,
     [ItemGrade.LEGENDARY]: 2.2,
     [ItemGrade.MYTHIC]: 3.0,
+    [ItemGrade.DIVINE]: 5.0,
   };
 
   const estimatedEnhancementCost =

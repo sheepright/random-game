@@ -25,6 +25,7 @@ const GRADE_BORDER_COLORS = {
   [ItemGrade.EPIC]: "border-purple-400",
   [ItemGrade.LEGENDARY]: "border-yellow-400",
   [ItemGrade.MYTHIC]: "border-red-400",
+  [ItemGrade.DIVINE]: "border-yellow-600", // 제우스 검 전용 골드 테두리
 } as const;
 
 // 등급별 배경 색상 (투명하게 변경)
@@ -34,6 +35,7 @@ const GRADE_BG_COLORS = {
   [ItemGrade.EPIC]: "bg-transparent",
   [ItemGrade.LEGENDARY]: "bg-transparent",
   [ItemGrade.MYTHIC]: "bg-transparent",
+  [ItemGrade.DIVINE]: "bg-transparent",
 } as const;
 
 // 반응형 크기별 스타일 (모바일 우선 설계)

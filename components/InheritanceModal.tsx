@@ -31,6 +31,7 @@ const GRADE_COLORS = {
   [ItemGrade.EPIC]: "hero-card-purple border-purple-400 hero-text-purple",
   [ItemGrade.LEGENDARY]: "hero-card-accent border-yellow-400 hero-text-accent",
   [ItemGrade.MYTHIC]: "hero-card-red border-red-400 hero-text-red",
+  [ItemGrade.DIVINE]: "hero-card-gold border-yellow-600 hero-text-gold", // 제우스 검 전용 골드 색상
 };
 
 // 등급 순서 (계승 방향 확인용)
@@ -40,6 +41,7 @@ const GRADE_ORDER = {
   [ItemGrade.EPIC]: 3,
   [ItemGrade.LEGENDARY]: 4,
   [ItemGrade.MYTHIC]: 5,
+  [ItemGrade.DIVINE]: 6, // 제우스 검 최고 등급
 };
 
 interface ItemSelectorProps {

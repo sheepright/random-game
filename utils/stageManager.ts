@@ -225,7 +225,20 @@ export function processBattleVictory(
   stageInfo: StageInfo | null;
   droppedItems: Item[];
   creditReward: number;
+  isGameComplete?: boolean;
 } {
+  // 100스테이지 클리어 시 게임 완료
+  if (currentStage >= GAME_LIMITS.MAX_STAGE) {
+    return {
+      newStage: currentStage, // 스테이지 증가하지 않음
+      newCreditRate: baseCreditRate,
+      stageInfo: null,
+      droppedItems: processBattleVictoryRewards(currentStage),
+      creditReward: calculateStageClearReward(currentStage),
+      isGameComplete: true,
+    };
+  }
+
   const newStage = currentStage + 1;
   const newCreditRate = calculateNewCreditRate(baseCreditRate, newStage);
   const stageInfo = getStageInfo(newStage);
@@ -238,6 +251,7 @@ export function processBattleVictory(
     stageInfo,
     droppedItems,
     creditReward,
+    isGameComplete: false,
   };
 }
 

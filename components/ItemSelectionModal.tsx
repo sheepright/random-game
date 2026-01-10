@@ -21,6 +21,7 @@ const GRADE_COLORS = {
   [ItemGrade.EPIC]: "hero-card-purple border-purple-400",
   [ItemGrade.LEGENDARY]: "hero-card-accent border-yellow-400",
   [ItemGrade.MYTHIC]: "hero-card-red border-red-400",
+  [ItemGrade.DIVINE]: "hero-card-gold border-yellow-600", // 제우스 검 전용 골드 색상
 };
 
 export function ItemSelectionModal({
@@ -75,6 +76,7 @@ export function ItemSelectionModal({
         epic: 2,
         legendary: 3,
         mythic: 4,
+        divine: 5, // 제우스 검 최고 등급
       };
       return gradeOrder[b.grade] - gradeOrder[a.grade];
     });

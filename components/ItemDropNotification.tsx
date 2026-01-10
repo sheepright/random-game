@@ -54,6 +54,13 @@ const GRADE_STYLES = {
     accent: "bg-red-400",
     glow: "hero-glow-red",
   },
+  [ItemGrade.DIVINE]: {
+    bg: "hero-card-gold",
+    border: "border-yellow-500",
+    text: "hero-text-gold",
+    accent: "bg-yellow-500",
+    glow: "hero-glow-gold",
+  },
 };
 
 // 등급 한글 이름
@@ -63,6 +70,7 @@ const GRADE_NAMES = {
   [ItemGrade.EPIC]: "영웅",
   [ItemGrade.LEGENDARY]: "전설",
   [ItemGrade.MYTHIC]: "신화",
+  [ItemGrade.DIVINE]: "신급",
 };
 
 export function ItemDropNotification({

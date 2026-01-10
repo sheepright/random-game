@@ -7,6 +7,7 @@ const ItemGrade = {
   EPIC: "epic",
   LEGENDARY: "legendary",
   MYTHIC: "mythic",
+  DIVINE: "divine",
 };
 
 const ItemType = {
@@ -42,6 +43,11 @@ const GRADE_BASE_STATS = {
     criticalDamageMultiplier: 2.5, // 250%
     criticalChance: 0.4, // 40%
   },
+  [ItemGrade.DIVINE]: {
+    creditPerSecondBonus: 100,
+    criticalDamageMultiplier: 5.0, // 500%
+    criticalChance: 1.0, // 100%
+  },
 };
 
 // 물약별 기본 스텟 (어떤 스탯이 적용되는지)
@@ -69,6 +75,7 @@ const gradeNames = {
   [ItemGrade.EPIC]: "에픽",
   [ItemGrade.LEGENDARY]: "전설",
   [ItemGrade.MYTHIC]: "신화",
+  [ItemGrade.DIVINE]: "신성",
 };
 
 const potionNames = {

@@ -117,6 +117,9 @@ export function recalculateEnhancedItemStats(item: Item): Item {
     [ItemType.WEALTH_POTION]: "creditPerSecondBonus",
     [ItemType.BOSS_POTION]: "criticalDamageMultiplier",
     [ItemType.ARTISAN_POTION]: "criticalChance",
+
+    // 특별 아이템
+    [ItemType.ZEUS_SWORD]: "attack",
   };
 
   const primaryStat = ITEM_PRIMARY_STATS[item.type];
@@ -452,6 +455,8 @@ export function migrateGameState(data: any): GameState {
         : 1,
     lastSaveTime:
       typeof data?.lastSaveTime === "number" ? data.lastSaveTime : Date.now(),
+    isGameComplete:
+      typeof data?.isGameComplete === "boolean" ? data.isGameComplete : false, // 게임 완료 상태 보존
   };
 
   // 마이그레이션 버전을 별도로 저장

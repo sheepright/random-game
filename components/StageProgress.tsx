@@ -153,11 +153,11 @@ export function StageProgress({ onStartBattle }: StageProgressProps) {
 
           <div className="relative">
             {/* 던전 배경 효과 */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-orange-900/20 rounded-lg"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-amber-900/20 to-orange-900/20 rounded-lg"></div>
 
             <button
               onClick={handleClickCredit}
-              className="relative w-full py-6 px-4 bg-gradient-to-br from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 
+              className="relative w-full py-6 px-4 bg-linear-to-br from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 
                          text-white font-bold text-xl rounded-lg shadow-xl transform transition-all duration-150 
                          hover:scale-105 active:scale-95 border-2 border-amber-400/50 hover:border-amber-300
                          hero-glow"
@@ -275,8 +275,8 @@ export function StageProgress({ onStartBattle }: StageProgressProps) {
         </div>
       </div>
 
-      {/* 최고 스테이지 달성 */}
-      {currentStage >= 100 && (
+      {/* 최고 스테이지 달성 - 100스테이지 클리어 후에만 표시 */}
+      {gameState.isGameComplete && (
         <div className="hero-card-accent p-4 rounded-lg text-center">
           <div className="text-2xl mb-2 hero-float">🎊</div>
           <div className="hero-text-accent font-bold text-lg mb-1">

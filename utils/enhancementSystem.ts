@@ -20,7 +20,7 @@ export const MAX_ENHANCEMENT_LEVEL = 25;
 // Safe enhancement levels (안전 등급 - 이 레벨 아래로는 하락하지 않음)
 export const SAFE_ENHANCEMENT_LEVELS = [15, 20];
 
-// Destruction prevention enhancement (파괴방지 강화 - 20강부터 사용 가능)
+// Destruction prevention enhancement (파괴방지 강화 - 20->21강부터 사용 가능)
 export const DESTRUCTION_PREVENTION_MIN_LEVEL = 20;
 
 // Calculate destruction prevention cost (파괴방지 강화 비용 계산)
@@ -32,31 +32,28 @@ export function calculateDestructionPreventionCost(
     return 0; // 20강 미만에서는 사용 불가
   }
 
-  // 적정 수준의 파괴방지 비용 (50만 ~ 150만)
+  // 20->21강부터 10만씩 증가하여 최대 50만까지
   let baseCost: number;
 
   switch (enhancementLevel) {
-    case 20:
+    case 20: // 20->21강
+      baseCost = 100000; // 10만
+      break;
+    case 21: // 21->22강
+      baseCost = 200000; // 20만
+      break;
+    case 22: // 22->23강
+      baseCost = 300000; // 30만
+      break;
+    case 23: // 23->24강
+      baseCost = 400000; // 40만
+      break;
+    case 24: // 24->25강
       baseCost = 500000; // 50만
       break;
-    case 21:
-      baseCost = 650000; // 65만
-      break;
-    case 22:
-      baseCost = 800000; // 80만
-      break;
-    case 23:
-      baseCost = 1000000; // 100만
-      break;
-    case 24:
-      baseCost = 1250000; // 125만
-      break;
-    case 25:
-      baseCost = 1500000; // 150만 (최대)
-      break;
     default:
-      // 25강 이상은 150만으로 고정
-      baseCost = 1500000;
+      // 25강 이상은 50만으로 고정
+      baseCost = 500000;
       break;
   }
 
@@ -103,6 +100,9 @@ export const ITEM_PRIMARY_STATS: Record<ItemType, keyof ItemStats> = {
   [ItemType.WEALTH_POTION]: "creditPerSecondBonus",
   [ItemType.BOSS_POTION]: "criticalDamageMultiplier",
   [ItemType.ARTISAN_POTION]: "criticalChance",
+
+  // 특별 아이템 (강화 불가이므로 의미없지만 정의)
+  [ItemType.ZEUS_SWORD]: "attack",
 };
 
 // Enhancement cost calculation (밸런스 조정됨 - Requirements 10.12)
@@ -116,6 +116,7 @@ export function calculateEnhancementCost(
     [ItemGrade.EPIC]: 1.7,
     [ItemGrade.LEGENDARY]: 2.2,
     [ItemGrade.MYTHIC]: 3.0,
+    [ItemGrade.DIVINE]: 1.0, // 제우스 검은 강화 불가이므로 의미없음
   };
 
   let baseCost: number;
@@ -206,6 +207,7 @@ export function getEnhancementStatIncrease(
     [ItemGrade.EPIC]: 8.0, // 5.5 → 8.0
     [ItemGrade.LEGENDARY]: 12.0, // 8.0 → 12.0
     [ItemGrade.MYTHIC]: 18.0, // 12.0 → 18.0
+    [ItemGrade.DIVINE]: 0, // 제우스 검은 강화 불가
   };
 
   // 레벨별 효율 증가 (훨씬 더 높은 보상)
@@ -298,6 +300,11 @@ export function getEnhancementInfo(item: Item): EnhancementInfo {
     throw new Error("Item has invalid type");
   }
 
+  // 제우스 검은 강화 불가
+  if (item.type === ItemType.ZEUS_SWORD) {
+    throw new Error("제우스 검은 강화할 수 없습니다");
+  }
+
   const nextLevel = item.enhancementLevel + 1;
 
   if (nextLevel > MAX_ENHANCEMENT_LEVEL) {
@@ -335,6 +342,11 @@ export function canEnhanceItem(item: Item, availableCredits: number): boolean {
       "canEnhanceItem: item.enhancementLevel is not a number",
       item
     );
+    return false;
+  }
+
+  // 제우스 검은 강화 불가
+  if (item.type === ItemType.ZEUS_SWORD) {
     return false;
   }
 

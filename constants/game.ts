@@ -81,6 +81,16 @@ export const GRADE_BASE_STATS = {
     criticalDamageMultiplier: 1.5,
     criticalChance: 0.16, // 16% (0.15 → 0.16)
   },
+  [ItemGrade.DIVINE]: {
+    // 제우스 검 전용 등급 (사용되지 않음, 직접 스탯 정의)
+    attack: 99999999,
+    defense: 0,
+    defensePenetration: 99999999,
+    additionalAttackChance: 1.0,
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 5.0,
+    criticalChance: 1.0,
+  },
 } as const;
 
 // 랜덤 보너스 범위 (1~5 추가)
@@ -237,6 +247,17 @@ export const ITEM_BASE_STATS: Record<ItemType, ItemStats> = {
     criticalDamageMultiplier: 0,
     criticalChance: 0.016, // 1.6% (신화 25강 기준 100% 목표)
   },
+
+  // 특별 아이템 - 제우스 검 (강화 불가, 최강 스탯)
+  [ItemType.ZEUS_SWORD]: {
+    attack: 99999999,
+    defense: 0,
+    defensePenetration: 99999999,
+    additionalAttackChance: 1.0, // 100%
+    creditPerSecondBonus: 0,
+    criticalDamageMultiplier: 5.0, // 500%
+    criticalChance: 1.0, // 100%
+  },
 } as const;
 
 // Generate all 100 stages using the stage generator
@@ -380,6 +401,7 @@ export const getDefaultGameState = (): GameState => ({
   },
   battleState: null,
   recentStageClearDrops: null,
+  isGameComplete: false, // 게임 완료 상태 초기화
 });
 
 // Stage requirements and rewards with new structure - now using generated data
@@ -411,6 +433,7 @@ export const ITEM_TYPE_NAMES: Record<ItemType, string> = {
   [ItemType.WEALTH_POTION]: "재물 물약",
   [ItemType.BOSS_POTION]: "보스 물약",
   [ItemType.ARTISAN_POTION]: "장인 물약",
+  [ItemType.ZEUS_SWORD]: "제우스 검",
 };
 
 // Item grade names for UI (Korean)
@@ -420,6 +443,7 @@ export const GRADE_NAMES = {
   [ItemGrade.EPIC]: "에픽",
   [ItemGrade.LEGENDARY]: "전설",
   [ItemGrade.MYTHIC]: "신화",
+  [ItemGrade.DIVINE]: "신급", // 제우스 검 전용
 } as const;
 
 // Player stat names for UI (Korean)
@@ -459,7 +483,8 @@ export const GACHA_RATES: DropRateTable = {
   [ItemGrade.RARE]: 0.25, // 25%
   [ItemGrade.EPIC]: 0.0245, // 2.45%
   [ItemGrade.LEGENDARY]: 0.005, // 0.5%
-  [ItemGrade.MYTHIC]: 0.0005, // 0.05%
+  [ItemGrade.MYTHIC]: 0.00049, // 0.049% (0.001% 감소)
+  [ItemGrade.DIVINE]: 0.00001, // 0.001% (제우스 검)
 } as const;
 
 // Gacha category item types
@@ -514,6 +539,7 @@ export const ITEM_IMAGE_PATHS = {
   [ItemType.WEALTH_POTION]: "/Items/WealthPotion.png",
   [ItemType.BOSS_POTION]: "/Items/BossPotion.png",
   [ItemType.ARTISAN_POTION]: "/Items/ArtisanPotion.png",
+  [ItemType.ZEUS_SWORD]: "/Items/Zeus.png",
 } as const;
 
 // Get item image path by item type

@@ -24,27 +24,27 @@ export function calculateStageRequirements(stage: number): {
   if (stage <= 5) {
     // 1-5: 기본 Common 장비로 클리어 가능
     requiredAttack = 8 + stage * 2; // 1스테이지: 10, 5스테이지: 18
-    requiredDefense = 12 + stage * 3; // 1스테이지: 15, 5스테이지: 27
+    requiredDefense = 20 + stage * 5; // 1스테이지: 25, 5스테이지: 45 (방어력 요구량 증가)
   } else if (stage <= 15) {
     // 6-15: Common 강화 또는 Rare 장비 필요
     requiredAttack = 18 + (stage - 5) * 4; // 6스테이지: 22, 15스테이지: 58
-    requiredDefense = 27 + (stage - 5) * 5; // 6스테이지: 32, 15스테이지: 77
+    requiredDefense = 45 + (stage - 5) * 8; // 6스테이지: 53, 15스테이지: 125 (방어력 요구량 증가)
   } else if (stage <= 30) {
     // 16-30: Rare 강화 또는 Epic 장비 필요
     requiredAttack = 58 + (stage - 15) * 8; // 16스테이지: 66, 30스테이지: 178
-    requiredDefense = 77 + (stage - 15) * 10; // 16스테이지: 87, 30스테이지: 227
+    requiredDefense = 125 + (stage - 15) * 15; // 16스테이지: 140, 30스테이지: 365 (방어력 요구량 증가)
   } else if (stage <= 50) {
     // 31-50: Epic 강화 또는 Legendary 장비 필요
     requiredAttack = 178 + (stage - 30) * 15; // 31스테이지: 193, 50스테이지: 478
-    requiredDefense = 227 + (stage - 30) * 18; // 31스테이지: 245, 50스테이지: 587
+    requiredDefense = 365 + (stage - 30) * 25; // 31스테이지: 390, 50스테이지: 865 (방어력 요구량 증가)
   } else if (stage <= 75) {
     // 51-75: Legendary 강화 또는 Mythic 장비 필요
     requiredAttack = 478 + (stage - 50) * 25; // 51스테이지: 503, 75스테이지: 1128
-    requiredDefense = 587 + (stage - 50) * 30; // 51스테이지: 617, 75스테이지: 1337
+    requiredDefense = 865 + (stage - 50) * 40; // 51스테이지: 905, 75스테이지: 1865 (방어력 요구량 증가)
   } else {
     // 76-100: Mythic 강화 필수
     requiredAttack = 1128 + (stage - 75) * 40; // 76스테이지: 1168, 100스테이지: 2128
-    requiredDefense = 1337 + (stage - 75) * 45; // 76스테이지: 1382, 100스테이지: 2462
+    requiredDefense = 1865 + (stage - 75) * 60; // 76스테이지: 1925, 100스테이지: 3365 (방어력 요구량 증가)
   }
 
   return {
@@ -67,32 +67,32 @@ export function calculateBossStats(stage: number): {
   if (stage <= 5) {
     // 1-5: 기본 Common 장비 (강화 없음)
     playerAttack = 24; // 주무기10 + 보조무기6 + 펫8
-    playerDefense = 19; // 헬멧5 + 아머8 + 팬츠6
+    playerDefense = 25; // 헬멧5 + 아머8 + 팬츠6 + 약간의 강화 고려
     playerDefensePenetration = 9; // 귀걸이3 + 반지2 + 목걸이4
   } else if (stage <= 15) {
     // 6-15: Common 강화 또는 Rare 장비
     playerAttack = 50 + (stage - 5) * 8; // 6스테이지: 58, 15스테이지: 138
-    playerDefense = 35 + (stage - 5) * 6; // 6스테이지: 41, 15스테이지: 95
+    playerDefense = 50 + (stage - 5) * 10; // 6스테이지: 60, 15스테이지: 150 (방어력 증가)
     playerDefensePenetration = 15 + (stage - 5) * 3; // 6스테이지: 18, 15스테이지: 45
   } else if (stage <= 30) {
     // 16-30: Rare 강화 또는 Epic 장비
     playerAttack = 138 + (stage - 15) * 12; // 16스테이지: 150, 30스테이지: 330
-    playerDefense = 95 + (stage - 15) * 10; // 16스테이지: 105, 30스테이지: 245
+    playerDefense = 150 + (stage - 15) * 15; // 16스테이지: 165, 30스테이지: 375 (방어력 증가)
     playerDefensePenetration = 45 + (stage - 15) * 5; // 16스테이지: 50, 30스테이지: 120
   } else if (stage <= 50) {
     // 31-50: Epic 강화 또는 Legendary 장비
     playerAttack = 330 + (stage - 30) * 20; // 31스테이지: 350, 50스테이지: 730
-    playerDefense = 245 + (stage - 30) * 15; // 31스테이지: 260, 50스테이지: 545
+    playerDefense = 375 + (stage - 30) * 25; // 31스테이지: 400, 50스테이지: 875 (방어력 증가)
     playerDefensePenetration = 120 + (stage - 30) * 8; // 31스테이지: 128, 50스테이지: 288
   } else if (stage <= 75) {
     // 51-75: Legendary 강화 또는 Mythic 장비
     playerAttack = 730 + (stage - 50) * 30; // 51스테이지: 760, 75스테이지: 1510
-    playerDefense = 545 + (stage - 50) * 25; // 51스테이지: 570, 75스테이지: 1195
+    playerDefense = 875 + (stage - 50) * 35; // 51스테이지: 910, 75스테이지: 1785 (방어력 증가)
     playerDefensePenetration = 288 + (stage - 50) * 12; // 51스테이지: 300, 75스테이지: 588
   } else {
     // 76-100: Mythic 강화 필수
     playerAttack = 1510 + (stage - 75) * 50; // 76스테이지: 1560, 100스테이지: 2810
-    playerDefense = 1195 + (stage - 75) * 35; // 76스테이지: 1230, 100스테이지: 2070
+    playerDefense = 1785 + (stage - 75) * 50; // 76스테이지: 1835, 100스테이지: 3035 (방어력 증가)
     playerDefensePenetration = 588 + (stage - 75) * 20; // 76스테이지: 608, 100스테이지: 1088
   }
 
@@ -179,23 +179,39 @@ export function calculateBossStats(stage: number): {
     bossHP = Math.floor(bossHP * stageMultiplier);
   }
 
-  // 보스 공격력 (더 위험하게)
+  // 보스 공격력 (방어구의 가치를 높이도록 대폭 상향)
   const playerHP = 100 + playerDefense * 2;
   let survivalTurns;
   if (stage <= 5) {
-    survivalTurns = 25; // 1-5 스테이지: 25턴 생존
+    survivalTurns = 15; // 1-5 스테이지: 15턴 생존 (25→15)
   } else if (stage <= 15) {
-    survivalTurns = 18; // 6-15 스테이지: 18턴 생존
+    survivalTurns = 12; // 6-15 스테이지: 12턴 생존 (18→12)
   } else if (stage <= 30) {
-    survivalTurns = 12; // 16-30 스테이지: 12턴 생존
+    survivalTurns = 8; // 16-30 스테이지: 8턴 생존 (12→8)
   } else if (stage <= 50) {
-    survivalTurns = 8; // 31-50 스테이지: 8턴 생존
+    survivalTurns = 6; // 31-50 스테이지: 6턴 생존 (8→6)
   } else if (stage <= 75) {
-    survivalTurns = 6; // 51-75 스테이지: 6턴 생존
+    survivalTurns = 4; // 51-75 스테이지: 4턴 생존 (6→4)
   } else {
-    survivalTurns = 4; // 76-100 스테이지: 4턴 생존 (매우 위험)
+    survivalTurns = 3; // 76-100 스테이지: 3턴 생존 (4→3, 매우 위험)
   }
-  const bossAttack = Math.floor(playerHP / survivalTurns);
+
+  // 방어구 없이는 생존하기 어렵도록 공격력 추가 증가
+  let attackMultiplier = 1.0;
+  if (stage <= 10) {
+    attackMultiplier = 1.3; // 30% 증가
+  } else if (stage <= 25) {
+    attackMultiplier = 1.5; // 50% 증가
+  } else if (stage <= 50) {
+    attackMultiplier = 1.8; // 80% 증가
+  } else if (stage <= 75) {
+    attackMultiplier = 2.2; // 120% 증가
+  } else {
+    attackMultiplier = 2.8; // 180% 증가
+  }
+
+  const baseBossAttack = Math.floor(playerHP / survivalTurns);
+  const bossAttack = Math.floor(baseBossAttack * attackMultiplier);
 
   return {
     maxHP: Math.max(50, bossHP), // 최소 HP 50
@@ -246,6 +262,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.1,
       [ItemGrade.LEGENDARY]: 0.025,
       [ItemGrade.MYTHIC]: 0.005,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
     idleRates = {
       [ItemGrade.COMMON]: 0.75,
@@ -253,6 +270,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.05,
       [ItemGrade.LEGENDARY]: 0.015,
       [ItemGrade.MYTHIC]: 0.005,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
   } else if (stage <= 40) {
     // 21-40: 중급
@@ -262,6 +280,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.14,
       [ItemGrade.LEGENDARY]: 0.05,
       [ItemGrade.MYTHIC]: 0.01,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
     idleRates = {
       [ItemGrade.COMMON]: 0.7,
@@ -269,6 +288,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.07,
       [ItemGrade.LEGENDARY]: 0.025,
       [ItemGrade.MYTHIC]: 0.005,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
   } else if (stage <= 60) {
     // 41-60: 고급
@@ -278,6 +298,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.17,
       [ItemGrade.LEGENDARY]: 0.08,
       [ItemGrade.MYTHIC]: 0.02,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
     idleRates = {
       [ItemGrade.COMMON]: 0.65,
@@ -285,6 +306,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.09,
       [ItemGrade.LEGENDARY]: 0.035,
       [ItemGrade.MYTHIC]: 0.005,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
   } else if (stage <= 80) {
     // 61-80: 최고급
@@ -294,6 +316,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.2,
       [ItemGrade.LEGENDARY]: 0.12,
       [ItemGrade.MYTHIC]: 0.03,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
     idleRates = {
       [ItemGrade.COMMON]: 0.6,
@@ -301,6 +324,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.1,
       [ItemGrade.LEGENDARY]: 0.04,
       [ItemGrade.MYTHIC]: 0.01,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
   } else {
     // 81-100: 전설급
@@ -310,6 +334,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.25,
       [ItemGrade.LEGENDARY]: 0.15,
       [ItemGrade.MYTHIC]: 0.05,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
     idleRates = {
       [ItemGrade.COMMON]: 0.55,
@@ -317,6 +342,7 @@ export function calculateDropRates(stage: number): {
       [ItemGrade.EPIC]: 0.12,
       [ItemGrade.LEGENDARY]: 0.05,
       [ItemGrade.MYTHIC]: 0.01,
+      [ItemGrade.DIVINE]: 0, // 제우스 검은 드랍되지 않음
     };
   }
 

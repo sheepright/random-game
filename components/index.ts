@@ -1,6 +1,7 @@
 export { CreditDisplay } from "./CreditDisplay";
 export { CreditGenerator } from "./CreditGenerator";
 export { default as EnhancementModal } from "./EnhancementModal";
+export { default as EndingModal } from "./EndingModal";
 export { EquipmentPanel } from "./EquipmentPanel";
 export { GameDashboard } from "./GameDashboard";
 export { PlayerStatsDisplay } from "./PlayerStatsDisplay";

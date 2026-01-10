@@ -18,6 +18,7 @@ export interface GameState {
     creditReward: number;
     timestamp: number;
   } | null;
+  isGameComplete?: boolean; // 게임 완료 상태 추가
 }
 
 export interface BattleState {
@@ -98,6 +99,8 @@ export enum ItemType {
   WEALTH_POTION = "wealthPotion", // 재물 물약 (초당 크레딧 증가)
   BOSS_POTION = "bossPotion", // 보스 물약 (크리티컬 데미지 증가)
   ARTISAN_POTION = "artisanPotion", // 장인 물약 (크리티컬 확률 증가)
+  // 특별 아이템
+  ZEUS_SWORD = "zeusSword", // 제우스 검 (특별 아이템)
 }
 
 export enum ItemGrade {
@@ -106,6 +109,7 @@ export enum ItemGrade {
   EPIC = "epic",
   LEGENDARY = "legendary",
   MYTHIC = "mythic",
+  DIVINE = "divine", // 제우스 검 전용 등급
 }
 
 export interface ItemStats {
@@ -153,6 +157,7 @@ export interface DropRateTable {
   [ItemGrade.EPIC]: number;
   [ItemGrade.LEGENDARY]: number;
   [ItemGrade.MYTHIC]: number;
+  [ItemGrade.DIVINE]: number;
 }
 
 export interface OfflineProgress {

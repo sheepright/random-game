@@ -427,6 +427,13 @@ export default function InventoryPanel() {
                   color: "bg-red-600 hover:bg-red-500",
                   count: inventoryStats.itemsByGrade[ItemGrade.MYTHIC],
                 },
+                {
+                  grade: ItemGrade.DIVINE,
+                  name: "신성",
+                  color:
+                    "bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400",
+                  count: inventoryStats.itemsByGrade[ItemGrade.DIVINE],
+                },
               ].map(({ grade, name, color, count }) => (
                 <button
                   key={grade}
@@ -552,6 +559,7 @@ export default function InventoryPanel() {
           >
             <option value="">모든 등급</option>
             <option value={ItemGrade.MYTHIC}>신화</option>
+            <option value={ItemGrade.DIVINE}>신성</option>
             <option value={ItemGrade.LEGENDARY}>전설</option>
             <option value={ItemGrade.EPIC}>에픽</option>
             <option value={ItemGrade.RARE}>레어</option>
@@ -597,6 +605,12 @@ export default function InventoryPanel() {
             <span className="text-gray-400">총 아이템:</span>
             <span className="font-semibold text-white">
               {inventoryStats.totalItems}개
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded"></span>
+            <span className="text-yellow-300">
+              신성: {inventoryStats.itemsByGrade[ItemGrade.DIVINE]}개
             </span>
           </div>
           <div className="flex items-center gap-2">

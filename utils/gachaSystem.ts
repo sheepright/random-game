@@ -44,7 +44,25 @@ export function performGachaDraw(
     };
   }
 
-  // 아이템 등급 결정 (고정 확률)
+  // 제우스 검 확률 체크 (0.00001% = 0.0000001)
+  const zeusRate = 0.0000001;
+  const random = Math.random();
+
+  if (random <= zeusRate) {
+    // 제우스 검 생성
+    const zeusSword = generateZeusSword();
+    const result: GachaResult = {
+      item: zeusSword,
+      category,
+      cost,
+    };
+    return {
+      success: true,
+      result,
+    };
+  }
+
+  // 일반 아이템 등급 결정 (고정 확률)
   const grade = selectItemGrade();
 
   // 카테고리에 맞는 아이템 타입 선택
@@ -70,12 +88,19 @@ export function performGachaDraw(
 /**
  * 가챠 확률에 따른 아이템 등급 선택
  * Requirements: 11.3 - Common (70%), Rare (20%), Epic (7%), Legendary (2.5%), Mythic (0.5%)
+ * 제우스 검: 0.00001% (모든 가챠에서 극희박한 확률)
  */
 function selectItemGrade(): ItemGrade {
   const random = Math.random();
   let cumulativeProbability = 0;
 
-  // 확률 순서대로 체크 (Common -> Rare -> Epic -> Legendary -> Mythic)
+  // 제우스 검 확률 체크 (0.00001% = 0.0000001)
+  const zeusRate = 0.0000001;
+  if (random <= zeusRate) {
+    return ItemGrade.DIVINE; // 제우스 검은 신급 등급으로 처리
+  }
+
+  // 기존 확률 순서대로 체크 (DIVINE 제외)
   const grades = [
     ItemGrade.COMMON,
     ItemGrade.RARE,
@@ -85,14 +110,34 @@ function selectItemGrade(): ItemGrade {
   ];
 
   for (const grade of grades) {
-    cumulativeProbability += GACHA_RATES[grade];
-    if (random <= cumulativeProbability) {
+    const gradeRate = GACHA_RATES[grade as keyof typeof GACHA_RATES];
+    cumulativeProbability += gradeRate;
+    if (random <= cumulativeProbability + zeusRate) {
       return grade;
     }
   }
 
   // 안전장치: 확률 계산 오류 시 Common 반환
   return ItemGrade.COMMON;
+}
+
+/**
+ * 제우스 검 생성 (특별 아이템)
+ * 강화 불가, 최강 스탯
+ */
+function generateZeusSword(): Item {
+  const zeusSwordStats = ITEM_BASE_STATS[ItemType.ZEUS_SWORD];
+
+  return {
+    id: `zeus-sword-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    type: ItemType.ZEUS_SWORD,
+    grade: ItemGrade.DIVINE, // 신급 등급으로 변경
+    baseStats: { ...zeusSwordStats },
+    enhancedStats: { ...zeusSwordStats },
+    level: 1,
+    enhancementLevel: 0, // 강화 불가
+    imagePath: getItemImagePath(ItemType.ZEUS_SWORD),
+  };
 }
 
 /**
@@ -191,7 +236,7 @@ export function canPerformGacha(
  * 가챠 확률 정보 반환
  * Requirements: 11.6
  */
-export function getGachaRates(): Record<ItemGrade, number> {
+export function getGachaRates(): Partial<Record<ItemGrade, number>> {
   return { ...GACHA_RATES };
 }
 

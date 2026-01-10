@@ -100,6 +100,7 @@ export default function InventoryManager() {
       [ItemGrade.EPIC]: 50,
       [ItemGrade.LEGENDARY]: 100,
       [ItemGrade.MYTHIC]: 200,
+      [ItemGrade.DIVINE]: 999999999, // 제우스 검은 매우 높은 가격 (판매 불가 처리 예정)
     };
 
     const basePrice = gradeMultipliers[item.grade];

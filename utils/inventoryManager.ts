@@ -69,6 +69,7 @@ export const INVENTORY_CONFIG = {
  * 아이템 등급별 우선순위 (정렬용)
  */
 const GRADE_PRIORITY: Record<ItemGrade, number> = {
+  [ItemGrade.DIVINE]: 6,
   [ItemGrade.MYTHIC]: 5,
   [ItemGrade.LEGENDARY]: 4,
   [ItemGrade.EPIC]: 3,
@@ -80,6 +81,7 @@ const GRADE_PRIORITY: Record<ItemGrade, number> = {
  * 아이템 타입별 우선순위 (정렬용)
  */
 const TYPE_PRIORITY: Record<ItemType, number> = {
+  [ItemType.ZEUS_SWORD]: 15, // 제우스 검 최고 우선순위
   [ItemType.MAIN_WEAPON]: 14,
   [ItemType.SUB_WEAPON]: 13,
   [ItemType.PET]: 12,
@@ -332,6 +334,7 @@ export function getItemDisplayName(item: Item): string {
     [ItemType.WEALTH_POTION]: "재물 물약",
     [ItemType.BOSS_POTION]: "보스 물약",
     [ItemType.ARTISAN_POTION]: "장인 물약",
+    [ItemType.ZEUS_SWORD]: "제우스 검",
   };
 
   const gradeNames: Record<ItemGrade, string> = {
@@ -340,6 +343,7 @@ export function getItemDisplayName(item: Item): string {
     [ItemGrade.EPIC]: "영웅",
     [ItemGrade.LEGENDARY]: "전설",
     [ItemGrade.MYTHIC]: "신화",
+    [ItemGrade.DIVINE]: "신급",
   };
 
   const typeName = typeNames[item.type] || item.type;
