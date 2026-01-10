@@ -22,11 +22,15 @@ export default function EndingModal({ isOpen, onClose }: EndingModalProps) {
             alt="게임 엔딩"
             className="w-full h-64 object-cover rounded-t-xl"
             onError={(e) => {
+              console.error("엔딩 이미지 로드 실패:", e);
               const target = e.target as HTMLImageElement;
               target.style.display = "none";
             }}
+            onLoad={() => {
+              console.log("엔딩 이미지 로드 성공");
+            }}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent rounded-t-xl" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-t-xl" />
           <div className="absolute bottom-4 left-6 right-6">
             <h1 className="text-3xl font-bold text-white mb-2">
               🎉 축하합니다! 🎉

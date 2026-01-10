@@ -100,12 +100,15 @@ export function GameDashboard() {
     console.log("아이템 드랍됨:", dropResult);
   };
 
-  // 게임 완료 감지
+  // 게임 완료 감지 - 한 번만 실행되도록 수정
+  const [hasShownEndingModal, setHasShownEndingModal] = useState(false);
+
   useEffect(() => {
-    if (gameState.isGameComplete && !showEndingModal) {
+    if (gameState.isGameComplete && !hasShownEndingModal) {
       setShowEndingModal(true);
+      setHasShownEndingModal(true);
     }
-  }, [gameState.isGameComplete, showEndingModal]);
+  }, [gameState.isGameComplete, hasShownEndingModal]);
 
   // 가챠 결과 처리 (단일)
   const handleGachaResult = (result: GachaResult) => {
