@@ -44,12 +44,11 @@ export function performGachaDraw(
     };
   }
 
-  // 제우스 검 확률 체크 (0.00001% = 0.0000001)
-  const zeusRate = 0.0000001;
-  const random = Math.random();
+  // 아이템 등급 결정 (DIVINE 포함)
+  const grade = selectItemGrade();
 
-  if (random <= zeusRate) {
-    // 제우스 검 생성
+  // 신급(DIVINE) 등급이면 무조건 제우스 검
+  if (grade === ItemGrade.DIVINE) {
     const zeusSword = generateZeusSword();
     const result: GachaResult = {
       item: zeusSword,
@@ -62,15 +61,11 @@ export function performGachaDraw(
     };
   }
 
-  // 일반 아이템 등급 결정 (고정 확률)
-  const grade = selectItemGrade();
-
-  // 카테고리에 맞는 아이템 타입 선택
+  // 일반 아이템 생성
   const availableTypes = GACHA_ITEM_TYPES[category];
   const itemType =
     availableTypes[Math.floor(Math.random() * availableTypes.length)];
 
-  // 아이템 생성
   const item = generateGachaItem(itemType, grade);
 
   const result: GachaResult = {
@@ -87,32 +82,26 @@ export function performGachaDraw(
 
 /**
  * 가챠 확률에 따른 아이템 등급 선택
- * Requirements: 11.3 - Common (70%), Rare (20%), Epic (7%), Legendary (2.5%), Mythic (0.5%)
- * 제우스 검: 0.00001% (모든 가챠에서 극희박한 확률)
+ * Requirements: 11.3 - 모든 등급 포함 (DIVINE 0.001% 포함)
  */
 function selectItemGrade(): ItemGrade {
   const random = Math.random();
   let cumulativeProbability = 0;
 
-  // 제우스 검 확률 체크 (0.00001% = 0.0000001)
-  const zeusRate = 0.0000001;
-  if (random <= zeusRate) {
-    return ItemGrade.DIVINE; // 제우스 검은 신급 등급으로 처리
-  }
-
-  // 기존 확률 순서대로 체크 (DIVINE 제외)
+  // 모든 등급을 확률 순서대로 체크 (DIVINE 포함)
   const grades = [
     ItemGrade.COMMON,
     ItemGrade.RARE,
     ItemGrade.EPIC,
     ItemGrade.LEGENDARY,
     ItemGrade.MYTHIC,
+    ItemGrade.DIVINE, // 신급 추가
   ];
 
   for (const grade of grades) {
     const gradeRate = GACHA_RATES[grade as keyof typeof GACHA_RATES];
     cumulativeProbability += gradeRate;
-    if (random <= cumulativeProbability + zeusRate) {
+    if (random <= cumulativeProbability) {
       return grade;
     }
   }
